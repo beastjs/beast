@@ -1,0 +1,4 @@
+interface:
+  display_name: "Beast"
+  short_description: "Build, debug, and navigate Beast BTSX apps"
+  default_prompt: "Use $beast to scaffold or maintain a Beast app, author BTSX, fix compiler diagnostics, configure the language server, or integrate Vite, Rspack, or Rsbuild."

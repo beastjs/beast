@@ -1,0 +1,4 @@
+interface:
+  display_name: "React to Beast"
+  short_description: "Port React applications to Beast safely"
+  default_prompt: "Use $react-to-beast to audit and port this React application to Beast with Tailwind unless I request pure CSS."
