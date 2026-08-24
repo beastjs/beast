@@ -6,12 +6,13 @@
 > for Octane.
 
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-d97706?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.1.0-6f42c1?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.7-6f42c1?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.2.7-111827?style=flat-square)](https://beast-docs.vercel.app)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.1.37-111827?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.1.37-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
-**Write the structure. Keep the types. Let Octane own rendering.**
+**Build fast apps fast. Even faster with machines.**
 
 [Quick start](#quick-start) ·
 [How it works](#how-it-works) ·
