@@ -885,6 +885,64 @@ describe('BTSX to TSRX', () => {
     )
   })
 
+  test('gives method-style custom hooks their own component update boundary', () => {
+    const code = compileBeast(
+      [
+        'import { api } from "./api";',
+        'component Reader',
+        '  setup const result = api.useCounter();',
+        '  p #{String(result)}',
+        'Reader'
+      ].join('\n'),
+      { filename: 'MethodHook.btsx' }
+    )
+    const octane = compile(code, 'MethodHook.tsrx', {
+      mode: 'client',
+      hmr: false,
+      dev: true
+    })
+
+    expect(octane.diagnostics).toHaveLength(0)
+    expect(octane.code).toContain('componentSlotVoid')
+    expect(octane.code).not.toContain('componentSlotLite')
+  })
+
+  test('preserves Strong-mode Effect Event diagnostics through generated TSRX', () => {
+    const code = compileBeast(
+      [
+        'module "use strong";',
+        'import { useEffectEvent } from "octane";',
+        'props { report }: { report: () => void }',
+        'setup const onReport = useEffectEvent(report);',
+        'setup onReport();',
+        'p Ready'
+      ].join('\n'),
+      { filename: 'InvalidEffectEvent.btsx' }
+    )
+
+    expect(() => compile(code, 'InvalidEffectEvent.tsrx', {
+      mode: 'client',
+      hmr: false,
+      dev: true,
+      strong: true
+    })).toThrow('OCTANE_STRONG_RENDER_EFFECT_EVENT_CALL')
+  })
+
+  test('retains Octane development nesting checks for Beast hosts', () => {
+    const code = compileBeast('p\n  div Invalid nesting\n', {
+      filename: 'InvalidNesting.btsx'
+    })
+    const octane = compile(code, 'InvalidNesting.tsrx', {
+      mode: 'client',
+      hmr: false,
+      dev: true
+    })
+
+    expect(octane.diagnostics).toHaveLength(0)
+    expect(octane.code).toContain('devHtmlNesting')
+    expect(octane.code).toContain('InvalidNesting.tsrx')
+  })
+
   test('passes controlled linked-state input through Octane without native-event warnings', () => {
     const source = [
       'module "use strong";',
@@ -905,24 +963,25 @@ describe('BTSX to TSRX', () => {
     expect(octane.diagnostics).toHaveLength(0)
   })
 
-  test('preserves callback and object ref arrays for Octane', () => {
+  test('preserves optional and nested callback and object ref arrays for Octane', () => {
     const result = compileBeastResult(
       [
         'import { useRef } from "octane";',
         'setup const inputRef = useRef<HTMLInputElement | null>(null);',
+        'setup const optionalRef = enabled ? inputRef : undefined;',
         'setup const reportInput = (element: HTMLInputElement | null) => { report(element); return () => report(null); };',
-        'input(ref={[inputRef, reportInput]})'
+        'input(ref={[inputRef, [optionalRef, reportInput]]})'
       ].join('\n'),
       { filename: 'MultiRef.btsx' }
     )
 
-    expect(result.code).toContain('<input ref={[inputRef, reportInput]} />')
+    expect(result.code).toContain('<input ref={[inputRef, [optionalRef, reportInput]]} />')
     const input = result.ast.children[0]
     expect(input?.kind).toBe('element')
     if (input?.kind === 'element') {
       expect(input.attrs[0]).toMatchObject({
         name: 'ref',
-        value: { type: 'expr', code: '[inputRef, reportInput]' }
+        value: { type: 'expr', code: '[inputRef, [optionalRef, reportInput]]' }
       })
     }
     const octane = compile(result.code, 'MultiRef.tsrx', {

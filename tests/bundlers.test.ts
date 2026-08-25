@@ -103,7 +103,12 @@ describe("Octane bundler integrations", () => {
         clean: true,
       },
       optimization: { minimize: false },
-      plugins: [beastOctaneRspack()],
+      plugins: [beastOctaneRspack({
+        octane: {
+          parallel: false,
+          cssModuleConstants: () => null,
+        },
+      })],
     });
 
     const files = await readdir(outDir, { recursive: true });
