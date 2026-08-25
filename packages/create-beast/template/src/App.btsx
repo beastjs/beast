@@ -1,120 +1,192 @@
 import { useState } from 'octane'
 
 module
-  type ViewId = 'reviews' | 'solve' | 'prevent'
+  type PanelId = 'language' | 'integration' | 'skills'
+  type PanelSide = 'left' | 'right'
 
   interface Props {
     docsUrl: string
   }
 
-  interface Panel {
-    id: ViewId
-    label: string
-    issueTitle: string
-    issueCopy: string
+  interface LeftPanel {
+    docsPath: string
+    eyebrow: string
+    title: string
+    description: string
     tags: string[]
-    finding: string
-    outcomeTitle: string
-    outcomeCopy: string
-    releaseNote: string
+    note: string
+  }
+
+  interface RightPanel {
+    eyebrow: string
+    title: string
+    description: string
+    note: string
     status: string
-    action: string
+    action?: {
+      label: string
+      docsPath: string
+    }
+  }
+
+  interface Panel {
+    id: PanelId
+    label: string
+    left: LeftPanel
+    right: RightPanel
+    copyableNotes?: boolean
   }
 
   const panels: Panel[] = [
     {
-      id: 'reviews',
-      label: 'Reviews',
-      issueTitle: 'Deployment (v2.8.5) added uncached lookups',
-      issueCopy: 'Requests are overloading the database, causing latency spikes and broken frontend responses.',
-      tags: ['v2.8.5', 'Open source', 'database'],
-      finding: '27 spikes found',
-      outcomeTitle: 'Secure deployment',
-      outcomeCopy: 'No deploys with uncached fetches. CI must load-test any component that pulls user data on render.',
-      releaseNote: 'v2.8.6 securely encrypted',
-      status: 'Deployed',
-      action: 'Restart investigation'
+      id: 'language',
+      label: 'Language',
+      left: {
+        docsPath: '/docs/language',
+        eyebrow: 'Input',
+        title: 'Structured components',
+        description: 'Write familiar elements, selectors, attributes, text, and interpolation in .btsx—without closing tags. Leading spaces define the component tree.',
+        tags: ['.btsx', 'typed props', 'native control flow'],
+        note: 'elements, props, and control flow'
+      },
+      right: {
+        eyebrow: 'Output',
+        title: 'Compiles to Octane',
+        description: 'Beast keeps TypeScript expressions intact, emits source-located TSRX, and leaves final validation and runtime compilation to Octane.',
+        note: 'small syntax. sative output.',
+        status: 'Source-located',
+        action: {
+          label: 'Explore the language',
+          docsPath: '/docs/language'
+        }
+      }
     },
     {
-      id: 'solve',
-      label: 'Solve',
-      issueTitle: 'API retries are multiplying write load',
-      issueCopy: 'A failed response triggers duplicate writes before the original request has finished processing.',
-      tags: ['API', 'Payments', 'retries'],
-      finding: '8 traces linked',
-      outcomeTitle: 'Contain duplicate writes',
-      outcomeCopy: 'Attach an idempotency key to every mutation and collapse matching requests at the edge.',
-      releaseNote: 'Patch ready for review',
-      status: 'Investigating',
-      action: 'Open trace'
+      id: 'integration',
+      label: 'Integration',
+      left: {
+        docsPath: '/docs/vite',
+        eyebrow: 'Beast → Octane → Vite',
+        title: 'Vite',
+        description: 'The Vite plugin compiles .btsx modules in memory before Octane processes the generated TSRX, so normal imports stay in one module graph.',
+        tags: ['HMR', 'SSR transforms', 'production builds'],
+        note: '^8.0.16'
+      },
+      right: {
+        eyebrow: 'Beast Styling',
+        title: 'Tailwind v4',
+        description: 'Use standard source imports, Tailwind utilities, and the same Beast–Octane pipeline for development, SSR, and production builds.',
+        // note: 'Integrated by default.',
+        status: 'Tailwind v4'
+      }
     },
     {
-      id: 'prevent',
-      label: 'Prevent',
-      issueTitle: 'Checkout cache expires during traffic peaks',
-      issueCopy: 'A synchronized cache refresh sends every checkout request back to the primary database.',
-      tags: ['Checkout', 'Cache', 'traffic'],
-      finding: '3 paths exposed',
-      outcomeTitle: 'Guard the hot path',
-      outcomeCopy: 'Stagger cache expiry and serve stale values while a single background refresh completes.',
-      releaseNote: 'Policy active in production',
-      status: 'Protected',
-      action: 'View policy'
+      id: 'skills',
+      label: 'Skills',
+      copyableNotes: true,
+      left: {
+        docsPath: '/docs/skills',
+        eyebrow: 'Beast Core',
+        title: 'Beast Skills',
+        description: 'The Beast skill gives coding agents a repeatable workflow to establish scope, scaffold or locate a project, author BTSX, diagnose compiler output, and verify the build.',
+        tags: ['scaffold', 'diagnose', 'verify'],
+        note: 'npx skills add https://github.com/phtn/beast-skill --skill beast'
+      },
+      right: {
+        eyebrow: 'Migrate to beast',
+        title: 'React to Beast',
+        description: 'Audit routes, state, styling, and behavior; port the application to BTSX while preserving the user-visible experience and recording migration evidence.',
+        note: 'npx skills add https://github.com/phtn/react-to-beast --skill react-to-beast',
+        status: 'migration ready',
+        action: {
+          label: 'Explore React migration',
+          docsPath: '/docs/react-to-beast'
+        }
+      }
     }
   ]
 
 props { docsUrl }: Props
-setup const [activeId, setActiveId] = useState<ViewId>('reviews');
+setup const [activeId, setActiveId] = useState<PanelId>('language');
+setup const [copiedSide, setCopiedSide] = useState<PanelSide | null>(null);
 setup const active = panels.find((panel) => panel.id === activeId) ?? panels[0];
+setup const copyNote = async (side: PanelSide, note: string) => { await navigator.clipboard.writeText(note); setCopiedSide(side); window.setTimeout(() => setCopiedSide(null), 1600); };
 
-main.app-shell
-  section.showcase(aria-labelledby="showcase-title")
-    header.showcase-header
-      h1#showcase-title
-        span Smarter systems spot problems
-        |  — and solve them.
-      nav.segmented-control(aria-label="Product workflow" role="tablist")
+main(className='grid min-h-screen min-w-80 place-items-center p-3 sm:p-8 lg:p-16')
+  section(
+    ~ aria-labelledby="showcase-title"
+    ~ className='w-full max-w-[1080px] overflow-hidden rounded-[1.75rem] border border-white/85 bg-white/75 p-4 shadow-[0_24px_55px_rgba(28,28,25,0.09)] backdrop-blur-xl sm:rounded-[2.8rem] sm:p-6 lg:p-8'
+    ~ )
+    header(className='flex flex-col items-start justify-between gap-6 px-1 pb-6 pt-2 md:flex-row md:items-center md:gap-8 md:px-3 md:pb-8 md:pt-3')
+      h1#showcase-title(className='m-0 max-w-xl text-[clamp(1.7rem,3.3vw,2.7rem)] font-medium leading-[1.08] tracking-[-0.045em] text-[#161616]')
+        div(className='flex items-center text-[#161616]')
+          img(src='/beast.svg' alt='Beast' className='size-6 sm:size-7 md:size-8 lg:size-9 opacity-60')
+          p(className='ml-3 opacity-70') Beast
+        span(className='ml-6 mr-3 opacity-50') &rarr;
+        span(className='text-[#ff415a]') Octane
+      nav(className='inline-flex w-full shrink-0 items-center rounded-full border border-black/[0.025] bg-[#f0f0ee] p-1 md:w-auto' aria-label="Product workflow" role="tablist")
         each panel in panels key panel.id
-          button.segmented-tab(
+          button(
             ~ type="button"
             ~ id={`tab-${panel.id}`}
             ~ role="tab"
             ~ aria-controls="workflow-panel"
             ~ aria-selected={activeId === panel.id}
-            ~ className={activeId === panel.id ? 'is-active' : ''}
-            ~ onClick={() => setActiveId(panel.id)}
+            ~ className={activeId === panel.id ? 'inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-white/95 px-2.5 py-3 text-xs font-semibold text-[#242422] shadow-[0_1px_4px_rgba(26,26,24,0.14)] outline-none transition focus-visible:ring-3 focus-visible:ring-orange-200 sm:px-2 sm:text-sm md:min-w-32'
+              ~ : 'inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-transparent px-2.5 py-3 text-xs font-semibold text-[#595956] outline-none transition hover:text-[#111] focus-visible:ring-3 focus-visible:ring-orange-200 sm:px-2 sm:text-sm md:min-w-32'}
+            ~ onClick={() => { setActiveId(panel.id); setCopiedSide(null); }}
             ~ )
-            if panel.id === 'reviews'
-              span.tab-dot(aria-hidden="true")
             | #{panel.label}
 
-    section#workflow-panel.workflow-panel(
+    section#workflow-panel(
       ~ role="tabpanel"
       ~ aria-live="polite"
       ~ aria-labelledby={`tab-${activeId}`}
+      ~ className='grid grid-cols-1 gap-4 rounded-3xl bg-[#eeeeeb]/90 p-2 sm:rounded-[2rem] sm:p-4 lg:grid-cols-[0.92fr_1.08fr]'
       ~ )
-      article.issue-card
-        div
-          p.card-kicker Signal detected
-          h2 #{active.issueTitle}
-          p.card-copy #{active.issueCopy}
-          ul.tag-list(aria-label="Issue tags")
-            each tag in active.tags key tag
-              li #{tag}
-        footer.issue-footer
-          span #{active.finding}
-          a(href={docsUrl} target="_blank" rel="noreferrer") Read more
 
-      article.outcome-card
+      // LEFT
+      article(className='flex min-h-[400px] flex-col rounded-[1.15rem] border border-black/8 bg-white/35 p-6 sm:min-h-[430px] sm:rounded-[1.45rem] sm:p-9 lg:min-h-[480px] lg:p-10')
         div
-          p.card-kicker Recommended guardrail
-          h2 #{active.outcomeTitle}
-          p.card-copy #{active.outcomeCopy}
-        p.release-note #{active.releaseNote}
-        footer.outcome-footer
-          span.status-pill
-            span.status-seal(aria-hidden="true") ✓
-            | #{active.status}
-          a.action-button(href={docsUrl} target="_blank" rel="noreferrer")
-            | #{active.action}
-            span(aria-hidden="true") →
+          p(className='mb-6 mt-0 text-[0.72rem] font-bold uppercase tracking-[0.11em] text-[#9b9b96]') #{active.left.eyebrow}
+          h2(className='m-0 max-w-sm text-[clamp(1.55rem,2.8vw,2.05rem)] font-medium leading-[1.16] tracking-[-0.035em] text-[#161616]') #{active.left.title}
+          p(className='mb-0 mt-5 max-w-md text-base leading-relaxed text-[#73736f]') #{active.left.description}
+          ul(className='mb-0 mt-9 flex list-none flex-wrap gap-2 p-0' aria-label="Issue tags")
+            each tag, index in active.left.tags key tag
+              li(className={index === 1 ? 'rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[#3f3f3c] shadow-xs' : 'rounded-full border border-black/10 bg-white/65 px-3 py-2 text-xs font-semibold text-[#3f3f3c] shadow-xs'}) #{tag}
+        if active.copyableNotes
+          button(
+            ~ type="button"
+            ~ className='group mb-5 mt-auto flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl border border-black/8 bg-white/55 px-4 py-3 text-left outline-none transition hover:bg-white/85 focus-visible:ring-3 focus-visible:ring-orange-200'
+            ~ aria-label={`Copy note: ${active.left.note}`}
+            ~ onClick={() => copyNote('left', active.left.note)}
+            ~ )
+            code(className='min-w-0 max-w-[35ch] overflow-x-auto whitespace-nowrap text-xs text-[#666661] scrollbar-none') #{active.left.note}
+            span(className='shrink-0 text-xs font-semibold text-[#343431]') #{copiedSide === 'left' ? 'Copied' : 'Copy'}
+        else
+          code(className='mb-0 mt-auto pb-5 pt-16 text-sm text-[#858681]') #{active.left.note}
+
+      // RIGHT
+      article(className='flex min-h-[390px] flex-col rounded-[1.15rem] bg-[radial-gradient(circle_at_88%_10%,rgba(255,255,255,0.07),transparent_28rem),linear-gradient(145deg,#2a2b29,#111211_72%)] p-6 text-[#f6f6f2] shadow-[0_22px_36px_rgba(15,16,14,0.18)] sm:min-h-[430px] sm:rounded-[1.45rem] sm:p-9 lg:min-h-[510px] lg:p-10')
+        div
+          p(className='mb-6 mt-0 text-[0.72rem] font-bold uppercase tracking-[0.11em] text-[#858681]') #{active.right.eyebrow}
+          h2(className='m-0 max-w-sm text-[clamp(1.55rem,2.8vw,2.05rem)] font-medium leading-[1.16] tracking-[-0.035em]') #{active.right.title}
+          p(className='mb-0 mt-5 max-w-md text-base leading-relaxed text-[#a4a5a0]') #{active.right.description}
+        if active.copyableNotes
+          button(
+            ~ type="button"
+            ~ className='group mb-5 mt-auto flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.045] px-4 py-3 text-left outline-none transition hover:bg-white/[0.075] focus-visible:ring-3 focus-visible:ring-orange-200'
+            ~ aria-label={`Copy note: ${active.right.note}`}
+            ~ onClick={() => copyNote('right', active.right.note)}
+            ~ )
+            code(className='min-w-0 max-w-[40ch] overflow-x-auto whitespace-nowrap text-xs text-[#a4a5a0] scrollbar-none') #{active.right.note}
+            span(className='shrink-0 text-xs font-semibold text-[#f6f6f2]') #{copiedSide === 'right' ? 'Copied' : 'Copy'}
+        else
+          code(className='mb-0 mt-auto pb-5 pt-16 text-sm text-[#858681]') #{active.right.note}
+
+  footer(className='pt-0')
+    a(href='https://beast-docs.vercel.app/'
+      ~ target='_blank'
+      ~ rel='noopener noreferrer'
+      ~ className='mt-1 px-1 py-0.5 ml-3 underline underline-offset-4 decoration-dotted')
+      span(className='font-mono text-xs tracking-wider') BEAST DOCS

@@ -46,7 +46,10 @@ describe("create-beast", () => {
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("interface Props");
-    expect(app).toContain("useState<ViewId>('reviews')");
+    expect(app).toContain("useState<PanelId>('language')");
+    expect(app).toContain("navigator.clipboard.writeText(note)");
+    expect(app).toContain("label: 'Integration'");
+    expect(app).toContain("label: 'Skills'");
     expect(app).toContain('role="tablist"');
     expect(app).toContain("each panel in panels key panel.id");
     expect(await readFile(resolve(result.directory, "vite.config.ts"), "utf8")).toContain(
@@ -57,6 +60,15 @@ describe("create-beast", () => {
     );
     expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).not.toContain(
       "@import 'tailwindcss'",
+    );
+    expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).toContain(
+      "tailwindcss v4.3.3",
+    );
+    expect(await readFile(resolve(result.directory, "public/beast.svg"), "utf8")).toContain(
+      '<svg xmlns="http://www.w3.org/2000/svg"',
+    );
+    expect(await readFile(resolve(result.directory, "index.html"), "utf8")).toContain(
+      "Beast — Language, Integration & Skills",
     );
     const main = await readFile(resolve(result.directory, "src", "main.ts"), "utf8");
     expect(main).toContain("docsUrl");
@@ -87,9 +99,38 @@ describe("create-beast", () => {
     expect(style).toContain('@import "tailwindcss"');
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
-    expect(app).toContain("useState<ViewId>('reviews')");
+    expect(app).toContain("useState<PanelId>('language')");
+    expect(app).toContain("navigator.clipboard.writeText(note)");
     expect(app).toContain("lg:grid-cols-[0.92fr_1.08fr]");
     expect(app).toContain('role="tablist"');
+    expect(await readFile(resolve(result.directory, "public/beast.svg"), "utf8")).toContain(
+      '<svg xmlns="http://www.w3.org/2000/svg"',
+    );
+  });
+
+  test("keeps CSS and Tailwind feature markup in parity", async () => {
+    const cwd = await temporaryDirectory();
+    const css = await createProject({
+      cwd,
+      directory: "css-app",
+      install: false,
+      git: false,
+      compilerSpec: "file:/local/beast-tsrx.tgz",
+    });
+    const tailwind = await createProject({
+      cwd,
+      directory: "tailwind-app",
+      install: false,
+      git: false,
+      tailwind: true,
+      compilerSpec: "file:/local/beast-tsrx.tgz",
+    });
+
+    for (const path of ["src/App.btsx", "src/main.ts", "index.html", "public/beast.svg"]) {
+      expect(await readFile(resolve(css.directory, path), "utf8")).toBe(
+        await readFile(resolve(tailwind.directory, path), "utf8"),
+      );
+    }
   });
 
   test("refuses a non-empty directory unless force is explicit", async () => {
