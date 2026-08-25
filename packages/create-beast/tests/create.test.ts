@@ -44,10 +44,11 @@ describe("create-beast", () => {
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
-    expect(app).toContain("props { title, links }: Props");
+    expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("interface Props");
-    expect(app).toContain("BTSX → TSRX → Octane");
-    expect(app).toContain("each link in links key link.id");
+    expect(app).toContain("useState<ViewId>('reviews')");
+    expect(app).toContain('role="tablist"');
+    expect(app).toContain("each panel in panels key panel.id");
     expect(await readFile(resolve(result.directory, "vite.config.ts"), "utf8")).toContain(
       "plugins: [beastOctane()]",
     );
@@ -58,8 +59,8 @@ describe("create-beast", () => {
       "@import 'tailwindcss'",
     );
     const main = await readFile(resolve(result.directory, "src", "main.ts"), "utf8");
-    expect(main).toContain("links");
-    expect(main).toContain("Beast → Octane");
+    expect(main).toContain("docsUrl");
+    expect(main).toContain("https://beast-docs.vercel.app");
   });
 
   test("creates a Tailwind project with dedicated template", async () => {
@@ -85,12 +86,10 @@ describe("create-beast", () => {
     const style = await readFile(resolve(result.directory, "src/style.css"), "utf8");
     expect(style).toContain('@import "tailwindcss"');
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
-    expect(app).toContain("props { source, direction, output, links }: Props");
-    expect(app).toContain("Header(source=");
-    expect(app).toContain("flex flex-col");
-    const header = await readFile(resolve(result.directory, "src/Header.btsx"), "utf8");
-    expect(header).toContain("props { source, direction, output }: HeaderProps");
-    expect(header).toContain("-skew-6");
+    expect(app).toContain("props { docsUrl }: Props");
+    expect(app).toContain("useState<ViewId>('reviews')");
+    expect(app).toContain("lg:grid-cols-[0.92fr_1.08fr]");
+    expect(app).toContain('role="tablist"');
   });
 
   test("refuses a non-empty directory unless force is explicit", async () => {

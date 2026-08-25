@@ -1,7 +1,7 @@
 :root {
-  color: #f6f7fb;
-  background: #0d0f14;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #161616;
+  background: #ececeb;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -10,79 +10,357 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
 body {
-  display: grid;
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background:
+    radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.92), transparent 34rem),
+    #ececeb;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  padding: clamp(1rem, 4vw, 4rem);
   place-items: center;
 }
 
-.app {
-  width: min(680px, calc(100vw - 3rem));
+.showcase {
+  width: min(1080px, 100%);
+  padding: clamp(1rem, 2.7vw, 2rem);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: clamp(1.75rem, 4vw, 2.8rem);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 24px 55px rgba(28, 28, 25, 0.09);
+  backdrop-filter: blur(22px);
 }
 
-.eyebrow {
-  color: #666666;
-  font-size: 0.8rem;
+.showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(0.35rem, 1.6vw, 1rem) clamp(0.25rem, 1.2vw, 0.9rem) clamp(1.3rem, 2.5vw, 2rem);
+}
+
+.showcase-header h1 {
+  max-width: 570px;
+  margin: 0;
+  font-size: clamp(1.7rem, 3.3vw, 2.7rem);
+  font-weight: 520;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+.showcase-header h1 span {
+  display: block;
+  color: #aaa9a6;
+}
+
+.segmented-control {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.025);
+  border-radius: 999px;
+  background: #f0f0ee;
+}
+
+.segmented-tab {
+  display: inline-flex;
+  min-width: 6.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.78rem 1.05rem;
+  border: 0;
+  border-radius: 999px;
+  color: #595956;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.segmented-tab:hover {
+  color: #111;
+}
+
+.segmented-tab:focus-visible,
+.action-button:focus-visible,
+.issue-footer a:focus-visible {
+  outline: 3px solid rgba(255, 119, 63, 0.28);
+  outline-offset: 3px;
+}
+
+.segmented-tab.is-active {
+  color: #242422;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1px 4px rgba(26, 26, 24, 0.14), 0 0 0 1px rgba(26, 26, 24, 0.035);
+}
+
+.tab-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #ff793f;
+  box-shadow: 0 0 0 4px rgba(255, 121, 63, 0.1);
+}
+
+.workflow-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 2rem;
+  background: rgba(238, 238, 235, 0.88);
+}
+
+.issue-card,
+.outcome-card {
+  display: flex;
+  min-height: 510px;
+  flex-direction: column;
+  padding: clamp(1.5rem, 3vw, 2.6rem);
+  border-radius: 1.45rem;
+}
+
+.issue-card {
+  justify-content: space-between;
+  border: 1px solid rgba(25, 25, 23, 0.08);
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.outcome-card {
+  color: #f6f6f2;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(255, 255, 255, 0.07), transparent 28rem),
+    linear-gradient(145deg, #2a2b29, #111211 72%);
+  box-shadow: 0 22px 36px rgba(15, 16, 14, 0.18);
+}
+
+.card-kicker {
+  margin: 0 0 1.6rem;
+  color: #9b9b96;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
-h1 {
-  margin: 0.25rem 0 0.75rem;
-  font-size: clamp(3rem, 10vw, 6rem);
-  letter-spacing: -0.07em;
+.outcome-card .card-kicker {
+  color: #858681;
 }
 
-p {
-  color: #b4bac7;
-  font-size: 1.1rem;
+.issue-card h2,
+.outcome-card h2 {
+  max-width: 25rem;
+  margin: 0;
+  font-size: clamp(1.55rem, 2.8vw, 2.05rem);
+  font-weight: 540;
+  letter-spacing: -0.035em;
+  line-height: 1.16;
 }
 
-.button {
-  display: inline-flex;
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.6rem;
-  color: #f6f7fb;
-  text-decoration: none;
+.card-copy {
+  max-width: 29rem;
+  margin: 1.3rem 0 0;
+  color: #73736f;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
-.button:hover {
-  opacity: 0.8;
+.outcome-card .card-copy {
+  color: #a4a5a0;
 }
 
-.flex {
+.tag-list {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 2.4rem 0 0;
+  list-style: none;
+}
+
+.tag-list li {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgba(26, 26, 24, 0.1);
+  border-radius: 999px;
+  color: #3f3f3c;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 1px 2px rgba(30, 30, 28, 0.04);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.tag-list li:nth-child(2) {
+  background: #f0f5e8;
+}
+
+.issue-footer,
+.outcome-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
 }
 
-#tsrx {
-  background: #680af5;
-  color: #fafafa;
+.issue-footer {
+  margin-top: 3rem;
+  color: #a2a29e;
+  font-size: 0.88rem;
 }
 
-#beast {
-  background: #fafafa;
-  color: #34373a;
+.issue-footer a {
+  color: #343431;
+  font-weight: 650;
+  text-underline-offset: 0.22rem;
 }
 
-#octane {
-  background: #ff415a;
-  color: #fafafa;
+.release-note {
+  margin: auto 0 0;
+  padding: 3rem 0 1.4rem;
+  color: #858681;
+  font-size: 0.88rem;
 }
 
-code {
-  font-size: 0.9rem;
-  letter-spacing: 0.03em;
-  color: #888888;
+.outcome-footer {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.075);
 }
 
-.arrow {
-  font-size: 0.8rem;
-  letter-spacing: 0.03em;
-  color: #e5e5e5;
-  padding: 0 10px;
+.status-pill,
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.status-pill {
+  gap: 0.55rem;
+  padding: 0.72rem 1rem;
+  color: #c8f393;
+  background: rgba(67, 111, 42, 0.2);
+}
+
+.status-seal {
+  display: grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  color: #263d17;
+  background: #b7ef75;
+  font-size: 0.76rem;
+  font-weight: 900;
+  place-items: center;
+}
+
+.action-button {
+  gap: 0.55rem;
+  min-height: 3.15rem;
+  padding: 0.7rem 1.25rem;
+  color: #282825;
+  background: #f6f6f3;
+  box-shadow: 0 1px 0 #fff inset, 0 3px 12px rgba(0, 0, 0, 0.24);
+  text-decoration: none;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.action-button:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 820px) {
+  .showcase-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+
+  .segmented-control {
+    width: 100%;
+  }
+
+  .segmented-tab {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .workflow-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .issue-card,
+  .outcome-card {
+    min-height: 430px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-shell {
+    padding: 0.7rem;
+  }
+
+  .showcase {
+    border-radius: 1.75rem;
+  }
+
+  .workflow-panel {
+    padding: 0.55rem;
+    border-radius: 1.5rem;
+  }
+
+  .issue-card,
+  .outcome-card {
+    min-height: 390px;
+    border-radius: 1.15rem;
+  }
+
+  .segmented-tab {
+    padding-inline: 0.55rem;
+    font-size: 0.8rem;
+  }
+
+  .issue-footer,
+  .outcome-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
