@@ -87,7 +87,7 @@ function restoreDom(): void {
 
 function rewriteRuntimeImports(code: string, mode: CompileMode): string {
   const specifiers = mode === "client"
-    ? ["octane/hydration", "octane"]
+    ? ["octane/internal/client", "octane/hydration", "octane"]
     : ["octane/hydration", "octane/server"];
   let executable = code;
 
@@ -143,6 +143,14 @@ function requiredElement<T extends Element>(root: any, selector: string): T {
 
 function click(element: any): void {
   (element as Element).dispatchEvent(new (browser as any).MouseEvent("click", { bubbles: true, cancelable: true }) as unknown as Event);
+}
+
+function deferred<T>(): { promise: Promise<T>; resolve(value: T): void } {
+  let resolvePromise!: (value: T) => void;
+  const promise = new Promise<T>((resolveValue) => {
+    resolvePromise = resolveValue;
+  });
+  return { promise, resolve: resolvePromise };
 }
 
 beforeAll(installDom);
@@ -298,6 +306,75 @@ describe("Octane client lifecycle", () => {
     root.unmount();
     expect(container.childNodes).toHaveLength(0);
     expect(portalTarget.childNodes).toHaveLength(0);
+  });
+
+  test("hydrates a framed primitive once and clears boolean children without duplication", async () => {
+    const source = [
+      'props { label, show, attrs }: { label: string; show: boolean; attrs: Record<string, string> }',
+      'p({...attrs}) #{show ? label : false}',
+    ].join("\n");
+    const filename = resolve("tests/fixtures/PrimitiveHydration.btsx");
+    const ServerPrimitive = await loadCompiledComponent(source, filename, "server");
+    const ClientPrimitive = await loadCompiledComponent(source, filename, "client");
+    const { act, hydrateRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    container.innerHTML = renderToString(ServerPrimitive, {
+      label: "Ready",
+      show: true,
+      attrs: { "data-kind": "status" },
+    }).html;
+    browser.document.body.append(container);
+    const serverParagraph = requiredElement<HTMLParagraphElement>(container, "p");
+
+    let root!: ReturnType<typeof hydrateRoot>;
+    await act(() => {
+      root = hydrateRoot(container, ClientPrimitive, {
+        label: "Ready",
+        show: true,
+        attrs: { "data-kind": "status" },
+      });
+    });
+    expect(requiredElement(container, "p")).toBe(serverParagraph);
+    expect(serverParagraph.textContent).toBe("Ready");
+
+    await act(() => root.render(ClientPrimitive, {
+      label: "Ready",
+      show: false,
+      attrs: { "data-kind": "status" },
+    }));
+    expect(serverParagraph.textContent).toBe("");
+    await act(() => root.render(ClientPrimitive, {
+      label: "Updated",
+      show: true,
+      attrs: { "data-kind": "status" },
+    }));
+    expect(serverParagraph.textContent).toBe("Updated");
+    root.unmount();
+  });
+
+  test("retries a root that suspends without an enclosing Suspense boundary", async () => {
+    const source = [
+      'import { use } from "octane";',
+      'props { value }: { value: PromiseLike<string> }',
+      'setup const resolved = use(value);',
+      'p#resolved #{resolved}',
+    ].join("\n");
+    const filename = resolve("tests/fixtures/RootSuspend.btsx");
+    const RootSuspend = await loadCompiledComponent(source, filename, "client");
+    const { act, createRoot } = await import("octane");
+    const pending = deferred<string>();
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+
+    await act(() => root.render(RootSuspend, { value: pending.promise }));
+    expect(container.childNodes).toHaveLength(0);
+    pending.resolve("Settled");
+    await act(async () => {
+      await pending.promise;
+    });
+    expect(requiredElement(container, "#resolved").textContent).toBe("Settled");
+    root.unmount();
   });
 });
 

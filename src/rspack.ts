@@ -3,6 +3,7 @@ import { isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   OctaneRspackPlugin,
+  type OctaneRspackLoaderOptions,
   type OctaneRspackPluginOptions,
 } from "@octanejs/rspack-plugin";
 import type { Compiler, RspackPluginInstance } from "@rspack/core";
@@ -11,6 +12,11 @@ import type { ProjectComponentOptions } from "./project.js";
 export interface BeastRspackOptions {
   root?: string;
   components?: Readonly<Record<string, ProjectComponentOptions>>;
+  /**
+   * The complete adapter forwards these options to Octane's class plugin.
+   * Beast-generated TSRX consumes the compiler subset; graph-level options
+   * such as `parallel` and `cssModuleConstants` remain owned by Octane.
+   */
   octane?: OctaneRspackPluginOptions;
 }
 
@@ -71,7 +77,9 @@ export class BeastRspackPlugin implements RspackPluginInstance {
           ...(this.options.components === undefined
             ? {}
             : { components: this.options.components }),
-          ...(this.options.octane === undefined ? {} : { octane: this.options.octane }),
+          ...(this.options.octane === undefined
+            ? {}
+            : { octane: beastCompilerOptions(this.options.octane) }),
         },
       }],
     });
@@ -102,4 +110,24 @@ function realRoot(path: string): string {
   } catch {
     return path;
   }
+}
+
+function beastCompilerOptions(
+  options: OctaneRspackPluginOptions,
+): OctaneRspackLoaderOptions {
+  return {
+    ...(options.environment === undefined ? {} : { environment: options.environment }),
+    ...(options.hmr === undefined ? {} : { hmr: options.hmr }),
+    ...(options.dev === undefined ? {} : { dev: options.dev }),
+    ...(options.profile === undefined ? {} : { profile: options.profile }),
+    ...(options.strong === undefined ? {} : { strong: options.strong }),
+    ...(options.exclude === undefined ? {} : { exclude: options.exclude }),
+    ...(options.renderers === undefined ? {} : { renderers: options.renderers }),
+    ...(options.requireDirective === undefined
+      ? {}
+      : { requireDirective: options.requireDirective }),
+    ...(options.universalRuntime === undefined
+      ? {}
+      : { universalRuntime: options.universalRuntime }),
+  };
 }

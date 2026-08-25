@@ -24,7 +24,7 @@ Never mass-rewrite package names solely from the audit report.
 | Source family | Candidate examples | Review focus |
 |---|---|---|
 | Stores and atoms | `zustand` → `@octanejs/zustand`, `jotai` → `@octanejs/jotai`, `react-redux` → `@octanejs/redux` | Subscription equality, provider/store lifetime, SSR snapshot, devtools |
-| Server state | `@tanstack/react-query` → `@octanejs/tanstack-query`, `swr` → `@octanejs/swr`, `@apollo/client` → `@octanejs/apollo-client` | Cache ownership, suspense/errors, dehydration, mutations, optimistic rollback |
+| Server state | `@tanstack/react-query` → `@octanejs/tanstack-query`, `@tanstack/react-db` → `@octanejs/tanstack-db`, `swr` → `@octanejs/swr`, `@apollo/client` → `@octanejs/apollo-client` | Cache ownership, live-query status and windows, suspense/errors, dehydration, mutations, optimistic rollback |
 | Forms | `react-hook-form` → `@octanejs/hook-form`, `@tanstack/react-form` → `@octanejs/tanstack-form` | Native events, registration refs, validation timing, reset, field arrays, SSR |
 | UI primitives | Radix React packages → `@octanejs/radix`, Floating UI → `@octanejs/floating-ui` | Focus management, portals, keyboard interactions, ARIA, controlled state |
 | Animation | `framer-motion`/`motion` → `@octanejs/motion`, React Spring → `@octanejs/spring` | Presence/exit behavior, layout measurement, reduced motion, SSR |

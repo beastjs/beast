@@ -11,6 +11,10 @@ import { composeSourceMaps } from "./source-map.js";
 
 export interface BeastViteOptions {
   components?: Readonly<Record<string, ProjectComponentOptions>>;
+  /**
+   * The complete adapter forwards these options to Octane's native-source
+   * plugin. Beast-generated TSRX consumes its direct compiler subset.
+   */
   octane?: OctaneVitePluginOptions;
 }
 

@@ -7,8 +7,8 @@ TanStack Router code-based and file-based trees share runtime capabilities but h
 The executable compatibility set in this skill is:
 
 - `beast-tsrx@0.2.7`;
-- `octane@0.1.37`;
-- `@octanejs/tanstack-router@0.1.36`, whose peer is Octane 0.1.37.
+- `octane@0.1.46`;
+- `@octanejs/tanstack-router@0.1.45`, whose peer is Octane 0.1.46.
 
 The binding reuses TanStack's framework-neutral core and implements the Octane component/hook layer. Resolve peer versions together and verify the binding's pinned upstream router/core versions before porting generated types.
 
