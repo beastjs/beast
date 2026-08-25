@@ -37,15 +37,15 @@ validation, lowering, development serving, and production bundling.
 
 ## At a glance
 
-| Capability | What it does | Why it matters |
-| --- | --- | --- |
-| BTSX compiler | Converts indentation-based `.btsx` into native `.tsrx` | Keeps generated output inspectable |
-| Component setup | Emits local TypeScript and Octane hooks before the template root | Keeps stateful components self-contained |
-| Native control flow | Emits Octane condition, loop, switch, and boundary directives | Preserves TSRX semantics and identity |
-| Project builder | Recursively compiles BTSX, validates native TSRX, and watches changes | Supports mixed source trees and recoverable rebuilds |
-| Vite integration | Runs Beast before Octane in memory | Enables normal dev and production builds |
-| Diagnostics | Reports stable codes with file and source spans | Makes compiler failures actionable |
-| Project creator | Scaffolds a typed Beast, Octane, and Vite application | Provides a coherent starting point |
+| Capability          | What it does                                                          | Why it matters                                       |
+| ------------------- | --------------------------------------------------------------------- | ---------------------------------------------------- |
+| BTSX compiler       | Converts indentation-based `.btsx` into native `.tsrx`                | Keeps generated output inspectable                   |
+| Component setup     | Emits local TypeScript and Octane hooks before the template root      | Keeps stateful components self-contained             |
+| Native control flow | Emits Octane condition, loop, switch, and boundary directives         | Preserves TSRX semantics and identity                |
+| Project builder     | Recursively compiles BTSX, validates native TSRX, and watches changes | Supports mixed source trees and recoverable rebuilds |
+| Vite integration    | Runs Beast before Octane in memory                                    | Enables normal dev and production builds             |
+| Diagnostics         | Reports stable codes with file and source spans                       | Makes compiler failures actionable                   |
+| Project creator     | Scaffolds a typed Beast, Octane, and Vite application                 | Provides a coherent starting point                   |
 
 ## Quick start
 
@@ -79,12 +79,21 @@ The generated project includes:
 
 Creator options:
 
-| Option | Effect |
-| --- | --- |
-| `--no-install` | Write the project without running `bun install` |
-| `--no-git` | Skip `git init` |
-| `--force` | Write known template files into a non-empty directory without deleting unrelated files |
-| `-h`, `--help` | Print command help |
+| Option         | Effect                                                                                 |
+| -------------- | -------------------------------------------------------------------------------------- |
+| `--no-install` | Write the project without running `bun install`                                        |
+| `--no-git`     | Skip `git init`                                                                        |
+| `--force`      | Write known template files into a non-empty directory without deleting unrelated files |
+| `-h`, `--help` | Print command help                                                                     |
+| `--tailwind`   | Add Tailwind CSS support (default)                                                     |
+
+## LSP
+
+| IDE     | Link                                                                        |
+| ------- | --------------------------------------------------------------------------- |
+| VS Code | [BeastJS](https://marketplace.visualstudio.com/items?itemName=phtn.beastjs) |
+| Zed     | Awaiting extensions merge                                                   |
+| NeoVim  | Awaiting nvim-treesitter merge                                              |
 
 ## How it works
 
@@ -114,6 +123,25 @@ props { user, unreadCount, messages }: { user: { name: string; id: string; isAdm
   .header
     h1 Welcome, #{user.name}
   .body
+    if user.isAdmin
+      AdminPanel(userId={user.id})
+    else
+      p You have #{unreadCount} new messages
+    ul.messages
+      each message, i in messages key message.id
+        li.message #{message.text}
+```
+
+or
+
+```btsx
+import AdminPanel from "./AdminPanel.btsx";
+props { user, unreadCount, messages }: { user: { name: string; id: string; isAdmin: boolean }; unreadCount: number; messages: { id: string; text: string }[] }
+
+div(className="card")
+  div(className="header")
+    h1 Welcome, #{user.name}
+  div(className="body")
     if user.isAdmin
       AdminPanel(userId={user.id})
     else
@@ -177,16 +205,16 @@ main.page
 
 Selectors follow a compact CSS-like form:
 
-| BTSX | Meaning |
-| --- | --- |
-| `section` | HTML element |
-| `Card` | Component reference |
-| `Theme.Provider` | Dotted component reference |
-| `.card` | `div` with class `card` |
-| `section.hero` | `section` with class `hero` |
+| BTSX                 | Meaning                                    |
+| -------------------- | ------------------------------------------ |
+| `section`            | HTML element                               |
+| `Card`               | Component reference                        |
+| `Theme.Provider`     | Dotted component reference                 |
+| `.card`              | `div` with class `card`                    |
+| `section.hero`       | `section` with class `hero`                |
 | `section#intro.hero` | `section` with ID `intro` and class `hero` |
 
-Capitalized tag names are treated as component references. Referenced
+**Capitalized** tag names are treated as `component` references. Referenced
 components can be imported at the top of the BTSX file or otherwise be in
 scope in the eventual TSRX module. PascalCase or `_`/`$` segments after a
 capitalized tag are preserved as a dotted component API, so `Theme.Provider`
@@ -509,13 +537,13 @@ Attributes live in parentheses and may be separated by spaces or commas:
 Button(tone="primary" count={items.length} disabled) Continue
 ```
 
-| Form | Output behavior |
-| --- | --- |
-| `name="value"` | Quoted string attribute |
-| `name='value'` | Single-quoted string attribute |
-| `name={expression}` | TypeScript expression attribute |
-| `disabled` | Boolean attribute |
-| `{...props}` | Ordered TypeScript spread attribute |
+| Form                | Output behavior                     |
+| ------------------- | ----------------------------------- |
+| `name="value"`      | Quoted string attribute             |
+| `name='value'`      | Single-quoted string attribute      |
+| `name={expression}` | TypeScript expression attribute     |
+| `disabled`          | Boolean attribute                   |
+| `{...props}`        | Ordered TypeScript spread attribute |
 
 `class` is normalized to `className`. Selector shorthand and an explicit class
 are combined; conflicting ID declarations and duplicate explicit class
@@ -746,14 +774,14 @@ does not require additional BTSX grammar.
 Server entry points consume the same component produced from BTSX; no separate
 authoring syntax is required. Choose the renderer by delivery goal:
 
-| Goal | Entry point |
-| --- | --- |
-| One synchronous hydratable pass | `renderToString` from `octane/server` |
-| Marker-free HTML that will not hydrate | `renderToStaticMarkup` from `octane/server` |
-| Progressive Node response | `renderToPipeableStream` from `octane/server` |
-| Progressive Web `ReadableStream` | `renderToReadableStream` from `octane/server` |
-| Fully resolved buffered output | `prerender` from `octane/static` |
-| Fully resolved Node prelude | `prerenderToNodeStream` from `octane/static` |
+| Goal                                   | Entry point                                   |
+| -------------------------------------- | --------------------------------------------- |
+| One synchronous hydratable pass        | `renderToString` from `octane/server`         |
+| Marker-free HTML that will not hydrate | `renderToStaticMarkup` from `octane/server`   |
+| Progressive Node response              | `renderToPipeableStream` from `octane/server` |
+| Progressive Web `ReadableStream`       | `renderToReadableStream` from `octane/server` |
+| Fully resolved buffered output         | `prerender` from `octane/static`              |
+| Fully resolved Node prelude            | `prerenderToNodeStream` from `octane/static`  |
 
 Buffered renderers return separate `html` and deduplicated scoped `css`
 channels. Head elements fold into `html` by default or can be requested through
@@ -797,15 +825,15 @@ Component(items={[
 
 Rules and diagnostics:
 
-* The `~` must be the first non-space character. `div ~ foo` is not a
+- The `~` must be the first non-space character. `div ~ foo` is not a
   continuation; `  ~ foo` at column 3 with leading spaces is.
-* One space after `~` is ergonomic and removed (`~ foo` and `~foo` both yield
+- One space after `~` is ergonomic and removed (`~ foo` and `~foo` both yield
   `foo`). Extra leading whitespace beyond that is trimmed before the join.
-* `~` followed by only whitespace, or by `//` after trimming, is a no-op
+- `~` followed by only whitespace, or by `//` after trimming, is a no-op
   comment/empty continuation and is dropped.
-* Otherwise the trimmed payload is joined with exactly one space:
+- Otherwise the trimmed payload is joined with exactly one space:
   `Component(items={` + `~ 0, 1` -> `Component(items={[ 0, 1`.
-* Multiple continuations chain onto the same predecessor:
+- Multiple continuations chain onto the same predecessor:
 
 ```btsx
 Button(
@@ -815,7 +843,7 @@ Button(
   ~ ) Save
 ```
 
-* Works for any template header - elements, `if`/`elseif`/`each`/`switch`/`try`,
+- Works for any template header - elements, `if`/`elseif`/`each`/`switch`/`try`,
   pipe text, and dotted components:
 
 ```btsx
@@ -834,7 +862,7 @@ p Hello,
   ~ continues on the next physical line
 ```
 
-* An orphan continuation with no predecessor at the start of the file (or as
+- An orphan continuation with no predecessor at the start of the file (or as
   the first logical line after imports/props/setup) fails with
   `BEAST1004_ORPHAN_CONTINUATION`.
 
@@ -872,12 +900,12 @@ beast compile src/Card.btsx \
   --props '{ title }: { title: string }'
 ```
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `-o`, `--output PATH` | Write TSRX to a specific path | Input path with `.tsrx` extension |
-| `--component-name NAME` | Override the generated component identifier | Derived from the filename |
-| `--props PARAMETER` | Override the complete function parameter, including its type | Source declaration or empty parameter list |
-| `--no-validate` | Skip Octane validation | Validation enabled |
+| Option                  | Description                                                  | Default                                    |
+| ----------------------- | ------------------------------------------------------------ | ------------------------------------------ |
+| `-o`, `--output PATH`   | Write TSRX to a specific path                                | Input path with `.tsrx` extension          |
+| `--component-name NAME` | Override the generated component identifier                  | Derived from the filename                  |
+| `--props PARAMETER`     | Override the complete function parameter, including its type | Source declaration or empty parameter list |
+| `--no-validate`         | Skip Octane validation                                       | Validation enabled                         |
 
 The output path must differ from the input path. Parent directories are
 created as needed.
@@ -888,12 +916,12 @@ created as needed.
 beast build ./src --out-dir ./.beast
 ```
 
-| Argument or option | Description | Default |
-| --- | --- | --- |
-| `source-directory` | Root recursively searched for `.btsx` and `.tsrx` | Current directory |
-| `--out-dir PATH` | Mirrored destination for generated TSRX | `<source-directory>/.beast` |
-| `--no-validate` | Skip validation of generated and native TSRX | Validation enabled |
-| `--watch` | Rebuild after source-tree changes and recover after compile errors | Disabled |
+| Argument or option | Description                                                        | Default                     |
+| ------------------ | ------------------------------------------------------------------ | --------------------------- |
+| `source-directory` | Root recursively searched for `.btsx` and `.tsrx`                  | Current directory           |
+| `--out-dir PATH`   | Mirrored destination for generated TSRX                            | `<source-directory>/.beast` |
+| `--no-validate`    | Skip validation of generated and native TSRX                       | Validation enabled          |
+| `--watch`          | Rebuild after source-tree changes and recover after compile errors | Disabled                    |
 
 The builder ignores `.git`, `.beast`, `build`, `coverage`, `dist`, and
 `node_modules`. Discovery and manifest entries are sorted for deterministic
@@ -924,25 +952,25 @@ Use `beastOctane()` for projects containing Beast and native TSRX modules:
 
 ```ts
 // vite.config.ts
-import { defineConfig } from "vite";
-import { beastOctane } from "beast-tsrx/vite";
+import { defineConfig } from 'vite'
+import { beastOctane } from 'beast-tsrx/vite'
 
 export default defineConfig({
   plugins: [
     beastOctane({
       octane: {
-        strong: true,
-      },
-    }),
-  ],
-});
+        strong: true
+      }
+    })
+  ]
+})
 ```
 
 Then import both source types normally:
 
 ```ts
-import App from "./App.btsx";
-import { NativePanel } from "./NativePanel.tsrx";
+import App from './App.btsx'
+import { NativePanel } from './NativePanel.tsrx'
 ```
 
 The Beast pre-transform generates TSRX in memory and passes it to Octane's
@@ -972,16 +1000,16 @@ npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.32
 
 ```js
 // rspack.config.mjs
-import { beastOctane } from "beast-tsrx/rspack";
+import { beastOctane } from 'beast-tsrx/rspack'
 
 export default {
-  entry: "./src/main.ts",
+  entry: './src/main.ts',
   plugins: [
     beastOctane({
-      octane: { strong: true },
-    }),
-  ],
-};
+      octane: { strong: true }
+    })
+  ]
+}
 ```
 
 The adapter compiles `.btsx`, leaves native `.tsrx` and compiler-owned helper
@@ -1007,14 +1035,14 @@ npm install --save-dev @rsbuild/core@^2
 
 ```ts
 // rsbuild.config.ts
-import { defineConfig } from "@rsbuild/core";
-import { beastOctane } from "beast-tsrx/rsbuild";
+import { defineConfig } from '@rsbuild/core'
+import { beastOctane } from 'beast-tsrx/rsbuild'
 
 export default defineConfig({
   plugins: beastOctane({
-    octane: { strong: true },
-  }),
-});
+    octane: { strong: true }
+  })
+})
 ```
 
 Without Octane routes this preserves ordinary Rsbuild entries. With an
@@ -1029,53 +1057,53 @@ BTSX transform. Use the exported Rsbuild `beast()` plugin alone when
 ### Compile source
 
 ```ts
-import { compileBeast, compileBeastResult } from "beast-tsrx";
+import { compileBeast, compileBeastResult } from 'beast-tsrx'
 
 const code = compileBeast(source, {
-  filename: "Card.btsx",
-  componentName: "Card",
-  propsParam: "{ title }: { title: string }",
-});
+  filename: 'Card.btsx',
+  componentName: 'Card',
+  propsParam: '{ title }: { title: string }'
+})
 
 const result = compileBeastResult(source, {
-  filename: "Card.btsx",
-});
+  filename: 'Card.btsx'
+})
 
-console.log(result.ast, result.code, result.map, result.diagnostics);
+console.log(result.ast, result.code, result.map, result.diagnostics)
 ```
 
 ### Build a project
 
 ```ts
-import { buildBeastProject } from "beast-tsrx";
+import { buildBeastProject } from 'beast-tsrx'
 
 const result = await buildBeastProject({
-  root: "src",
-  outDir: ".beast",
+  root: 'src',
+  outDir: '.beast',
   components: {
-    "components/Card.btsx": {
-      componentName: "Card",
-      propsParam: "{ title }: { title: string }",
-    },
-  },
-});
+    'components/Card.btsx': {
+      componentName: 'Card',
+      propsParam: '{ title }: { title: string }'
+    }
+  }
+})
 
-console.log(result.manifestPath, result.removed);
+console.log(result.manifestPath, result.removed)
 ```
 
 For a long-running non-Vite workflow, use the same options with the watch API:
 
 ```ts
-import { watchBeastProject } from "beast-tsrx";
+import { watchBeastProject } from 'beast-tsrx'
 
 const watcher = watchBeastProject({
-  root: "src",
-  outDir: ".beast",
+  root: 'src',
+  outDir: '.beast',
   onBuild: (result) => console.log(result.generated),
-  onError: (error) => console.error(error),
-});
+  onError: (error) => console.error(error)
+})
 
-await watcher.ready;
+await watcher.ready
 // Later: await watcher.close();
 ```
 
@@ -1084,20 +1112,20 @@ root. The same shape is accepted by the Vite integration.
 
 ### Exports
 
-| Export | Purpose |
-| --- | --- |
-| `compileBeast()` | Compile BTSX source and return TSRX code |
-| `compileBeastResult()` | Return generated code, its version 3 source map, the source-located AST, and diagnostics |
-| `parse()` | Parse BTSX into the public Beast AST |
-| `componentNameFromPath()` | Derive and sanitize a component identifier from a path |
-| `buildBeastProject()` | Compile and validate a recursive source tree |
-| `watchBeastProject()` | Watch a source tree with debounced, serialized, recoverable rebuilds |
-| `resolveProjectPath()` | Resolve project-relative configuration paths |
-| `BeastCompileError` | Structured compiler error carrying a stable diagnostic |
-| `formatDiagnostic()` | Render a diagnostic with source location and caret context |
-| `beast()`, `beastOctane()` | Beast-only and complete Vite integrations from `beast-tsrx/vite` |
-| `BeastRspackPlugin`, `beast()`, `beastOctane()` | Rspack integrations from `beast-tsrx/rspack` |
-| `beast()`, `beastOctane()` | Rsbuild plugins from `beast-tsrx/rsbuild` |
+| Export                                          | Purpose                                                                                  |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `compileBeast()`                                | Compile BTSX source and return TSRX code                                                 |
+| `compileBeastResult()`                          | Return generated code, its version 3 source map, the source-located AST, and diagnostics |
+| `parse()`                                       | Parse BTSX into the public Beast AST                                                     |
+| `componentNameFromPath()`                       | Derive and sanitize a component identifier from a path                                   |
+| `buildBeastProject()`                           | Compile and validate a recursive source tree                                             |
+| `watchBeastProject()`                           | Watch a source tree with debounced, serialized, recoverable rebuilds                     |
+| `resolveProjectPath()`                          | Resolve project-relative configuration paths                                             |
+| `BeastCompileError`                             | Structured compiler error carrying a stable diagnostic                                   |
+| `formatDiagnostic()`                            | Render a diagnostic with source location and caret context                               |
+| `beast()`, `beastOctane()`                      | Beast-only and complete Vite integrations from `beast-tsrx/vite`                         |
+| `BeastRspackPlugin`, `beast()`, `beastOctane()` | Rspack integrations from `beast-tsrx/rspack`                                             |
+| `beast()`, `beastOctane()`                      | Rsbuild plugins from `beast-tsrx/rsbuild`                                                |
 
 Compiler and project exports are available from `beast-tsrx`; build-tool
 adapters use their named subpaths above.
@@ -1136,16 +1164,16 @@ editors.
 
 ## Compatibility
 
-| Tool | Supported version | Role |
-| --- | --- | --- |
-| Node.js | `>=22.22.2` | Required by the supported Octane toolchain |
-| Bun | Current stable | Workspace, tests, project creation, and dependency installation |
-| TypeScript | `^5.9.3` | Package declarations and generated-project checking |
-| TSRX TypeScript plugin | `0.3.118` | `.tsrx` and `.btsx` project type checking |
-| Octane | `0.1.37` | TSRX validation, lowering, and runtime |
-| Vite | `^8.0.16` | Development server and production bundling |
-| Octane Rspack/Rsbuild plugins | `0.1.32` | Bundler integration compatible with Octane `0.1.37` |
-| Rspack / Rsbuild | `^2.0.0` | Low-level and application-level production builds |
+| Tool                          | Supported version | Role                                                            |
+| ----------------------------- | ----------------- | --------------------------------------------------------------- |
+| Node.js                       | `>=22.22.2`       | Required by the supported Octane toolchain                      |
+| Bun                           | Current stable    | Workspace, tests, project creation, and dependency installation |
+| TypeScript                    | `^5.9.3`          | Package declarations and generated-project checking             |
+| TSRX TypeScript plugin        | `0.3.118`         | `.tsrx` and `.btsx` project type checking                       |
+| Octane                        | `0.1.37`          | TSRX validation, lowering, and runtime                          |
+| Vite                          | `^8.0.16`         | Development server and production bundling                      |
+| Octane Rspack/Rsbuild plugins | `0.1.32`          | Bundler integration compatible with Octane `0.1.37`             |
+| Rspack / Rsbuild              | `^2.0.0`          | Low-level and application-level production builds               |
 
 Octane and TSRX are evolving. Beast pins the versions used by its conformance
 suite and starter project so failures are reproducible.
@@ -1251,12 +1279,12 @@ bun install --frozen-lockfile
 bun run check
 ```
 
-| Script | Purpose |
-| --- | --- |
-| `bun run build` | Compile both publishable workspace packages |
-| `bun run typecheck` | Type-check both packages without emitting files |
-| `bun run test` | Run compiler, builder, Vite, and creator tests |
-| `bun run check` | Run type checking, tests, and builds in sequence |
+| Script               | Purpose                                              |
+| -------------------- | ---------------------------------------------------- |
+| `bun run build`      | Compile both publishable workspace packages          |
+| `bun run typecheck`  | Type-check both packages without emitting files      |
+| `bun run test`       | Run compiler, builder, Vite, and creator tests       |
+| `bun run check`      | Run type checking, tests, and builds in sequence     |
 | `bun run pack:check` | Inspect both npm package tarballs without publishing |
 
 When changing the language or generator:
@@ -1300,4 +1328,4 @@ Released under the [ISC License](LICENSE).
 
 ---
 
-*A compact authoring layer for explicit, native Octane templates.*
+_A compact authoring layer for explicit, native Octane templates._
