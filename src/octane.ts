@@ -1,10 +1,7 @@
 import { compile } from "octane/compiler";
+import type { CompileResult } from "octane/compiler";
 
-export interface OctaneValidationResult {
-  code: string;
-  map: unknown;
-  diagnostics: readonly unknown[];
-}
+export type OctaneValidationResult = CompileResult;
 
 export function validateTsrx(
   source: string,

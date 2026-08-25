@@ -1,29 +1,7 @@
-declare module "octane/compiler" {
-  export interface OctaneCompileOptions {
-    mode?: "client" | "server";
-    hmr?: boolean | "vite" | "webpack";
-    dev?: boolean;
-    profile?: boolean;
-    strong?: boolean;
-  }
-
-  export interface OctaneCompileResult {
-    code: string;
-    map: unknown;
-    diagnostics: readonly unknown[];
-  }
-
-  export function compile(
-    source: string,
-    filename: string,
-    options?: OctaneCompileOptions,
-  ): OctaneCompileResult;
-}
-
 declare module "octane/compiler/bundler" {
-  import type { OctaneCompileResult } from "octane/compiler";
+  import type { CompileResult } from "octane/compiler";
 
-  export interface OctaneBundlerTransformResult extends OctaneCompileResult {
+  export interface OctaneBundlerTransformResult extends CompileResult {
     kind: string;
     dependencies: string[];
     missingDependencies: string[];
