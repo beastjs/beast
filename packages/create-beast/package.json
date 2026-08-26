@@ -1,6 +1,6 @@
 {
   "name": "create-beast",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Create a Beast and Octane TSRX project.",
   "type": "module",
   "main": "./dist/index.js",
