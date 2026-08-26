@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "beast-tsrx": "__BEAST_PACKAGE_SPEC__",
-    "octane": "0.1.46"
+    "clsx": "^2.1.1",
+    "octane": "0.1.46",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
