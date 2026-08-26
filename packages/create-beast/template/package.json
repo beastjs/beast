@@ -15,6 +15,7 @@
     "octane": "0.1.37"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "@tsrx/typescript-plugin": "0.3.118",
     "typescript": "^5.9.3",
     "vite": "^8.0.16"
