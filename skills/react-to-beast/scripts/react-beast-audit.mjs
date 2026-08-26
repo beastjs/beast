@@ -55,6 +55,7 @@ const BINDING_CANDIDATES = new Map([
   ["@react-three/fiber", { candidate: "@octanejs/three", category: "3d" }],
   ["@reduxjs/toolkit", { candidate: "@octanejs/redux-toolkit", category: "state" }],
   ["@tanstack/react-form", { candidate: "@octanejs/tanstack-form", category: "forms" }],
+  ["@tanstack/react-db", { candidate: "@octanejs/tanstack-db", category: "data" }],
   ["@tanstack/react-query", { candidate: "@octanejs/tanstack-query", category: "data" }],
   ["@tanstack/react-router", { candidate: "@octanejs/tanstack-router", category: "routing" }],
   ["@tanstack/react-store", { candidate: "@octanejs/tanstack-store", category: "state" }],

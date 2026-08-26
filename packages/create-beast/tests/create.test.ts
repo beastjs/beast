@@ -43,6 +43,7 @@ describe("create-beast", () => {
     ) as { name: string; dependencies: Record<string, string> };
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
+    expect(packageJson.dependencies.octane).toBe("0.1.46");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("interface Props");
@@ -89,7 +90,11 @@ describe("create-beast", () => {
     expect(result.packageName).toBe("my-tailwind-app");
     const packageJson = JSON.parse(
       await readFile(resolve(result.directory, "package.json"), "utf8"),
-    ) as { devDependencies: Record<string, string> };
+    ) as {
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+    expect(packageJson.dependencies.octane).toBe("0.1.46");
     expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.1.8");
     expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.1.8");
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");

@@ -1,26 +1,32 @@
 import { realpathSync } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import { inferRspackEnvironment } from "@octanejs/rspack-plugin";
+import {
+  inferRspackEnvironment,
+  type OctaneRspackLoaderOptions,
+} from "@octanejs/rspack-plugin";
 import type { LoaderDefinition, RawSourceMap } from "@rspack/core";
 import { createOctaneCompiler } from "octane/compiler/bundler";
 import { compileBeastResult, componentNameFromPath } from "./compiler.js";
 import type { ProjectComponentOptions } from "./project.js";
 import { composeSourceMaps } from "./source-map.js";
 
+type BeastOctaneCompilerOptions = Pick<
+  OctaneRspackLoaderOptions,
+  | "environment"
+  | "hmr"
+  | "dev"
+  | "profile"
+  | "strong"
+  | "exclude"
+  | "renderers"
+  | "requireDirective"
+  | "universalRuntime"
+>;
+
 interface BeastRspackLoaderOptions {
   root?: string;
   components?: Readonly<Record<string, ProjectComponentOptions>>;
-  octane?: {
-    environment?: "client" | "server";
-    hmr?: boolean;
-    dev?: boolean;
-    profile?: boolean;
-    strong?: boolean;
-    exclude?: string[];
-    renderers?: unknown;
-    requireDirective?: boolean;
-    universalRuntime?: unknown;
-  };
+  octane?: BeastOctaneCompilerOptions;
 }
 
 const beastRspackLoader: LoaderDefinition<BeastRspackLoaderOptions> = function (
