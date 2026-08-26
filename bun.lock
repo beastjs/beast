@@ -41,7 +41,7 @@
     },
     "packages/create-beast": {
       "name": "create-beast",
-      "version": "0.2.9",
+      "version": "0.2.11",
       "bin": {
         "create-beast": "./dist/index.js",
       },
