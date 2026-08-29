@@ -21,7 +21,8 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | --- | --- | --- |
 | Components, typed props, children | Native elements, component references, source imports, typed props, and tagless local component declarations | `app`, `provider` goldens |
 | Setup and hooks | Inline TypeScript setup; `useState`, `useMemo`, and `useEffect` compile through Octane | `counter` golden |
-| Advanced hooks | Initialized reducer/current-state getter, insertion/layout phases, effect events, generated IDs, imperative handles, stable callbacks, memoized components, debug labels, method-style custom-hook ownership, and Strong-mode Effect Event diagnostics | `hooks` golden, client lowering assertions, Strong-mode regression, and SSR assertion |
+| Scoped child setup | `scope` emits setup-bearing or code-only nested `@{ ... }` child scopes with native Octane ownership | Scoped-child client/server compiler regression |
+| Advanced hooks | Initialized reducer/current-state getter, insertion/layout phases, effect events, generated IDs, imperative handles, stable callbacks, memoized components, debug labels, method-style custom-hook ownership, and Strong-mode Effect Event/nondeterminism diagnostics | `hooks` golden, client lowering assertions, Strong-mode regressions, and SSR assertion |
 | Module/setup source | Inline and multiline raw TypeScript, module directives, comments, blank lines, refs, and effect cleanup | `shortcut` golden |
 | Refs | Object refs, callback refs with cleanup, and optional nested arrays of refs pass through as ordinary props | `refs`, `shortcut` goldens and nested-array compiler regression |
 | Native events and attributes | Expression, string, boolean, spread, ARIA, data, class, ID, native `onInput`, and form events, with authored spread precedence and Octane development nesting checks | `catalog`, `counter`, `editor`, `styling` goldens and invalid-nesting compiler regression |
@@ -48,6 +49,7 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | Vite application lifecycle | Mixed BTSX/TSRX production build plus a BTSX SSR render, server-DOM adoption, interaction replay, and compiler-split deferred chunk | Executable project integration tests |
 | Rspack application lifecycle | Mixed BTSX/TSRX client build with a compiler-split deferred chunk plus an executable Node-target SSR render | Executable bundler integration test |
 | Rsbuild application lifecycle | Mixed compiler-only build plus routed browser and Node environments whose generated handler SSR-renders a BTSX route | Executable bundler integration tests |
+| Experimental native reads | `nativeReads` reaches the generated BTSX compiler in the Vite, Rspack, and Rsbuild adapters | Compiler-option forwarding regressions |
 | Source-map pipeline | Declaration, multiline source-body, template-node, branch, and attribute anchors compose through Octane to original BTSX in Vite and Rspack output | Compiler mapping assertions plus emitted Vite and Rspack map tests |
 | Standalone watch lifecycle | Debounced and serialized project rebuilds, ignored output events, stale cleanup, compile-error reporting, and recovery after a valid edit | Executable project API and CLI watcher tests |
 
@@ -60,9 +62,9 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.1.46` types. Compiler-emitted runtime
-helpers, metaframework RPC internals, compatibility aliases, and type-only
-exports are outside this user-facing scope.
+`octane/static` in the pinned `octane@0.1.49` types. Compiler-emitted runtime
+helpers, metaframework RPC internals, compatibility aliases, type-only exports,
+and the experimental `octane/signals` API are outside this stable Core API scope.
 
 | Area | API | Status | Proof |
 | --- | --- | --- | --- |

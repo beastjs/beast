@@ -14,6 +14,7 @@ export type {
   ModuleDeclaration,
   NamedAttr,
   PropsDeclaration,
+  ScopeNode,
   SetupDeclaration,
   SourcePosition,
   SourceSpan,

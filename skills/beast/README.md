@@ -5,9 +5,9 @@
 > Agent skill for authoring, diagnosing, and shipping Beast BTSX → TSRX → Octane apps across supported build tools.
 
 [![skills.sh](https://img.shields.io/badge/skills.sh-Beast-111827?style=flat-square)](https://skills.sh/phtn/beast-skill/beast)
-[![Version](https://img.shields.io/badge/version-0.2.0-6f42c1?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.0-6f42c1?style=flat-square)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.1.46-111827?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.1.49-111827?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Scaffold in seconds. Author with indentation. Compile to native TSRX. Let Octane own rendering.**
@@ -17,6 +17,7 @@
 [CLI reference](#cli-reference) ·
 [Language server](#language-server) ·
 [Diagnostics](#diagnostics) ·
+[Changelog](CHANGELOG.md) ·
 [Development](#development)
 
 ---
@@ -31,6 +32,7 @@ It does not replace TypeScript, TSRX, Octane, or an application bundler. It owns
 | --- | --- | --- |
 | Scaffold | Creates a typed Beast + Octane + Vite app, optionally with Tailwind | Starts with a coherent toolchain |
 | Author | Indentation-based BTSX with typed props | Keeps structure, keeps types |
+| Scope | Places setup and hooks in an exact child position | Preserves child ownership without a wrapper element |
 | Compile | BTSX → native TSRX (readable) | Octane remains authority |
 | Diagnose | Stable codes + source spans | Makes failures actionable |
 | Edit | Beast-aware completion, navigation, hover, and workspace references | Keeps editor guidance aligned with BTSX |
@@ -232,6 +234,7 @@ beast-skill/
 ├── scripts/
 │   ├── beast-doctor.cjs              # Portable bounded checker
 │   └── src/beast-doctor.ts           # Source of truth
+├── CHANGELOG.md                       # Skill-specific release notes
 ├── package.json
 └── tsconfig.json
 ```

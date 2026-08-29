@@ -6,10 +6,10 @@
 > for Octane.
 
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-d97706?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.2.7-6f42c1?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.9-6f42c1?style=flat-square)](package.json)
 [![Docs](https://img.shields.io/badge/docs-0.2.7-111827?style=flat-square)](https://beast-docs.vercel.app)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.1.46-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.1.49-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -19,6 +19,7 @@
 [Language reference](#language-reference) ·
 [Examples](examples/README.md) ·
 [Octane coverage](docs/octane-coverage.md) ·
+[Changelog](CHANGELOG.md) ·
 [CLI reference](#cli-reference) ·
 [Vite integration](#vite-integration) ·
 [Development](#development)
@@ -41,6 +42,7 @@ validation, lowering, development serving, and production bundling.
 | ------------------- | --------------------------------------------------------------------- | ---------------------------------------------------- |
 | BTSX compiler       | Converts indentation-based `.btsx` into native `.tsrx`                | Keeps generated output inspectable                   |
 | Component setup     | Emits local TypeScript and Octane hooks before the template root      | Keeps stateful components self-contained             |
+| Scoped child setup  | Emits nested Octane `@{ ... }` render scopes                          | Keeps child hook state at its authored sibling       |
 | Native control flow | Emits Octane condition, loop, switch, and boundary directives         | Preserves TSRX semantics and identity                |
 | Project builder     | Recursively compiles BTSX, validates native TSRX, and watches changes | Supports mixed source trees and recoverable rebuilds |
 | Vite integration    | Runs Beast before Octane in memory                                    | Enables normal dev and production builds             |
@@ -75,6 +77,7 @@ The generated project includes:
 - A typed `App.btsx` component
 - TSRX-aware TypeScript checking through `tsrx-tsc`
 - Development, production build, preview, type-check, and combined check scripts
+- A project-owned `CHANGELOG.md` with an `Unreleased` section
 - A focused `.gitignore` and an optional initialized Git repository
 
 Creator options:
@@ -296,6 +299,22 @@ button(type="button" onClick={() => setCount(count + 1)}) Count: #{count}, doubl
 
 Dependency arguments are intentionally omitted in this example so Octane can
 infer them from each closure. See the complete [counter golden](examples/counter/counter.btsx).
+
+Use `scope` when setup belongs to one exact child position rather than the
+whole component. Its leading `setup` declarations compile to Octane's nested
+`@{ ... }` child scope, may capture parent values, and retain their hook state
+across parent updates. The rendered child is optional, so a setup-only scope is
+also valid:
+
+```btsx
+main
+  h1 Counter
+  scope
+    setup const [count, setCount] = useState(0);
+    button(onClick={() => setCount(count + 1)}) Count: #{count}
+  scope
+    setup observe();
+```
 
 For editable state that follows a changing source, use Octane's
 `useLinkedState`. Text fields use the browser-native `onInput` event for each
@@ -991,14 +1010,17 @@ its public parameter type.
 
 `beast()` is also exported for advanced configurations that only need the
 BTSX pre-transform. Most applications should use `beastOctane()` exactly once.
+The experimental Octane signal engine remains opt-in: setting `nativeReads` in
+the nested `octane` options is forwarded to both native TSRX and generated BTSX
+compilation.
 
 ## Rspack integration
 
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.1.46
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.41
+npm install octane@0.1.49
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.44
 ```
 
 ```js
@@ -1030,6 +1052,8 @@ graph-level optimizations; plugin-only callbacks are not serialized into it.
 
 `beast()` and `BeastRspackPlugin` are also exported for configurations that
 already install `OctaneRspackPlugin` themselves.
+The `nativeReads` compiler option is forwarded to Beast's generated-TSRX loader
+as well as Octane's native-source plugin.
 
 ## Rsbuild integration
 
@@ -1037,7 +1061,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.1.46 @octanejs/rsbuild-plugin@0.1.41
+npm install octane@0.1.49 @octanejs/rsbuild-plugin@0.1.44
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1059,8 +1083,10 @@ Octane's browser hydration and Node SSR environments. Inline compiler options
 and the project's Strong-mode and renderer configuration are forwarded to the
 BTSX transform. Use the exported Rsbuild `beast()` plugin alone when
 `pluginOctane()` is already present.
+
 As with Rspack, Octane's `parallel` and `cssModuleConstants` graph optimizations
 cover native Octane modules; generated BTSX uses Beast's compiler loader.
+Inline or `octane.config.ts` `nativeReads` settings also reach generated BTSX.
 
 ## Programmatic API
 
@@ -1180,9 +1206,9 @@ editors.
 | Bun                           | Current stable    | Workspace, tests, project creation, and dependency installation |
 | TypeScript                    | `^5.9.3`          | Package declarations and generated-project checking             |
 | TSRX TypeScript plugin        | `0.3.118`         | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.1.46`          | TSRX validation, lowering, and runtime                          |
+| Octane                        | `0.1.49`          | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`         | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.41`          | Bundler integration compatible with Octane `0.1.46`             |
+| Octane Rspack/Rsbuild plugins | `0.1.44`          | Bundler integration compatible with Octane `0.1.49`             |
 | Rspack / Rsbuild              | `^2.0.0`          | Low-level and application-level production builds               |
 
 Octane and TSRX are evolving. Beast pins the versions used by its conformance
@@ -1330,7 +1356,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.1.46`.
+the release checks. Every row in that ledger is covered for `octane@0.1.49`.
 
 ## License
 

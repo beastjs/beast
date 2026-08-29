@@ -323,9 +323,50 @@ describe('BTSX to TSRX', () => {
     expect(rendered.css).toContain('margin: 0;')
   })
 
+  test('emits setup-bearing and code-only Octane child scopes', () => {
+    const result = compileBeastResult(
+      [
+        'import { useState } from "octane";',
+        'main',
+        '  h1 Before',
+        '  scope',
+        '    setup const [count, setCount] = useState(0);',
+        '    button(onClick={() => setCount(count + 1)}) Count #{count}',
+        '  scope',
+        '    setup report();',
+        '  p After'
+      ].join('\n'),
+      { filename: 'ScopedChildren.btsx' }
+    )
+
+    expect(result.ast.children[0]).toMatchObject({
+      kind: 'element',
+      children: [
+        { kind: 'element' },
+        { kind: 'scope', setup: [{ kind: 'setup' }], children: [{ kind: 'element' }] },
+        { kind: 'scope', setup: [{ kind: 'setup' }], children: [] },
+        { kind: 'element' }
+      ]
+    })
+    expect(result.code).toContain(
+      '\t\t@{\n\t\t\tconst [count, setCount] = useState(0);\n\n\t\t\t<button'
+    )
+    expect(result.code).toContain('\t\t@{\n\t\t\treport();\n\t\t}')
+
+    for (const mode of ['client', 'server'] as const) {
+      const octane = compile(result.code, 'ScopedChildren.tsrx', {
+        mode,
+        hmr: false,
+        dev: true
+      })
+      expect(octane.diagnostics).toHaveLength(0)
+    }
+  })
+
   test.each([
     ['empty fragment', 'fragment\n', 'BEAST1901_EMPTY_FRAGMENT'],
     ['empty style', 'style\n', 'BEAST1902_EMPTY_STYLE'],
+    ['empty scope', 'scope\n', 'BEAST1903_EMPTY_SCOPE'],
     ['empty spread', 'button({...})\n', 'BEAST1202_INVALID_ATTRIBUTE'],
     ['non-spread braces', 'button({props})\n', 'BEAST1202_INVALID_ATTRIBUTE']
   ])('reports invalid element syntax for %s', (_label, source, code) => {
@@ -926,6 +967,24 @@ describe('BTSX to TSRX', () => {
       dev: true,
       strong: true
     })).toThrow('OCTANE_STRONG_RENDER_EFFECT_EVENT_CALL')
+  })
+
+  test('preserves Strong-mode nondeterministic render diagnostics', () => {
+    const code = compileBeast(
+      [
+        'module "use strong";',
+        'setup const timestamp = Date.now();',
+        'p #{String(timestamp)}'
+      ].join('\n'),
+      { filename: 'InvalidClockRead.btsx' }
+    )
+
+    expect(() => compile(code, 'InvalidClockRead.tsrx', {
+      mode: 'client',
+      hmr: false,
+      dev: true,
+      strong: true
+    })).toThrow('OCTANE_STRONG_RENDER_IMPURE_CALL')
   })
 
   test('retains Octane development nesting checks for Beast hosts', () => {

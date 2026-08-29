@@ -17,6 +17,7 @@ declare module "octane/compiler/bundler" {
         dev?: boolean;
         profile?: boolean;
         strong?: boolean;
+        nativeReads?: boolean;
       },
     ): OctaneBundlerTransformResult | null;
     invalidate(path?: string): void;
@@ -29,6 +30,10 @@ declare module "octane/compiler/bundler" {
     dev?: boolean;
     profile?: boolean;
     strong?: boolean;
+    nativeReads?: boolean;
+    exclude?: string[];
+    renderers?: import("octane/compiler/vite").OctaneRendererConfigOptions;
+    requireDirective?: boolean;
     warn?: (message: string) => void;
   }): OctaneBundlerCompiler;
 }
