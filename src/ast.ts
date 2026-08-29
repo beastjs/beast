@@ -111,6 +111,12 @@ export interface FragmentNode extends BaseNode {
   children: BeastNode[];
 }
 
+export interface ScopeNode extends BaseNode {
+  kind: "scope";
+  setup: SetupDeclaration[];
+  children: BeastNode[];
+}
+
 export interface StyleNode extends BaseNode {
   kind: "style";
   css: string;
@@ -173,6 +179,7 @@ export type BeastNode =
   | ElementNode
   | TextNode
   | FragmentNode
+  | ScopeNode
   | StyleNode
   | IfNode
   | EachNode

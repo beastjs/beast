@@ -17,6 +17,7 @@ type BeastOctaneCompilerOptions = Pick<
   | "dev"
   | "profile"
   | "strong"
+  | "nativeReads"
   | "exclude"
   | "renderers"
   | "requireDirective"
@@ -69,6 +70,7 @@ const beastRspackLoader: LoaderDefinition<BeastRspackLoaderOptions> = function (
       dev,
       profile,
       ...(octane.strong === undefined ? {} : { strong: octane.strong }),
+      ...(octane.nativeReads === undefined ? {} : { nativeReads: octane.nativeReads }),
       ...(octane.exclude === undefined ? {} : { exclude: octane.exclude }),
       ...(octane.renderers === undefined ? {} : { renderers: octane.renderers }),
       ...(octane.requireDirective === undefined

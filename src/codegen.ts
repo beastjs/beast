@@ -8,6 +8,7 @@ import type {
   FragmentNode,
   IfNode,
   NamedAttr,
+  ScopeNode,
   SourcePosition,
   SourceTextFragment,
   StyleNode,
@@ -203,6 +204,8 @@ function generateNode(node: BeastNode, depth: number, document: BeastDocument): 
       return [mappedLine(`${indent(depth)}${generateText(node.spans)}`, node.span.start)];
     case "fragment":
       return generateFragment(node, depth, document);
+    case "scope":
+      return generateScope(node, depth, document);
     case "style":
       return generateStyle(node, depth);
     case "if":
@@ -214,6 +217,42 @@ function generateNode(node: BeastNode, depth: number, document: BeastDocument): 
     case "try":
       return generateTry(node, depth, document);
   }
+}
+
+function generateScope(
+  node: ScopeNode,
+  depth: number,
+  document: BeastDocument,
+): GeneratedLine[] {
+  const lines = [mappedLine(`${indent(depth)}@{`, node.span.start)];
+  for (const declaration of node.setup) {
+    lines.push(
+      ...mappedSourceTextLines(
+        declaration.code,
+        declaration.codeFragments,
+        indent(depth + 1),
+        declaration.codeStart,
+      ),
+    );
+  }
+  if (node.setup.length > 0 && node.children.length > 0) lines.push(unmappedLine(""));
+
+  const needsFragment =
+    node.children.length > 1 ||
+    node.children[0]?.kind === "text" ||
+    node.children[0]?.kind === "style";
+  if (needsFragment) {
+    lines.push(mappedLine(`${indent(depth + 1)}<>`, node.span.start));
+    for (const child of node.children) {
+      lines.push(...generateNode(child, depth + 2, document));
+    }
+    lines.push(mappedLine(`${indent(depth + 1)}</>`, node.span.start));
+  } else {
+    const child = node.children[0];
+    if (child !== undefined) lines.push(...generateNode(child, depth + 1, document));
+  }
+  lines.push(mappedLine(`${indent(depth)}}`, node.span.start));
+  return lines;
 }
 
 function generateFragment(

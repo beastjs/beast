@@ -46,14 +46,14 @@ module
         eyebrow: 'Input',
         title: 'Structured components',
         description: 'Write familiar elements, selectors, attributes, text, and interpolation in .btsx—without closing tags. Leading spaces define the component tree.',
-        tags: ['.btsx', 'typed props', 'native control flow'],
+        tags: ['.btsx', 'typed props', 'native control flow', 'child scopes'],
         note: 'elements, props, and control flow'
       },
       right: {
         eyebrow: 'Output',
         title: 'Compiles to Octane',
         description: 'Beast keeps TypeScript expressions intact, emits source-located TSRX, and leaves final validation and runtime compilation to Octane.',
-        note: 'small syntax. sative output.',
+        note: 'small syntax. native output.',
         status: 'Source-located',
         action: {
           label: 'Explore the language',
@@ -70,7 +70,7 @@ module
         title: 'Vite',
         description: 'The Vite plugin compiles .btsx modules in memory before Octane processes the generated TSRX, so normal imports stay in one module graph.',
         tags: ['HMR', 'SSR transforms', 'production builds'],
-        note: '^8.0.16'
+        note: 'octane@0.1.49 · vite@^8.0.16'
       },
       right: {
         eyebrow: 'Beast Styling',
@@ -185,8 +185,10 @@ main(className='grid min-h-screen min-w-80 place-items-center p-3 sm:p-8 lg:p-16
           code(className='mb-0 mt-auto pb-5 pt-16 text-sm text-[#858681]') #{active.right.note}
 
   footer(className='pt-0')
-    a(href='https://beast-docs.vercel.app/'
-      ~ target='_blank'
-      ~ rel='noopener noreferrer'
-      ~ className='mt-1 px-1 py-0.5 ml-3 underline underline-offset-4 decoration-dotted')
-      span(className='font-mono text-xs tracking-wider') BEAST DOCS
+    scope
+      setup const releaseLabel = 'Octane 0.1.49';
+      a(href='https://beast-docs.vercel.app/'
+        ~ target='_blank'
+        ~ rel='noopener noreferrer'
+        ~ className='mt-1 px-1 py-0.5 ml-3 underline underline-offset-4 decoration-dotted')
+        span(className='font-mono text-xs tracking-wider') BEAST DOCS · #{releaseLabel}

@@ -32,6 +32,22 @@ main.page
 
 Use a module directive before imports when native TSRX requires it. `module` and `setup` source is preserved as TypeScript; Beast removes the block's common indentation but does not parse or rewrite it. A `props` declaration contains the component's complete function parameter, including its type. Explicit compiler or bundler `propsParam` options override source-level props.
 
+## Scoped child setup
+
+`scope` emits a nested Octane `@{ ... }` child scope at its exact sibling
+position. Put any `setup` declarations first, followed by zero or more template
+nodes. Setup can capture parent values and use hooks; a setup-only scope renders
+no element.
+
+```btsx
+section
+  scope
+    setup const [count, setCount] = useState(0);
+    button(onClick={() => setCount(count + 1)}) Count: #{count}
+  scope
+    setup observe();
+```
+
 ## Elements and selectors
 
 | BTSX | Meaning |

@@ -1,6 +1,6 @@
 {
   "name": "beast-tsrx",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "An indentation-based frontend that compiles .btsx components to Octane-compatible TSRX.",
   "workspaces": [
     "packages/*"
@@ -33,6 +33,7 @@
     "dist",
     "docs",
     "examples",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],
@@ -62,11 +63,11 @@
     "node": ">=22.22.2"
   },
   "peerDependencies": {
-    "@octanejs/rsbuild-plugin": "0.1.41",
-    "@octanejs/rspack-plugin": "0.1.41",
+    "@octanejs/rsbuild-plugin": "0.1.44",
+    "@octanejs/rspack-plugin": "0.1.44",
     "@rsbuild/core": "^2.0.0",
     "@rspack/core": "^2.0.0",
-    "octane": "0.1.46",
+    "octane": "0.1.49",
     "vite": "^8.0.16"
   },
   "peerDependenciesMeta": {
@@ -96,14 +97,14 @@
   },
   "devDependencies": {
     "@jridgewell/trace-mapping": "^0.3.31",
-    "@octanejs/rsbuild-plugin": "0.1.41",
-    "@octanejs/rspack-plugin": "0.1.41",
+    "@octanejs/rsbuild-plugin": "0.1.44",
+    "@octanejs/rspack-plugin": "0.1.44",
     "@rsbuild/core": "2.1.13",
     "@rspack/core": "2.1.10",
     "@types/bun": "^1.3.14",
     "@types/node": "^26.2.0",
     "happy-dom": "^20.11.0",
-    "octane": "0.1.46",
+    "octane": "0.1.49",
     "typescript": "^5.9.3",
     "vite": "^8.0.16"
   }
