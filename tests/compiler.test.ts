@@ -158,6 +158,43 @@ describe('BTSX to TSRX', () => {
       .toBe(true)
   })
 
+  test('accepts literal less-than text through Octane native-parser fallback', () => {
+    const source = [
+      'module',
+      '  export function NativeText() @{ <p><3 and 1 < 2 and <= 3</p> }',
+      'NativeText'
+    ].join('\n') + '\n'
+    const tsrx = compileBeast(source, { filename: 'LessThan.btsx' })
+    const client = compile(tsrx, 'LessThan.tsrx', { mode: 'client', hmr: false })
+    const server = compile(tsrx, 'LessThan.tsrx', { mode: 'server', hmr: false })
+
+    expect(tsrx).toContain('<p><3 and 1 < 2 and <= 3</p>')
+    expect(client.diagnostics).toEqual([])
+    expect(server.diagnostics).toEqual([])
+  })
+
+  test('composes computed-key locations through Octane TSRX core', () => {
+    const filename = '/project/src/ComputedKey.btsx'
+    const source = [
+      'props { record, field }: { record: Record<string, string>; field: string }',
+      'setup const value = record[field];',
+      'output #{value}'
+    ].join('\n') + '\n'
+    const beast = compileBeastResult(source, { filename })
+    const octane = compile(beast.code, filename.replace(/\.btsx$/u, '.tsrx'), {
+      mode: 'client',
+      hmr: false
+    })
+    const composed = composeSourceMaps(octane.map, beast.map)
+    if (composed === null) throw new Error('Expected a composed computed-key source map.')
+    const mappings: Array<{ source: string | null; originalLine: number | null }> = []
+    eachMapping(new TraceMap(composed), (mapping) => mappings.push(mapping))
+
+    expect(octane.diagnostics).toEqual([])
+    expect(mappings.some((mapping) => mapping.source === filename && mapping.originalLine === 2))
+      .toBe(true)
+  })
+
   test('maps multiline module, setup, and style bodies to their authored lines', () => {
     const filename = '/project/src/Embedded.btsx'
     const source = [

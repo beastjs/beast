@@ -24,7 +24,7 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | Advanced hooks | Initialized reducer/current-state getter, insertion/layout phases, effect events, generated IDs, imperative handles, stable callbacks, memoized components, debug labels, method-style custom-hook ownership, and Strong-mode Effect Event diagnostics | `hooks` golden, client lowering assertions, Strong-mode regression, and SSR assertion |
 | Module/setup source | Inline and multiline raw TypeScript, module directives, comments, blank lines, refs, and effect cleanup | `shortcut` golden |
 | Refs | Object refs, callback refs with cleanup, and optional nested arrays of refs pass through as ordinary props | `refs`, `shortcut` goldens and nested-array compiler regression |
-| Native events and attributes | Expression, string, boolean, spread, ARIA, data, class, ID, native `onInput`, and form events, with authored spread precedence and Octane development nesting checks | `catalog`, `counter`, `editor`, `styling` goldens and invalid-nesting compiler regression |
+| Native events and attributes | Expression, string, boolean, spread, ARIA, data, class, ID, native `onInput`, form events, dialog lifecycle delegation, and distinct logical/native propagation cancellation | Goldens plus invalid nesting, dialog lifecycle, and `stopImmediatePropagation` regressions |
 | Element composition and CSS | Explicit and automatic fragments plus raw, component-scoped style blocks with `:global()` escapes | `fragment`, `styling` goldens and styling SSR assertion |
 | Linked controlled state | Strong-mode `useLinkedState` reconciles editable state by source identity | `editor` golden |
 | External stores | Stable subscription/client snapshot functions and a deterministic server snapshot pass through `useSyncExternalStore` | `network` golden and SSR assertion |
@@ -42,13 +42,13 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | Library and resources | Element creation/cloning, descriptor and children-block checks, all five `Children` methods, six resource/connection APIs, transition pseudo-element handles, and package version | `library` golden and SSR assertions plus pseudo-element/version runtime test |
 | Fragments and text holes | Explicit and automatic output fragments, text-only lines, escaping, and interpolation | `fragment`, `styling` goldens |
 | Context | Module-scoped `createContext`, dotted `Theme.Provider`, and local `use()`/`useContext()` consumers | `provider` golden |
-| Client ownership | Root mount/update/unmount, root-level suspension retry, server-DOM adoption, framed primitive hydration and boolean clearing, dormant-boundary activation and event replay, synchronous/test scheduling, cross-container portals, and non-reconciling behavior ownership | Executable Happy DOM lifecycle suite |
+| Client ownership | Root mount/update/unmount, root-level suspension retry with committed-ref ownership, server-DOM adoption, framed primitive hydration and boolean clearing, dormant-boundary activation and event replay, responsive continuous events during pending Actions, synchronous/test scheduling, cross-container portals, and non-reconciling behavior ownership | Executable Happy DOM lifecycle suite |
 | Server and static rendering | Hydratable/static buffered output, scoped CSS/head channels, Node and Web progressive streams, await-everything output, aborts, deadlines, and complete Node preludes | Executable renderer lifecycle suite |
 | Public entry points | Every tracked name is present in the pinned `octane`, hydration, behavior, server, and static module namespaces | Machine-readable Core API inventory test |
 | Vite application lifecycle | Mixed BTSX/TSRX production build plus a BTSX SSR render, server-DOM adoption, interaction replay, and compiler-split deferred chunk | Executable project integration tests |
 | Rspack application lifecycle | Mixed BTSX/TSRX client build with a compiler-split deferred chunk plus an executable Node-target SSR render | Executable bundler integration test |
 | Rsbuild application lifecycle | Mixed compiler-only build plus routed browser and Node environments whose generated handler SSR-renders a BTSX route | Executable bundler integration tests |
-| Source-map pipeline | Declaration, multiline source-body, template-node, branch, and attribute anchors compose through Octane to original BTSX in Vite and Rspack output | Compiler mapping assertions plus emitted Vite and Rspack map tests |
+| Source-map pipeline | Declaration, multiline source-body, template-node, branch, attribute, and computed-key anchors compose through Octane to original BTSX in Vite and Rspack output; valid literal less-than text reaches Octane's parser fallback | Compiler mapping/parser assertions plus emitted Vite and Rspack map tests |
 | Standalone watch lifecycle | Debounced and serialized project rebuilds, ignored output events, stale cleanup, compile-error reporting, and recovery after a valid edit | Executable project API and CLI watcher tests |
 
 Every golden output is compared byte for byte and compiled with the pinned
@@ -60,7 +60,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.1.46` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.2.0` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, and type-only
 exports are outside this user-facing scope.
 

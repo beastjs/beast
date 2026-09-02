@@ -6,7 +6,10 @@ import { pathToFileURL } from "node:url";
 import { createRsbuild } from "@rsbuild/core";
 import { rspack, type Configuration, type Stats } from "@rspack/core";
 import { beastOctane as beastOctaneRsbuild } from "../src/rsbuild.js";
-import { beastOctane as beastOctaneRspack } from "../src/rspack.js";
+import {
+  BeastRspackPlugin,
+  beastOctane as beastOctaneRspack,
+} from "../src/rspack.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -85,6 +88,27 @@ async function runRspack(config: Configuration): Promise<Stats> {
 }
 
 describe("Octane bundler integrations", () => {
+  test("Rspack resolves Beast and explicit ESM/CommonJS module extensions", () => {
+    const compiler = {
+      options: {
+        context: process.cwd(),
+        resolve: { extensions: [".custom", ".mjs"] },
+        module: { rules: [] },
+      },
+    } as unknown as Parameters<BeastRspackPlugin["apply"]>[0];
+
+    new BeastRspackPlugin().apply(compiler);
+
+    expect(compiler.options.resolve?.extensions).toEqual([
+      ".btsx",
+      ".mjs",
+      ".mts",
+      ".cjs",
+      ".cts",
+      ".custom",
+    ]);
+  });
+
   test("Rspack builds a split client graph and executable server render", async () => {
     const root = await temporaryProject("beast-rspack-test-");
     await writeMixedApplication(root);

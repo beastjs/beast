@@ -34,6 +34,8 @@ describe("create-beast", () => {
     expect(result.packageName).toBe("my-beast-app");
     expect(result.installed).toBe(false);
     expect(result.gitInitialized).toBe(false);
+    expect(result.bundler).toBe("vite");
+    expect(result.ui).toBe("base-ui");
     expect(await readFile(resolve(result.directory, ".gitignore"), "utf8")).toContain(
       "node_modules/",
     );
@@ -43,7 +45,8 @@ describe("create-beast", () => {
     ) as { name: string; dependencies: Record<string, string> };
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
-    expect(packageJson.dependencies.octane).toBe("0.1.46");
+    expect(packageJson.dependencies.octane).toBe("0.2.0");
+    expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.50");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("interface Props");
@@ -94,9 +97,9 @@ describe("create-beast", () => {
       dependencies: Record<string, string>;
       devDependencies: Record<string, string>;
     };
-    expect(packageJson.dependencies.octane).toBe("0.1.46");
-    expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.1.8");
-    expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.1.8");
+    expect(packageJson.dependencies.octane).toBe("0.2.0");
+    expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.3.3");
+    expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.3.3");
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
     expect(viteConfig).toContain('import tailwindcss from "@tailwindcss/vite"');
     expect(viteConfig).toContain("plugins: [tailwindcss(), beastOctane()]");
@@ -136,6 +139,64 @@ describe("create-beast", () => {
         await readFile(resolve(tailwind.directory, path), "utf8"),
       );
     }
+  });
+
+  test("creates a Rspack project with the Octane Radix binding", async () => {
+    const cwd = await temporaryDirectory();
+    const result = await createProject({
+      cwd,
+      directory: "rspack-radix",
+      install: false,
+      git: false,
+      bundler: "rspack",
+      ui: "radix",
+    });
+    const packageJson = JSON.parse(
+      await readFile(resolve(result.directory, "package.json"), "utf8"),
+    ) as {
+      scripts: Record<string, string>;
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+
+    expect(result.bundler).toBe("rspack");
+    expect(result.ui).toBe("radix");
+    expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.51");
+    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.47");
+    expect(packageJson.devDependencies.vite).toBeUndefined();
+    expect(packageJson.scripts.build).toBe("rspack build --mode production");
+    const config = await readFile(resolve(result.directory, "rspack.config.ts"), "utf8");
+    expect(config).toContain('from "beast-tsrx/rspack"');
+    expect(config).toContain("new HtmlRspackPlugin");
+    expect(await readFile(resolve(result.directory, "index.html"), "utf8"))
+      .not.toContain('/src/main.ts');
+  });
+
+  test("creates an Rsbuild shadcn project with Tailwind enabled", async () => {
+    const cwd = await temporaryDirectory();
+    const result = await createProject({
+      cwd,
+      directory: "rsbuild-shadcn",
+      install: false,
+      git: false,
+      bundler: "rsbuild",
+      ui: "shadcn",
+    });
+    const packageJson = JSON.parse(
+      await readFile(resolve(result.directory, "package.json"), "utf8"),
+    ) as {
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+
+    expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.37");
+    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.47");
+    expect(packageJson.devDependencies["@rsbuild/plugin-tailwindcss"]).toBe("^2.0.3");
+    const config = await readFile(resolve(result.directory, "rsbuild.config.ts"), "utf8");
+    expect(config).toContain('from "beast-tsrx/rsbuild"');
+    expect(config).toContain("pluginTailwindcss()");
+    expect(await readFile(resolve(result.directory, "src/style.css"), "utf8"))
+      .toContain('@source "../node_modules/@octanejs/shadcn"');
   });
 
   test("refuses a non-empty directory unless force is explicit", async () => {

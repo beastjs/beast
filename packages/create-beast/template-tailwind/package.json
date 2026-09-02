@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "beast-tsrx": "__BEAST_PACKAGE_SPEC__",
-    "octane": "0.1.46"
+    "octane": "0.2.0"
   },
   "devDependencies": {
-    "@tsrx/typescript-plugin": "0.3.118",
+    "@tsrx/typescript-plugin": "0.3.129",
     "typescript": "^5.9.3",
     "vite": "^8.0.16",
-    "tailwindcss": "^4.1.8",
-    "@tailwindcss/vite": "^4.1.8"
+    "tailwindcss": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3"
   }
 }

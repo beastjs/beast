@@ -24,6 +24,7 @@ const loaderPath = fileURLToPath(new URL(
   import.meta.url.endsWith(".ts") ? "./rspack-loader.ts" : "./rspack-loader.js",
   import.meta.url,
 ));
+const BEAST_RESOLVE_EXTENSIONS = [".btsx", ".mjs", ".mts", ".cjs", ".cts"] as const;
 
 /** Compile `.btsx` resources before Rspack parses the resulting JavaScript. */
 export class BeastRspackPlugin implements RspackPluginInstance {
@@ -49,9 +50,9 @@ export class BeastRspackPlugin implements RspackPluginInstance {
 
     compiler.options.resolve ??= {};
     const extensions = compiler.options.resolve.extensions ?? [".js", ".json", ".wasm"];
-    compiler.options.resolve.extensions = extensions.includes(".btsx")
-      ? extensions
-      : [".btsx", ...extensions];
+    compiler.options.resolve.extensions = [
+      ...new Set([...BEAST_RESOLVE_EXTENSIONS, ...extensions]),
+    ];
 
     const extensionAlias = compiler.options.resolve.extensionAlias ?? {};
     const configuredTsrx = extensionAlias[".tsrx"];
