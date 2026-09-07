@@ -240,6 +240,32 @@ describe("Octane client lifecycle", () => {
     expect(container.childNodes).toHaveLength(0);
   });
 
+  test("recovers a server-deferred rejected read inside the client ErrorBoundary", async () => {
+    const ServerAsync = await loadFixture("async", "server");
+    const ClientAsync = await loadFixture("async", "client");
+    const { act, hydrateRoot } = await import("octane");
+    const profile = { status: "rejected", reason: new Error("Unavailable"), then() {} };
+    const server = renderToString(ServerAsync, { profile });
+    const container = browser.document.createElement("div");
+    container.innerHTML = server.html;
+    browser.document.body.append(container);
+
+    expect(server.html).toContain("<!--oct-native-fresh:");
+    expect(container.textContent).toContain("Loading profile…");
+    expect(container.textContent).not.toContain("Profile failed.");
+
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    await act(() => {
+      root = hydrateRoot(container, ClientAsync, { profile });
+    });
+
+    expect(container.textContent).toContain("Profile failed.");
+    expect(container.textContent).not.toContain("Loading profile…");
+    expect(container.querySelector("article.profile")).toBeNull();
+
+    root!.unmount();
+  });
+
   test("an interaction boundary adopts dormant HTML, activates, and replays intent", async () => {
     const source = [
       'import { Hydrate } from "octane";',

@@ -37,7 +37,7 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | Empty lists | An aligned `empty` branch emits native `@empty` | `catalog` golden |
 | Multi-way branches | `switch`, `case`, and `default` emit native `@switch` arms | `variant` golden |
 | Async/error boundaries | `try`, `pending`, and bound `catch` emit native boundary arms | `boundary` golden |
-| Runtime boundary components | `lazy` composes under `Suspense` and `ErrorBoundary`; Promise reads prove fulfilled, pending, and rejected server paths; `Activity` covers visible/hidden/prerender output | `deferred`, `async` goldens and async SSR assertions |
+| Runtime boundary components | `lazy` composes under `Suspense` and `ErrorBoundary`; Promise reads prove fulfilled and pending server paths plus the client recovery of a server-deferred rejected read; `Activity` covers visible/hidden/prerender output | `deferred`, `async` goldens, async SSR assertions, and the hydration recovery test |
 | Deferred hydration | Every activation strategy, dynamic selection, strategy/procedural prefetch, fallback/completion props, default child extraction, permanent-static ranges, server markers, and idempotent early event capture | `hydration` golden, extracted-child compile, SSR assertions, and capture test |
 | Library and resources | Element creation/cloning, descriptor and children-block checks, all five `Children` methods, six resource/connection APIs, transition pseudo-element handles, and package version | `library` golden and SSR assertions plus pseudo-element/version runtime test |
 | Fragments and text holes | Explicit and automatic output fragments, text-only lines, escaping, and interpolation | `fragment`, `styling` goldens |
@@ -60,7 +60,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.2.0` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.2.6` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, and type-only
 exports are outside this user-facing scope.
 
@@ -70,7 +70,7 @@ exports are outside this user-facing scope.
 | State | `useReducer` | Covered | `hooks` initialized reducer, latest-state getter lowering, and SSR assertion |
 | State | `useLinkedState` | Covered | `editor` golden |
 | Context | `createContext`, `use(context)`, `useContext` | Covered | `provider` golden |
-| Async data | `use(Promise)` | Covered | `async` fulfilled, Suspense-pending, and ErrorBoundary-rejected SSR assertions |
+| Async data | `use(Promise)` | Covered | `async` fulfilled and Suspense-pending SSR assertions plus the client ErrorBoundary recovery of a rejected read the server defers behind a fresh-native marker |
 | External state | `useSyncExternalStore` | Covered | `network` golden and SSR assertion |
 | Refs/effects | `useRef`, `useEffect` | Covered | `refs`, `shortcut`, and `counter` goldens |
 | Refs/effects | `useLayoutEffect`, `useInsertionEffect`, `useEffectEvent` | Covered | `hooks` client lowering and server no-effect assertion |
@@ -98,7 +98,7 @@ exports are outside this user-facing scope.
 | Scheduling/testing | `flushSync`, `act` | Covered | Synchronous DOM commit plus render/effect settling in the client lifecycle suite |
 | Debugging | `useDebugValue` | Covered | `hooks` client/server lowering assertion |
 | Package | `version` | Covered | Runtime export equals Beast's pinned Octane dependency |
-| Server | `renderToString` | Covered | Hydratable markers, suspense seeds, nonce, folded/separate head channels, and existing SSR assertions |
+| Server | `renderToString` | Covered | Hydratable markers, resolved-boundary suspense seeds, nonce, folded/separate head channels, and existing SSR assertions |
 | Server | `renderToStaticMarkup` | Covered | Marker-free static output plus scoped CSS channel and CSP nonce assertions |
 | Server | `renderToPipeableStream`, `renderToReadableStream` | Covered | Node `pipe`/callbacks and Web `allReady` assertions with progressive Suspense output |
 | Server | `setSsrSuspenseTimeout`, `getSsrSuspenseTimeout` | Covered | Global getter/setter, per-render override, timeout, and abort assertions |

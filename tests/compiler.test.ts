@@ -477,8 +477,10 @@ describe('BTSX to TSRX', () => {
     const rejected = await renderCompiledServerResult(server.code, {
       profile: { status: 'rejected', reason: new Error('Unavailable'), then() {} }
     })
-    expect(rejected.html).toContain('Profile failed.')
-    expect(rejected.html).toContain('"message":"Unavailable"')
+    expect(rejected.html).toContain('<!--oct-native-fresh:')
+    expect(rejected.html).toContain('Loading profile…')
+    expect(rejected.html).not.toContain('Profile failed.')
+    expect(rejected.html).not.toContain('<article class="profile">')
   })
 
   test('covers every hydration strategy and the complete Hydrate prop surface', async () => {

@@ -119,7 +119,9 @@ describe("Octane server and static renderers", () => {
     const hydratable = renderToString(AsyncProfile, { profile }, { nonce: "beast-nonce" });
     const staticMarkup = renderToStaticMarkup(AsyncProfile, { profile });
     expect(hydratable.html).toContain("<!--[-->");
-    expect(hydratable.html).toContain('data-octane-suspense nonce="beast-nonce"');
+    expect(hydratable.html).toContain("<!--oct-suspense:");
+    expect(hydratable.html).toContain('data-octane-suspense-seeds nonce="beast-nonce"');
+    expect(hydratable.html).toContain('[{"name":"Ada","role":"Engineer"}]');
     expect(staticMarkup.html).toContain("<h2>Ada</h2><p>Engineer</p>");
     expect(staticMarkup.html).not.toContain("<!--");
     expect(staticMarkup.html).not.toContain("data-octane-suspense");

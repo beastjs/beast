@@ -38,9 +38,9 @@ export type UiLibrary = "base-ui" | "radix" | "shadcn";
 const BUNDLERS = ["vite", "rspack", "rsbuild"] as const;
 const UI_LIBRARIES = ["base-ui", "radix", "shadcn"] as const;
 const UI_PACKAGES: Readonly<Record<UiLibrary, readonly [string, string]>> = {
-  "base-ui": ["@octanejs/base-ui", "0.1.50"],
-  radix: ["@octanejs/radix", "0.1.51"],
-  shadcn: ["@octanejs/shadcn", "0.0.37"],
+  "base-ui": ["@octanejs/base-ui", "0.1.51"],
+  radix: ["@octanejs/radix", "0.1.52"],
+  shadcn: ["@octanejs/shadcn", "0.0.38"],
 };
 
 export interface CreateProjectOptions {
@@ -275,11 +275,11 @@ async function configureProject(
     packageJson.devDependencies["@rspack/core"] = "^2.2.2";
     packageJson.devDependencies["@rspack/cli"] = "^2.2.2";
     packageJson.devDependencies["@rspack/dev-server"] = "^2.2.1";
-    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.1.47";
+    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.1.48";
   }
   if (bundler === "rsbuild") {
     packageJson.devDependencies["@rsbuild/core"] = "^2.2.2";
-    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.47";
+    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.48";
   }
 
   if (tailwind) {

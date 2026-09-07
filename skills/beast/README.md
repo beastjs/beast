@@ -7,7 +7,7 @@
 [![skills.sh](https://img.shields.io/badge/skills.sh-Beast-111827?style=flat-square)](https://skills.sh/phtn/beast-skill/beast)
 [![Version](https://img.shields.io/badge/version-0.2.0-6f42c1?style=flat-square)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.2.0-111827?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.2.6-111827?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Scaffold in seconds. Author with indentation. Compile to native TSRX. Let Octane own rendering.**
@@ -21,7 +21,7 @@
 
 ---
 
-Beast Skill is an agent skill for the [Beast](https://github.com/phtn/beast) compiler — an indentation-first language that compiles `.btsx` into readable `.tsrx` for [Octane](https://octanejs.dev/). It gives agents a focused workflow to scaffold, author, diagnose, navigate, watch, and build Beast apps with the Beast language server, Vite, Rspack, or Rsbuild.
+Beast Skill is an agent skill for the [Beast](https://github.com/beastjs/beast) compiler — an indentation-first language that compiles `.btsx` into readable `.tsrx` for [Octane](https://octanejs.dev/). It gives agents a focused workflow to scaffold, author, diagnose, navigate, watch, and build Beast apps with the Beast language server, Vite, Rspack, or Rsbuild.
 
 It does not replace TypeScript, TSRX, Octane, or an application bundler. It owns the authoring-to-build loop and hands generated TSRX to the existing toolchain.
 
@@ -258,4 +258,4 @@ Released under the [ISC License](LICENSE).
 
 *Built for fast, indentation-first Beast development.*
 
-[View Beast on GitHub](https://github.com/phtn/beast) · [View Beast Skill on skills.sh](https://skills.sh/phtn/beast-skill/beast)
+[View Beast on GitHub](https://github.com/beastjs/beast) · [View Beast Skill on skills.sh](https://skills.sh/phtn/beast-skill/beast)
