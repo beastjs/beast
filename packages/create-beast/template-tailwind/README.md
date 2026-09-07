@@ -9,7 +9,7 @@ bun run dev
 ```
 
 Edit `src/App.btsx` to get started. Declare typed props at the top of the BTSX
-file; the Beast Vite plugin compiles it into native TSRX and then lets Octane
+file; the Beast bundler adapter compiles it into native TSRX and then lets Octane
 produce the browser module.
 
 The starter pins the tested `octane@0.1.49` toolchain. Run the complete local

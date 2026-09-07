@@ -91,7 +91,7 @@ export default {
 };
 ```
 
-The adapter selects client or server output from the Rspack target, registers source dependencies for caching/watch, and resolves compiler-split `.tsrx` hydration requests back to `.btsx` while preferring a real native `.tsrx` file. `BeastRspackPlugin` and `beast()` are available when `OctaneRspackPlugin` is installed separately.
+The adapter selects client or server output from the Rspack target, registers source dependencies for caching/watch, resolves `.btsx`, `.mjs`, `.mts`, `.cjs`, and `.cts` modules, and resolves compiler-split `.tsrx` hydration requests back to `.btsx` while preferring a real native `.tsrx` file. `BeastRspackPlugin` and `beast()` are available when `OctaneRspackPlugin` is installed separately.
 Compiler-level `nativeReads` is forwarded to Beast's generated-TSRX loader.
 
 ## Rsbuild

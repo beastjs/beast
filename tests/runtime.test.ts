@@ -153,6 +153,10 @@ function deferred<T>(): { promise: Promise<T>; resolve(value: T): void } {
   return { promise, resolve: resolvePromise };
 }
 
+async function microtasks(count = 8): Promise<void> {
+  for (let index = 0; index < count; index++) await Promise.resolve();
+}
+
 beforeAll(installDom);
 
 beforeEach(() => {
@@ -234,6 +238,32 @@ describe("Octane client lifecycle", () => {
 
     root!.unmount();
     expect(container.childNodes).toHaveLength(0);
+  });
+
+  test("recovers a server-deferred rejected read inside the client ErrorBoundary", async () => {
+    const ServerAsync = await loadFixture("async", "server");
+    const ClientAsync = await loadFixture("async", "client");
+    const { act, hydrateRoot } = await import("octane");
+    const profile = { status: "rejected", reason: new Error("Unavailable"), then() {} };
+    const server = renderToString(ServerAsync, { profile });
+    const container = browser.document.createElement("div");
+    container.innerHTML = server.html;
+    browser.document.body.append(container);
+
+    expect(server.html).toContain("<!--oct-native-fresh:");
+    expect(container.textContent).toContain("Loading profile…");
+    expect(container.textContent).not.toContain("Profile failed.");
+
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    await act(() => {
+      root = hydrateRoot(container, ClientAsync, { profile });
+    });
+
+    expect(container.textContent).toContain("Profile failed.");
+    expect(container.textContent).not.toContain("Loading profile…");
+    expect(container.querySelector("article.profile")).toBeNull();
+
+    root!.unmount();
   });
 
   test("an interaction boundary adopts dormant HTML, activates, and replays intent", async () => {
@@ -374,6 +404,163 @@ describe("Octane client lifecycle", () => {
       await pending.promise;
     });
     expect(requiredElement(container, "#resolved").textContent).toBe("Settled");
+    root.unmount();
+  });
+
+  test("publishes only the committed ref when suspended root updates are superseded", async () => {
+    const source = [
+      'props { innerRef, read }: { innerRef: (element: Element | null) => void; read: () => string }',
+      'component RootResource',
+      '  props { read }: { read: () => string }',
+      '  span.value #{read()}',
+      'section.resource(ref={innerRef})',
+      '  RootResource(read={read})',
+    ].join("\n");
+    const Component = await loadCompiledComponent(
+      source,
+      resolve("tests/fixtures/SuspendedRefOwnership.btsx"),
+      "client",
+    );
+    const { act, createRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const calls: Array<[string, Element | null]> = [];
+    const first = (element: Element | null) => calls.push(["first", element]);
+    const stale = (element: Element | null) => calls.push(["stale", element]);
+    const latest = (element: Element | null) => calls.push(["latest", element]);
+    const root = createRoot(container);
+
+    await act(() => root.render(Component, { innerRef: first, read: () => "initial" }));
+    const target = requiredElement<HTMLElement>(container, ".resource");
+    expect(calls).toEqual([["first", target]]);
+
+    const superseded = deferred<void>();
+    const pending = deferred<void>();
+    let ready = false;
+    await act(() => root.render(Component, {
+      innerRef: stale,
+      read: () => { throw superseded.promise; },
+    }));
+    await act(() => root.render(Component, {
+      innerRef: latest,
+      read: () => {
+        if (!ready) throw pending.promise;
+        return "resolved";
+      },
+    }));
+    expect(calls).toEqual([["first", target]]);
+
+    await act(() => superseded.resolve());
+    expect(calls).toEqual([["first", target]]);
+    await act(() => {
+      ready = true;
+      pending.resolve();
+    });
+    expect(requiredElement(container, ".value").textContent).toBe("resolved");
+    expect(calls).toEqual([
+      ["first", target],
+      ["first", null],
+      ["latest", target],
+    ]);
+    root.unmount();
+  });
+
+  test("keeps continuous-event updates responsive during a pending transition action", async () => {
+    const source = [
+      'import { useState, useTransition } from "octane";',
+      'props { gate }: { gate: Promise<void> }',
+      'setup',
+      '  const [saved, setSaved] = useState("initial");',
+      '  const [count, setCount] = useState(0);',
+      '  const [pending, start] = useTransition();',
+      'button#action(type="button" onClick={() => start(async () => { setSaved("started"); await gate; setSaved("finished"); })}) Start',
+      'button#move(type="button" onPointerMove={() => setCount((value) => value + 1)}) Move',
+      'output#count #{count}',
+      'output#saved #{saved}',
+      'output#pending #{pending ? "pending" : "idle"}',
+    ].join("\n");
+    const Component = await loadCompiledComponent(
+      source,
+      resolve("tests/fixtures/ContinuousAction.btsx"),
+      "client",
+    );
+    const { act, createRoot } = await import("octane");
+    const gate = deferred<void>();
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+    await act(() => root.render(Component, { gate: gate.promise }));
+
+    click(requiredElement(container, "#action"));
+    await microtasks();
+    expect(requiredElement(container, "#pending").textContent).toBe("pending");
+    expect(requiredElement(container, "#saved").textContent).toBe("initial");
+
+    requiredElement(container, "#move").dispatchEvent(
+      new browser.Event("pointermove", { bubbles: true }),
+    );
+    await microtasks();
+    expect(requiredElement(container, "#count").textContent).toBe("1");
+    expect(requiredElement(container, "#pending").textContent).toBe("pending");
+
+    gate.resolve();
+    await microtasks(16);
+    expect(requiredElement(container, "#saved").textContent).toBe("finished");
+    expect(requiredElement(container, "#pending").textContent).toBe("idle");
+    root.unmount();
+  });
+
+  test("keeps native immediate cancellation separate from the logical handler queue", async () => {
+    const source = [
+      'props { onTarget, onParent }: { onTarget: (event: Event) => void; onParent: (event: Event) => void }',
+      'section(onClick={onParent})',
+      '  button#target(type="button" onClick={onTarget}) Target',
+    ].join("\n");
+    const Component = await loadCompiledComponent(
+      source,
+      resolve("tests/fixtures/ImmediatePropagation.btsx"),
+      "client",
+    );
+    const { act, createRoot } = await import("octane");
+    const log: string[] = [];
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+    await act(() => root.render(Component, {
+      onTarget: (event: Event) => {
+        log.push("target");
+        event.stopImmediatePropagation();
+      },
+      onParent: () => log.push("parent"),
+    }));
+    container.addEventListener("click", () => log.push("native after"));
+
+    click(requiredElement(container, "#target"));
+    expect(log).toEqual(["target", "parent"]);
+    root.unmount();
+  });
+
+  test("delegates dialog lifecycle events to logical ancestors", async () => {
+    const source = [
+      'props { onClose }: { onClose: (event: Event) => void }',
+      'section(onClose={onClose})',
+      '  dialog#modal Dialog',
+    ].join("\n");
+    const Component = await loadCompiledComponent(
+      source,
+      resolve("tests/fixtures/DialogLifecycle.btsx"),
+      "client",
+    );
+    const { act, createRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const observed: Event[] = [];
+    const root = createRoot(container);
+    await act(() => root.render(Component, { onClose: (event: Event) => observed.push(event) }));
+    const event = new browser.Event("close", { bubbles: false });
+    requiredElement(container, "#modal").dispatchEvent(event);
+
+    expect(observed).toEqual([event]);
     root.unmount();
   });
 });

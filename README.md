@@ -6,10 +6,10 @@
 > for Octane.
 
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-d97706?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.2.9-6f42c1?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.2.7-111827?style=flat-square)](https://beast-docs.vercel.app)
+[![Version](https://img.shields.io/badge/version-0.2.60-6f42c1?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.2.60-111827?style=flat-square)](https://beast-docs.vercel.app)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.1.49-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.2.6-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -47,7 +47,7 @@ validation, lowering, development serving, and production bundling.
 | Project builder     | Recursively compiles BTSX, validates native TSRX, and watches changes | Supports mixed source trees and recoverable rebuilds |
 | Vite integration    | Runs Beast before Octane in memory                                    | Enables normal dev and production builds             |
 | Diagnostics         | Reports stable codes with file and source spans                       | Makes compiler failures actionable                   |
-| Project creator     | Scaffolds a typed Beast, Octane, and Vite application                 | Provides a coherent starting point                   |
+| Project creator     | Scaffolds a typed Beast and Octane application with selectable tooling | Provides a coherent starting point                 |
 
 ## Quick start
 
@@ -73,7 +73,8 @@ bun x create-beast@latest my-app
 
 The generated project includes:
 
-- Beast and Octane configured as one Vite compilation pipeline
+- Beast and Octane configured for the selected Vite, Rspack, or Rsbuild pipeline
+- The selected Octane-native Base UI, Radix, or shadcn package
 - A typed `App.btsx` component
 - TSRX-aware TypeScript checking through `tsrx-tsc`
 - Development, production build, preview, type-check, and combined check scripts
@@ -82,20 +83,22 @@ The generated project includes:
 
 Creator options:
 
-| Option         | Effect                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------- |
-| `--no-install` | Write the project without running `bun install`                                        |
-| `--no-git`     | Skip `git init`                                                                        |
-| `--force`      | Write known template files into a non-empty directory without deleting unrelated files |
-| `-h`, `--help` | Print command help                                                                     |
-| `--tailwind`   | Add Tailwind CSS support (default)                                                     |
+| Option           | Effect                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `--bundler NAME` | Select `vite`, `rspack`, or `rsbuild` without the interactive prompt                    |
+| `--ui NAME`      | Select `base-ui`, `radix`, or `shadcn` without the interactive prompt                   |
+| `--no-install`   | Write the project without running `bun install`                                         |
+| `--no-git`       | Skip `git init`                                                                         |
+| `--force`        | Write known template files into a non-empty directory without deleting unrelated files  |
+| `-h`, `--help`   | Print command help                                                                      |
+| `--tailwind`     | Add Tailwind CSS support; selecting shadcn enables it automatically                     |
 
 ## LSP
 
 | IDE     | Link                                                                        |
 | ------- | --------------------------------------------------------------------------- |
 | VS Code | [BeastJS](https://marketplace.visualstudio.com/items?itemName=phtn.beastjs) |
-| Zed     | Awaiting extensions merge                                                   |
+| Zed     | [Beast](https://zed.dev/extensions/beast)                                   |
 | NeoVim  | Awaiting nvim-treesitter merge                                              |
 
 ## How it works
@@ -107,7 +110,7 @@ flowchart LR
     C --> D[TSRX generator]
     D --> E[.tsrx source]
     E --> F[Octane compiler]
-    F --> G[Vite module graph]
+    F --> G[Vite / Rspack / Rsbuild graph]
     G --> H[Browser application]
 ```
 
@@ -1019,8 +1022,8 @@ compilation.
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.1.49
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.44
+npm install octane@0.2.6
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.48
 ```
 
 ```js
@@ -1041,7 +1044,8 @@ The adapter compiles `.btsx`, leaves native `.tsrx` and compiler-owned helper
 modules to Octane, selects client or server output from the Rspack target, and
 registers source dependencies with Rspack's cache and watcher. Its `.tsrx`
 extension fallback resolves compiler-split hydration requests back to the
-originating `.btsx` module while preferring a real native `.tsrx` file. Rspack
+originating `.btsx` module while preferring a real native `.tsrx` file. The
+resolver also recognizes `.mjs`, `.mts`, `.cjs`, and `.cts` modules. Rspack
 receives the same composed BTSX-to-JavaScript source map, including any input
 map supplied by an earlier loader.
 
@@ -1061,7 +1065,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.1.49 @octanejs/rsbuild-plugin@0.1.44
+npm install octane@0.2.6 @octanejs/rsbuild-plugin@0.1.48
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1205,10 +1209,10 @@ editors.
 | Node.js                       | `>=22.22.2`       | Required by the supported Octane toolchain                      |
 | Bun                           | Current stable    | Workspace, tests, project creation, and dependency installation |
 | TypeScript                    | `^5.9.3`          | Package declarations and generated-project checking             |
-| TSRX TypeScript plugin        | `0.3.118`         | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.1.49`          | TSRX validation, lowering, and runtime                          |
+| TSRX TypeScript plugin        | `0.3.135`         | `.tsrx` and `.btsx` project type checking                       |
+| Octane                        | `0.2.6`           | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`         | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.44`          | Bundler integration compatible with Octane `0.1.49`             |
+| Octane Rspack/Rsbuild plugins | `0.1.48`          | Bundler integration compatible with Octane `0.2.6`              |
 | Rspack / Rsbuild              | `^2.0.0`          | Low-level and application-level production builds               |
 
 Octane and TSRX are evolving. Beast pins the versions used by its conformance
@@ -1309,7 +1313,7 @@ beast/
 Requirements: Node.js 22.22.2 or newer and Bun.
 
 ```bash
-git clone https://github.com/phtn/beast.git
+git clone https://github.com/beastjs/beast.git
 cd beast
 bun install --frozen-lockfile
 bun run check
@@ -1356,7 +1360,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.1.49`.
+the release checks. Every row in that ledger is covered for `octane@0.2.6`.
 
 ## License
 

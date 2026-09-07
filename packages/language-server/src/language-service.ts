@@ -8,6 +8,7 @@ import {
   sep,
 } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import * as ts from "typescript";
 import {
   BeastCompileError,
   componentNameFromPath,
@@ -128,6 +129,14 @@ interface IndexedComponent {
   uri: string;
 }
 
+interface IndexedExport {
+  name: string;
+  path: string;
+  uri: string;
+  kind: "function" | "class" | "const" | "type" | "interface" | "variable";
+  isDefault: boolean;
+}
+
 interface ImportRecord {
   binding?: string;
   range: Range;
@@ -155,6 +164,7 @@ interface ImportPathContext {
 
 export class BeastLanguageService {
   private components: IndexedComponent[] = [];
+  private exports: IndexedExport[] = [];
   private indexed = false;
   private roots: string[] = [];
 
@@ -174,11 +184,12 @@ export class BeastLanguageService {
   }
 
   async refresh(): Promise<void> {
-    const paths = (
+    // Collect Beast components
+    const btsxPaths = (
       await Promise.all(this.roots.map(async (root) => collectBtsxFiles(root)))
     ).flat();
     const components = await Promise.all(
-      paths.map(async (path): Promise<IndexedComponent | null> => {
+      btsxPaths.map(async (path): Promise<IndexedComponent | null> => {
         try {
           const source = await readFile(path, "utf8");
           return {
@@ -195,6 +206,29 @@ export class BeastLanguageService {
     this.components = components
       .filter((component): component is IndexedComponent => component !== null)
       .sort((left, right) => left.path.localeCompare(right.path));
+
+    // Collect TypeScript exports
+    const tsPaths = (
+      await Promise.all(this.roots.map(async (root) => collectTypeScriptFiles(root)))
+    ).flat();
+    console.error(`[beast-lsp] Found ${tsPaths.length} TypeScript files in roots: ${this.roots.join(", ")}`);
+    const allExports = await Promise.all(
+      tsPaths.map(async (path): Promise<IndexedExport[]> => {
+        try {
+          const source = await readFile(path, "utf8");
+          const exports = extractExports(source, path);
+          if (exports.length > 0) {
+            console.error(`[beast-lsp] Extracted ${exports.length} exports from ${path}: ${exports.map(e => e.name).join(", ")}`);
+          }
+          return exports;
+        } catch {
+          return [];
+        }
+      }),
+    );
+    this.exports = allExports.flat().sort((left, right) => left.name.localeCompare(right.name));
+    console.error(`[beast-lsp] Total exports indexed: ${this.exports.length}`);
+
     this.indexed = true;
   }
 
@@ -280,6 +314,38 @@ export class BeastLanguageService {
       }
       items.push(item);
     }
+
+    // Add TypeScript exports to completions
+    for (const exportItem of this.exports) {
+      if (
+        exportItem.path === documentPath ||
+        !matchesPrefix(exportItem.name, trimmed)
+      ) {
+        continue;
+      }
+      // Skip if already imported
+      if (imported.has(exportItem.name)) {
+        continue;
+      }
+      const completionKind = exportItem.kind === "function"
+        ? CompletionItemKind.Function
+        : exportItem.kind === "class"
+          ? CompletionItemKind.Class
+          : exportItem.kind === "type" || exportItem.kind === "interface"
+            ? CompletionItemKind.Interface
+            : CompletionItemKind.Constant;
+      const item: CompletionItem = {
+        label: exportItem.name,
+        kind: completionKind,
+        detail: `${exportItem.kind} from ${relativeDetail(documentPath, exportItem.path)}`,
+        sortText: `4-${exportItem.name}`,
+        textEdit: TextEdit.replace(replacement, exportItem.name),
+      };
+      const edit = autoImportExportEdit(document, exportItem);
+      if (edit !== null) item.additionalTextEdits = [edit];
+      items.push(item);
+    }
+
     return deduplicateCompletions(items);
   }
 
@@ -514,6 +580,111 @@ async function collectBtsxFiles(root: string): Promise<string[]> {
   return files;
 }
 
+async function collectTypeScriptFiles(root: string): Promise<string[]> {
+  const files: string[] = [];
+  async function walk(directory: string): Promise<void> {
+    let entries;
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    await Promise.all(
+      entries.map(async (entry) => {
+        const path = resolve(directory, entry.name);
+        if (entry.isDirectory()) {
+          if (!IGNORED_DIRECTORIES.has(entry.name)) await walk(path);
+        } else if (entry.isFile()) {
+          const ext = extname(entry.name);
+          if (ext === ".ts" || ext === ".tsx") {
+            // Skip .d.ts declaration files
+            if (!entry.name.endsWith(".d.ts")) {
+              files.push(path);
+            }
+          }
+        }
+      }),
+    );
+  }
+  await walk(root);
+  return files;
+}
+
+function extractExports(source: string, filePath: string): IndexedExport[] {
+  const exports: IndexedExport[] = [];
+  const uri = pathToFileURL(filePath).href;
+
+  try {
+    const sourceFile = ts.createSourceFile(
+      filePath,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      filePath.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    );
+
+    ts.forEachChild(sourceFile, (node) => {
+      // Check for export modifiers
+      const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+      const hasExport = modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+      const hasDefault = modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword);
+
+      if (!hasExport) return;
+
+      if (ts.isFunctionDeclaration(node) && node.name) {
+        exports.push({
+          name: node.name.text,
+          path: filePath,
+          uri,
+          kind: "function",
+          isDefault: hasDefault ?? false,
+        });
+      } else if (ts.isClassDeclaration(node) && node.name) {
+        exports.push({
+          name: node.name.text,
+          path: filePath,
+          uri,
+          kind: "class",
+          isDefault: hasDefault ?? false,
+        });
+      } else if (ts.isVariableStatement(node)) {
+        for (const declaration of node.declarationList.declarations) {
+          if (ts.isIdentifier(declaration.name)) {
+            const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
+            exports.push({
+              name: declaration.name.text,
+              path: filePath,
+              uri,
+              kind: isConst ? "const" : "variable",
+              isDefault: false,
+            });
+          }
+        }
+      } else if (ts.isTypeAliasDeclaration(node)) {
+        exports.push({
+          name: node.name.text,
+          path: filePath,
+          uri,
+          kind: "type",
+          isDefault: false,
+        });
+      } else if (ts.isInterfaceDeclaration(node)) {
+        exports.push({
+          name: node.name.text,
+          path: filePath,
+          uri,
+          kind: "interface",
+          isDefault: false,
+        });
+      }
+    });
+  } catch {
+    // Ignore parse errors in TypeScript files
+  }
+
+  return exports;
+}
+
 function extractProps(source: string, filename: string): string[] {
   let parameter: string | undefined;
   try {
@@ -611,6 +782,26 @@ function autoImportEdit(
     Position.create(insertionLine, 0),
     `import ${componentName} from "${specifier}";\n`,
   );
+}
+
+function autoImportExportEdit(
+  document: TextDocument,
+  exportItem: IndexedExport,
+): TextEdit | null {
+  const documentPath = filePathForDocument(document);
+  if (documentPath === null) return null;
+  const imports = importsForDocument(document);
+  const insertionLine = imports.length === 0
+    ? modulePreludeEndLine(document.getText())
+    : imports.reduce(
+        (line, record) => Math.max(line, record.statementEndLine + 1),
+        0,
+      );
+  const specifier = moduleSpecifier(documentPath, exportItem.path);
+  const importStatement = exportItem.isDefault
+    ? `import ${exportItem.name} from "${specifier}";\n`
+    : `import { ${exportItem.name} } from "${specifier}";\n`;
+  return TextEdit.insert(Position.create(insertionLine, 0), importStatement);
 }
 
 function moduleSpecifier(fromPath: string, targetPath: string): string {
