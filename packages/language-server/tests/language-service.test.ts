@@ -43,6 +43,18 @@ function document(path: string, source: string): TextDocument {
 }
 
 describe("BeastLanguageService", () => {
+  test("completes the scoped child keyword", async () => {
+    const project = await createProject();
+    const source = "sc";
+    const service = new BeastLanguageService([pathToFileURL(project.root).href]);
+    const items = await service.completions(
+      document(project.appPath, source),
+      Position.create(0, source.length),
+    );
+
+    expect(items.map((item) => item.label)).toContain("scope");
+  });
+
   test("completes workspace components with an auto-import edit", async () => {
     const project = await createProject();
     const source = "Ca";

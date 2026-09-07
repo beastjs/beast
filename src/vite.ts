@@ -22,19 +22,33 @@ export interface BeastViteOptions {
 export function beast(options: BeastViteOptions = {}): Plugin {
   let config: ResolvedConfig | undefined;
   let octaneCompiler: ReturnType<typeof createOctaneCompiler> | undefined;
+  let hmrEnabled = false;
+  let profileEnabled = false;
 
   return {
     name: "beast:tsrx",
     enforce: "pre",
     configResolved(resolved) {
       config = resolved;
+      hmrEnabled = resolved.command === "serve" && options.octane?.hmr !== false;
+      profileEnabled = options.octane?.ssr !== true &&
+        (options.octane?.profile === true ||
+          (options.octane?.profile === "auto" && resolved.command === "serve"));
       octaneCompiler = createOctaneCompiler({
         root: resolved.root,
         environment: "client",
-        hmr: resolved.command === "serve" ? "vite" : false,
+        hmr: hmrEnabled ? "vite" : false,
         dev: resolved.command === "serve",
-        profile: options.octane?.profile === true,
+        profile: profileEnabled,
         strong: options.octane?.strong === true,
+        nativeReads: options.octane?.nativeReads === true,
+        ...(options.octane?.exclude === undefined ? {} : { exclude: options.octane.exclude }),
+        ...(options.octane?.renderers === undefined
+          ? {}
+          : { renderers: options.octane.renderers }),
+        ...(options.octane?.requireDirective === undefined
+          ? {}
+          : { requireDirective: options.octane.requireDirective }),
         warn: (message) => resolved.logger.warn(message),
       });
     },
@@ -65,13 +79,16 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         ...(configured?.propsParam === undefined ? {} : { propsParam: configured.propsParam }),
       });
       const tsrxId = `${filename.replace(/\.btsx$/u, ".tsrx")}${id.slice(filename.length)}`;
-      const environment = transformOptions?.ssr === true ? "server" : "client";
+      const server = options.octane?.ssr ??
+        (transformOptions?.ssr === true || this.environment?.config.consumer === "server");
+      const environment = server ? "server" : "client";
       const result = octaneCompiler.transform(tsrx.code, tsrxId, {
         environment,
-        hmr: environment === "client" && config.command === "serve" ? "vite" : false,
+        hmr: environment === "client" && hmrEnabled ? "vite" : false,
         dev: config.command === "serve",
-        profile: options.octane?.profile === true,
+        profile: environment === "client" && profileEnabled,
         strong: options.octane?.strong === true,
+        nativeReads: options.octane?.nativeReads === true,
       });
       if (result === null) {
         throw new Error(`Octane declined to compile generated TSRX for ${projectName}.`);

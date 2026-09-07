@@ -1,6 +1,6 @@
 {
   "name": "beast-skill",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Agent skill for authoring, debugging, navigating, and shipping Beast BTSX → TSRX → Octane apps",
   "license": "ISC",

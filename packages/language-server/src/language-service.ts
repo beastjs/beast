@@ -64,6 +64,7 @@ const BEAST_KEYWORDS = [
   "switch",
   "try",
   "fragment",
+  "scope",
   "style",
 ] as const;
 

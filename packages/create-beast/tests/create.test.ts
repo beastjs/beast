@@ -2,6 +2,8 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
+import { compile } from "octane/compiler";
+import { compileBeast } from "../../../src/index.js";
 import { createProject } from "../src/index.js";
 
 const temporaryDirectories: string[] = [];
@@ -54,8 +56,13 @@ describe("create-beast", () => {
     expect(app).toContain("navigator.clipboard.writeText(note)");
     expect(app).toContain("label: 'Integration'");
     expect(app).toContain("label: 'Skills'");
+    expect(app).toContain("scope\n      setup const releaseLabel = 'Octane 0.1.49';");
     expect(app).toContain('role="tablist"');
     expect(app).toContain("each panel in panels key panel.id");
+    const tsrx = compileBeast(app, { filename: "src/App.btsx" });
+    expect(compile(tsrx, "src/App.tsrx", { mode: "client", hmr: false }).diagnostics).toEqual(
+      [],
+    );
     expect(await readFile(resolve(result.directory, "vite.config.ts"), "utf8")).toContain(
       "plugins: [beastOctane()]",
     );
@@ -73,6 +80,9 @@ describe("create-beast", () => {
     );
     expect(await readFile(resolve(result.directory, "index.html"), "utf8")).toContain(
       "Beast — Language, Integration & Skills",
+    );
+    expect(await readFile(resolve(result.directory, "CHANGELOG.md"), "utf8")).toContain(
+      "## [Unreleased]",
     );
     const main = await readFile(resolve(result.directory, "src", "main.ts"), "utf8");
     expect(main).toContain("docsUrl");
@@ -109,6 +119,7 @@ describe("create-beast", () => {
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("useState<PanelId>('language')");
     expect(app).toContain("navigator.clipboard.writeText(note)");
+    expect(app).toContain("scope\n      setup const releaseLabel = 'Octane 0.1.49';");
     expect(app).toContain("lg:grid-cols-[0.92fr_1.08fr]");
     expect(app).toContain('role="tablist"');
     expect(await readFile(resolve(result.directory, "public/beast.svg"), "utf8")).toContain(

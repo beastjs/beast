@@ -18,6 +18,7 @@
     "dist",
     "template",
     "template-tailwind",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],

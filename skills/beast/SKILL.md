@@ -39,7 +39,7 @@ bun x create-beast@latest [directory]
 
 Options: `--tailwind` selects the dedicated Tailwind CSS template; `--no-install` skips `bun install`; `--no-git` skips `git init`; `--force` writes known template files into a non-empty directory without deleting unrelated files; `-h/--help` prints help. Inspect a non-empty target before using `--force`.
 
-The base and Tailwind templates include a typed `src/App.btsx`, `src/main.ts`, styles, `vite.config.ts` with `beastOctane()`, and TSRX-aware `tsconfig.json`. The Tailwind template also configures `@tailwindcss/vite` and `@import "tailwindcss"`.
+The base and Tailwind templates include a typed `src/App.btsx`, `src/main.ts`, styles, `vite.config.ts` with `beastOctane()`, TSRX-aware `tsconfig.json`, and a project-owned `CHANGELOG.md`. The Tailwind template also configures `@tailwindcss/vite` and `@import "tailwindcss"`.
 
 For an existing project, locate `*.btsx`, the `beast-tsrx` dependency, and one of:
 
@@ -99,6 +99,9 @@ Button(
 fragment
   div One
   div Two
+scope
+  setup const [localCount, setLocalCount] = useState(0);
+  button(onClick={() => setLocalCount(localCount + 1)}) Local: #{localCount}
 style
   :global(body) { margin: 0; }
   .app { color: #f6f7fb; }

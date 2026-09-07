@@ -10,6 +10,7 @@ import type {
   IfBranch,
   IfNode,
   PropsDeclaration,
+  ScopeNode,
   SetupDeclaration,
   SourcePosition,
   SourceSpan,
@@ -481,6 +482,7 @@ class Parser {
       return this.parseTry(line);
     }
     if (line.content === "fragment") return this.parseFragment(line);
+    if (line.content === "scope") return this.parseScope(line);
     if (line.content === "style") return this.parseStyle(line);
     if (line.content === "empty") {
       this.fail(
@@ -538,6 +540,52 @@ class Parser {
     }
     return {
       kind: "fragment",
+      children,
+      lineNo: line.lineNo,
+      span: lineSpan(line),
+    };
+  }
+
+  private parseScope(line: LogicalLine): ScopeNode {
+    this.index += 1;
+    const firstBodyLine = this.lines[this.index];
+    if (firstBodyLine === undefined || firstBodyLine.indent <= line.indent) {
+      this.fail(
+        "BEAST1903_EMPTY_SCOPE",
+        "A scope requires indented setup or template content.",
+        line,
+      );
+    }
+
+    const bodyIndent = firstBodyLine.indent;
+    const setup: SetupDeclaration[] = [];
+    while (this.index < this.lines.length) {
+      const declarationLine = this.lines[this.index];
+      if (
+        declarationLine === undefined ||
+        declarationLine.indent !== bodyIndent ||
+        !isSetupDeclaration(declarationLine.content)
+      ) {
+        break;
+      }
+      setup.push(this.parseSetupDeclaration(declarationLine));
+    }
+
+    const nextLine = this.lines[this.index];
+    const children =
+      nextLine !== undefined && nextLine.indent > line.indent
+        ? this.parseBlock(bodyIndent)
+        : [];
+    if (setup.length === 0 && children.length === 0) {
+      this.fail(
+        "BEAST1903_EMPTY_SCOPE",
+        "A scope requires indented setup or template content.",
+        line,
+      );
+    }
+    return {
+      kind: "scope",
+      setup,
       children,
       lineNo: line.lineNo,
       span: lineSpan(line),
