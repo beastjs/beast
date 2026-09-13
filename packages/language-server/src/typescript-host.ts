@@ -1,175 +1,161 @@
 import * as ts from "typescript";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { compileBeastResult, BeastCompileError, type BeastSourceMap } from "beast-tsrx";
-import type { TextDocument } from "vscode-languageserver-textdocument";
+import { dirname } from "node:path";
+import { createBeastVirtualCode, type BeastVirtualCode } from "./virtual-code.js";
 
-export interface CompiledBeastDocument {
-  /** Original Beast source code */
+const VIRTUAL_EXTENSION = ".tsx";
+
+/** `/app/Card.btsx` is analyzed by TypeScript as `/app/Card.btsx.tsx`. */
+export function toVirtualPath(btsxPath: string): string {
+  return `${btsxPath}${VIRTUAL_EXTENSION}`;
+}
+
+export function isVirtualPath(fileName: string): boolean {
+  return fileName.endsWith(`.btsx${VIRTUAL_EXTENSION}`);
+}
+
+export function toBtsxPath(virtualPath: string): string {
+  return virtualPath.slice(0, -VIRTUAL_EXTENSION.length);
+}
+
+interface OpenDocument {
   source: string;
-  /** Compiled TSRX/TypeScript code */
-  tsrxCode: string;
-  /** Source map from TSRX back to Beast */
-  sourceMap: BeastSourceMap;
-  /** Version number for incremental updates */
   version: number;
-  /** Last compilation timestamp for cache invalidation */
-  compiledAt: number;
 }
 
-export interface BeastLanguageServiceHost extends ts.LanguageServiceHost {
-  /** Update a Beast document and recompile */
-  updateDocument(uri: string, source: string): void;
-
-  /** Remove a document from the virtual file system */
-  removeDocument(uri: string): void;
-
-  /** Get the compiled result for a Beast document */
-  getCompiledDocument(uri: string): CompiledBeastDocument | undefined;
-
-  /** Force recompilation of all documents */
-  invalidateAll(): void;
+interface CachedVirtualCode {
+  source: string;
+  code: BeastVirtualCode | null;
 }
 
-export class BeastTypeScriptHost implements BeastLanguageServiceHost {
-  private documents = new Map<string, CompiledBeastDocument>();
+/**
+ * Serves `.btsx` files to TypeScript as virtual TSX, alongside the workspace's
+ * real TypeScript files. Relative and path-aliased `.btsx` imports resolve
+ * through ordinary module resolution because `Card.btsx.tsx` "exists" whenever
+ * `Card.btsx` does.
+ */
+export class BeastTypeScriptHost implements ts.LanguageServiceHost {
+  private readonly workspaceRoot: string;
+  private readonly openDocuments = new Map<string, OpenDocument>();
+  private readonly virtualCodes = new Map<string, CachedVirtualCode>();
   private projectVersion = 0;
-  private compilerOptions: ts.CompilerOptions;
-  private workspaceRoot: string;
+  private compilerOptions: ts.CompilerOptions = {};
+  private projectFileNames: string[] = [];
 
   constructor(workspaceRoot: string) {
     this.workspaceRoot = workspaceRoot;
-    this.compilerOptions = this.loadCompilerOptions();
+    this.loadProject();
   }
 
-  private loadCompilerOptions(): ts.CompilerOptions {
-    // Default options optimized for Beast/TSRX analysis
-    const defaultOptions: ts.CompilerOptions = {
+  /** Re-read tsconfig.json and the project's root files. */
+  loadProject(): void {
+    const defaults: ts.CompilerOptions = {
       target: ts.ScriptTarget.ESNext,
       module: ts.ModuleKind.ESNext,
       moduleResolution: ts.ModuleResolutionKind.Bundler,
       jsx: ts.JsxEmit.ReactJSX,
       jsxImportSource: "octane",
       strict: true,
-      noEmit: true,
       skipLibCheck: true,
       esModuleInterop: true,
-      allowSyntheticDefaultImports: true,
-      allowArbitraryExtensions: true,
       resolveJsonModule: true,
     };
+    let options: ts.CompilerOptions = {};
+    let fileNames: string[] = [];
 
-    // Try to load tsconfig.json from workspace
-    const configPath = ts.findConfigFile(
-      this.workspaceRoot,
-      ts.sys.fileExists,
-      "tsconfig.json",
-    );
-
-    if (configPath) {
-      const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-      if (!configFile.error) {
-        const parsed = ts.parseJsonConfigFileContent(
-          configFile.config,
-          ts.sys,
-          dirname(configPath),
-        );
-        return { ...defaultOptions, ...parsed.options };
+    const configPath = ts.findConfigFile(this.workspaceRoot, ts.sys.fileExists, "tsconfig.json");
+    if (configPath !== undefined) {
+      const config = ts.readConfigFile(configPath, ts.sys.readFile);
+      if (config.error === undefined) {
+        const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, dirname(configPath));
+        options = parsed.options;
+        fileNames = parsed.fileNames;
       }
     }
 
-    return defaultOptions;
+    this.compilerOptions = {
+      ...defaults,
+      ...options,
+      // Analysis only: Beast components import `.ts`/`.btsx` specifiers directly.
+      noEmit: true,
+      allowImportingTsExtensions: true,
+      allowArbitraryExtensions: true,
+    };
+    this.projectFileNames = fileNames;
+    this.projectVersion += 1;
   }
 
-  updateDocument(uri: string, source: string): void {
-    const existing = this.documents.get(uri);
+  setOpenDocument(btsxPath: string, source: string): void {
+    const existing = this.openDocuments.get(btsxPath);
+    if (existing?.source === source) return;
+    this.openDocuments.set(btsxPath, { source, version: (existing?.version ?? 0) + 1 });
+    this.projectVersion += 1;
+  }
 
-    // Skip recompilation if source unchanged
-    if (existing?.source === source) {
-      return;
-    }
+  closeDocument(btsxPath: string): void {
+    if (this.openDocuments.delete(btsxPath)) this.projectVersion += 1;
+  }
 
-    try {
-      const filePath = uri.startsWith("file:") ? fileURLToPath(uri) : uri;
-      const result = compileBeastResult(source, { filename: filePath });
-
-      this.documents.set(uri, {
-        source,
-        tsrxCode: result.code,
-        sourceMap: result.map,
-        version: (existing?.version ?? 0) + 1,
-        compiledAt: Date.now(),
-      });
-
-      this.projectVersion++;
-    } catch (error) {
-      // Beast parse errors are handled separately by the existing diagnostics
-      // Store a minimal entry to track the document
-      if (error instanceof BeastCompileError) {
-        this.documents.set(uri, {
-          source,
-          tsrxCode: "", // Empty - no valid TypeScript to analyze
-          sourceMap: { version: 3, sources: [], names: [], mappings: "" },
-          version: (existing?.version ?? 0) + 1,
-          compiledAt: Date.now(),
-        });
+  /** Note that files changed on disk; TypeScript re-reads them by modified time. */
+  filesChanged(paths: readonly string[]): void {
+    for (const path of paths) {
+      if (/(?:^|[\\/])(?:tsconfig|jsconfig)[^\\/]*\.json$/u.test(path)) {
+        this.loadProject();
+        return;
       }
+      this.virtualCodes.delete(path);
     }
+    this.projectVersion += 1;
   }
 
-  removeDocument(uri: string): void {
-    if (this.documents.delete(uri)) {
-      this.projectVersion++;
-    }
+  /** The virtual TSX for a Beast file, or null when it does not compile. */
+  getVirtualCode(btsxPath: string): BeastVirtualCode | null {
+    const source = this.openDocuments.get(btsxPath)?.source ?? ts.sys.readFile(btsxPath);
+    if (source === undefined) return null;
+    const cached = this.virtualCodes.get(btsxPath);
+    if (cached?.source === source) return cached.code;
+    const code = createBeastVirtualCode(source, btsxPath);
+    this.virtualCodes.set(btsxPath, { source, code });
+    return code;
   }
 
-  getCompiledDocument(uri: string): CompiledBeastDocument | undefined {
-    return this.documents.get(uri);
-  }
-
-  invalidateAll(): void {
-    this.documents.clear();
-    this.projectVersion++;
-  }
-
-  // LanguageServiceHost implementation
   getCompilationSettings(): ts.CompilerOptions {
     return this.compilerOptions;
   }
 
+  getProjectVersion(): string {
+    return String(this.projectVersion);
+  }
+
   getScriptFileNames(): string[] {
-    // Return virtual .ts paths for all Beast documents
-    return Array.from(this.documents.keys()).map((uri) => {
-      const path = uri.startsWith("file:") ? fileURLToPath(uri) : uri;
-      return path.replace(/\.btsx$/u, ".ts");
-    });
+    return [
+      ...this.projectFileNames,
+      ...[...this.openDocuments.keys()].map(toVirtualPath),
+    ];
+  }
+
+  getScriptKind(fileName: string): ts.ScriptKind {
+    if (isVirtualPath(fileName) || fileName.endsWith(".tsx")) return ts.ScriptKind.TSX;
+    if (/\.[cm]?jsx?$/u.test(fileName)) return fileName.endsWith("x") ? ts.ScriptKind.JSX : ts.ScriptKind.JS;
+    if (fileName.endsWith(".json")) return ts.ScriptKind.JSON;
+    return ts.ScriptKind.TS;
   }
 
   getScriptVersion(fileName: string): string {
-    // Map .ts back to .btsx URI
-    const btsxPath = fileName.replace(/\.ts$/u, ".btsx");
-    const uri = btsxPath.startsWith("/") ? pathToFileURL(btsxPath).href : btsxPath;
-    const doc = this.documents.get(uri);
-    return doc ? String(doc.version) : "0";
+    const path = isVirtualPath(fileName) ? toBtsxPath(fileName) : fileName;
+    const open = this.openDocuments.get(path);
+    if (open !== undefined) return `open:${open.version}`;
+    return String(ts.sys.getModifiedTime?.(path)?.getTime() ?? 0);
   }
 
   getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
-    // Map virtual .ts filename back to Beast document
-    const btsxPath = fileName.replace(/\.ts$/u, ".btsx");
-    const uri = btsxPath.startsWith("/") ? pathToFileURL(btsxPath).href : btsxPath;
-    const doc = this.documents.get(uri);
-
-    if (doc && doc.tsrxCode.length > 0) {
-      return ts.ScriptSnapshot.fromString(doc.tsrxCode);
+    if (isVirtualPath(fileName)) {
+      const code = this.getVirtualCode(toBtsxPath(fileName));
+      // A Beast file that does not compile still exists as a module; it just
+      // exports nothing TypeScript can see until it is fixed.
+      return ts.ScriptSnapshot.fromString(code?.code ?? "export {};\n");
     }
-
-    // Fall through to real file system for non-Beast files
-    if (ts.sys.fileExists(fileName)) {
-      const content = ts.sys.readFile(fileName);
-      return content ? ts.ScriptSnapshot.fromString(content) : undefined;
-    }
-
-    return undefined;
+    const content = ts.sys.readFile(fileName);
+    return content === undefined ? undefined : ts.ScriptSnapshot.fromString(content);
   }
 
   getCurrentDirectory(): string {
@@ -181,21 +167,16 @@ export class BeastTypeScriptHost implements BeastLanguageServiceHost {
   }
 
   fileExists(path: string): boolean {
-    // Check if it's a virtual Beast file
-    const btsxPath = path.replace(/\.ts$/u, ".btsx");
-    const uri = btsxPath.startsWith("/") ? pathToFileURL(btsxPath).href : btsxPath;
-    if (this.documents.has(uri)) {
-      return true;
+    if (isVirtualPath(path)) {
+      const btsxPath = toBtsxPath(path);
+      return this.openDocuments.has(btsxPath) || ts.sys.fileExists(btsxPath);
     }
     return ts.sys.fileExists(path);
   }
 
-  readFile(path: string): string | undefined {
-    return ts.sys.readFile(path);
-  }
-
-  getProjectVersion(): string {
-    return String(this.projectVersion);
+  readFile(path: string, encoding?: string): string | undefined {
+    if (isVirtualPath(path)) return this.getScriptSnapshot(path)?.getText(0, Number.MAX_SAFE_INTEGER);
+    return ts.sys.readFile(path, encoding);
   }
 
   readDirectory(
@@ -214,5 +195,13 @@ export class BeastTypeScriptHost implements BeastLanguageServiceHost {
 
   getDirectories(directoryName: string): string[] {
     return ts.sys.getDirectories(directoryName);
+  }
+
+  realpath(path: string): string {
+    return isVirtualPath(path) ? path : ts.sys.realpath?.(path) ?? path;
+  }
+
+  useCaseSensitiveFileNames(): boolean {
+    return ts.sys.useCaseSensitiveFileNames;
   }
 }
