@@ -90,6 +90,19 @@ describe("BeastTypeScriptFeatures", () => {
     expect(missing?.range.start).toEqual(positionOf(document, "nmae", false));
   });
 
+  test("reports an unknown element once, on its Beast tag name", async () => {
+    const root = await createProject();
+    const features = new BeastTypeScriptFeatures(root);
+    const document = open(root, "App.btsx", "props { label }: { label: string }\nbutton\n  fragment #{label}\n");
+
+    const unknown = features.diagnostics(document).filter((diagnostic) => diagnostic.code === 2339);
+    expect(unknown).toHaveLength(1);
+    expect(unknown[0]?.range).toEqual({
+      start: positionOf(document, "fragment", false),
+      end: positionOf(document, "fragment"),
+    });
+  });
+
   test("type-checks props passed to imported Beast components", async () => {
     const root = await createProject();
     const features = new BeastTypeScriptFeatures(root);

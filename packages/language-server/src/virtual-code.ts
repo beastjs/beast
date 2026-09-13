@@ -55,9 +55,18 @@ export function createBeastVirtualCode(source: string, filePath: string): BeastV
     tsrx,
     code: volar.code,
     toSourceRange(start, end, feature) {
-      const tsrxStart = tsx.toSource(start, feature, false);
+      let tsrxStart = tsx.toSource(start, feature, false);
       if (tsrxStart === null) return null;
-      const tsrxEnd = Math.max(tsrxStart, tsx.toSource(end, feature, true) ?? tsrxStart + (end - start));
+      let tsrxEnd = Math.max(tsrxStart, tsx.toSource(end, feature, true) ?? tsrxStart + (end - start));
+      // Drop JSX/statement punctuation Beast never writes (`<`/`</` and `>` around
+      // a tag name, a trailing `;`) so opening and closing tags map to one range.
+      const text = tsrx.slice(tsrxStart, tsrxEnd);
+      const leading = /^<\/?/u.exec(text)?.[0].length ?? 0;
+      const trailing = (leading > 0 ? /\/?>$/u : /;$/u).exec(text.slice(leading))?.[0].length ?? 0;
+      if (leading + trailing < text.length) {
+        tsrxStart += leading;
+        tsrxEnd -= trailing;
+      }
       const sourceStart = beast.toSource(tsrxStart, tsrx.slice(tsrxStart, tsrxEnd));
       if (sourceStart === null) return null;
       return {
