@@ -349,6 +349,20 @@ export class BeastLanguageService {
     return deduplicateCompletions(items);
   }
 
+  /** Whether the position is inside an import specifier string. */
+  isImportPathPosition(document: TextDocument, position: Position): boolean {
+    return importPathContext(document, position) !== null;
+  }
+
+  /** Where a new import statement belongs in the document. */
+  importInsertionPosition(document: TextDocument): Position {
+    const imports = importsForDocument(document);
+    const line = imports.length === 0
+      ? modulePreludeEndLine(document.getText())
+      : imports.reduce((last, record) => Math.max(last, record.statementEndLine + 1), 0);
+    return Position.create(line, 0);
+  }
+
   diagnostics(document: TextDocument): Diagnostic[] {
     try {
       parse(document.getText(), filePathForDocument(document) ?? document.uri);

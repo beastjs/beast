@@ -5,9 +5,25 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-14
+
 ### Added
 
 - Added `scope` to Beast keyword completions for Octane child scopes.
+- Added TypeScript checking for `.btsx` files: components are lowered through
+  Octane's TSX virtual code, so reference and type errors report at their Beast
+  location, including props passed to imported `.btsx` components.
+- Added TypeScript completions in embedded expressions, with auto-imports from
+  workspace `.ts` modules, plus TypeScript hover and go-to-definition.
+
+### Changed
+
+- Depends on `octane@0.2.8` for TSX virtual code and `beast-tsrx@0.2.60`.
+
+### Fixed
+
+- TypeScript diagnostics no longer analyze raw TSRX, which TypeScript cannot
+  parse, and no longer hide the resulting syntax errors.
 
 ## Before this changelog
 
