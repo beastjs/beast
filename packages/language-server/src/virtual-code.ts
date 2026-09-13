@@ -57,12 +57,17 @@ export function createBeastVirtualCode(source: string, filePath: string): BeastV
     toSourceRange(start, end, feature) {
       let tsrxStart = tsx.toSource(start, feature, false);
       if (tsrxStart === null) return null;
-      let tsrxEnd = Math.max(tsrxStart, tsx.toSource(end, feature, true) ?? tsrxStart + (end - start));
-      // Drop JSX/statement punctuation Beast never writes (`<`/`</` and `>` around
-      // a tag name, a trailing `;`) so opening and closing tags map to one range.
+      // Octane may append generated text (an inserted `;`); end at the last mapped offset.
+      let mappedEnd: number | null = null;
+      for (let offset = end; mappedEnd === null && offset > start; offset -= 1) {
+        mappedEnd = tsx.toSource(offset, feature, true);
+      }
+      let tsrxEnd = Math.max(tsrxStart, mappedEnd ?? tsrxStart + (end - start));
+      // Drop JSX punctuation Beast never writes (`<`/`</` and `>` around a tag
+      // name) so opening and closing tags map to the same range.
       const text = tsrx.slice(tsrxStart, tsrxEnd);
       const leading = /^<\/?/u.exec(text)?.[0].length ?? 0;
-      const trailing = (leading > 0 ? /\/?>$/u : /;$/u).exec(text.slice(leading))?.[0].length ?? 0;
+      const trailing = leading > 0 ? /\/?>$/u.exec(text.slice(leading))?.[0].length ?? 0 : 0;
       if (leading + trailing < text.length) {
         tsrxStart += leading;
         tsrxEnd -= trailing;

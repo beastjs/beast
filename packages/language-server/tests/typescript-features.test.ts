@@ -103,6 +103,20 @@ describe("BeastTypeScriptFeatures", () => {
     });
   });
 
+  test("fades an unused import over exactly its Beast line", async () => {
+    const root = await createProject();
+    const features = new BeastTypeScriptFeatures(root);
+    const importLine = 'import { formatPrice } from "./utils.ts"';
+    const document = open(root, "App.btsx", `${importLine}\nprops { label }: { label: string }\np #{label}\n`);
+
+    const unused = features.diagnostics(document).find((diagnostic) => diagnostic.code === 6133);
+    expect(unused?.tags).toEqual([1]);
+    expect(unused?.range).toEqual({
+      start: { line: 0, character: 0 },
+      end: { line: 0, character: importLine.length },
+    });
+  });
+
   test("type-checks props passed to imported Beast components", async () => {
     const root = await createProject();
     const features = new BeastTypeScriptFeatures(root);
