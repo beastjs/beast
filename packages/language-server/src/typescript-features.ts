@@ -28,6 +28,10 @@ const SUPPRESSED_CODES = new Set<number>([
   7026, // JSX element implicitly has type 'any' (no JSX namespace in the project)
 ]);
 
+// Lowercase tags Beast emits as real elements that Octane's JSX types don't declare.
+const BEAST_INTRINSIC_ELEMENTS = new Set(["fragment"]);
+const PROPERTY_MISSING = 2339;
+
 // Inserted at the cursor when half-typed code (`value.`) does not compile yet.
 const COMPLETION_PLACEHOLDER = "__beast_completion";
 
@@ -94,6 +98,7 @@ export class BeastTypeScriptFeatures {
     const seen = new Set<string>();
     for (const diagnostic of found) {
       if (SUPPRESSED_CODES.has(diagnostic.code) || diagnostic.start === undefined) continue;
+      if (diagnostic.code === PROPERTY_MISSING && isBeastIntrinsicTag(code.code, diagnostic.start)) continue;
       const range = code.toSourceRange(
         diagnostic.start,
         diagnostic.start + (diagnostic.length ?? 0),
@@ -398,6 +403,12 @@ function severity(category: ts.DiagnosticCategory): DiagnosticSeverity {
 
 function isTriggerCharacter(value: string | undefined): value is ts.CompletionsTriggerCharacter {
   return value !== undefined && [".", "\"", "'", "`", "/", "@", "<", "#", " "].includes(value);
+}
+
+/** Whether `offset` starts an opening or closing tag for a Beast-only intrinsic element. */
+function isBeastIntrinsicTag(tsx: string, offset: number): boolean {
+  const tag = /^<\/?([a-z][\w-]*)/u.exec(tsx.slice(offset, offset + 64))?.[1];
+  return tag !== undefined && BEAST_INTRINSIC_ELEMENTS.has(tag);
 }
 
 function isGeneratedName(name: string): boolean {

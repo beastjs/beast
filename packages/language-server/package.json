@@ -1,6 +1,6 @@
 {
   "name": "beast-language-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Language Server Protocol support for Beast BTSX components.",
   "type": "module",
   "main": "./dist/server.js",
