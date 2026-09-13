@@ -90,16 +90,24 @@ describe("BeastTypeScriptFeatures", () => {
     expect(missing?.range.start).toEqual(positionOf(document, "nmae", false));
   });
 
-  test("reports an unknown element once, on its Beast tag name", async () => {
+  test("accepts fragment as an element", async () => {
     const root = await createProject();
     const features = new BeastTypeScriptFeatures(root);
     const document = open(root, "App.btsx", "props { label }: { label: string }\nbutton\n  fragment #{label}\n");
 
+    expect(features.diagnostics(document).filter((diagnostic) => diagnostic.severity === 1)).toEqual([]);
+  });
+
+  test("reports an unknown element once, on its Beast tag name", async () => {
+    const root = await createProject();
+    const features = new BeastTypeScriptFeatures(root);
+    const document = open(root, "App.btsx", "props { label }: { label: string }\nbutton\n  dvi #{label}\n");
+
     const unknown = features.diagnostics(document).filter((diagnostic) => diagnostic.code === 2339);
     expect(unknown).toHaveLength(1);
     expect(unknown[0]?.range).toEqual({
-      start: positionOf(document, "fragment", false),
-      end: positionOf(document, "fragment"),
+      start: positionOf(document, "dvi", false),
+      end: positionOf(document, "dvi"),
     });
   });
 

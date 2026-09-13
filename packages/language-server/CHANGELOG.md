@@ -5,6 +5,13 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-14
+
+### Fixed
+
+- `fragment` elements no longer report "Property 'fragment' does not exist on
+  type 'JSX.IntrinsicElements'". Other unknown lowercase elements are still reported.
+
 ## [0.2.0] - 2026-09-14
 
 ### Added
