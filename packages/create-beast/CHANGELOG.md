@@ -3,7 +3,7 @@
 All notable changes to `create-beast` and its generated starter projects are
 recorded here. See the repository's [changelog policy](../../docs/changelogs.md).
 
-## [Unreleased]
+## [0.2.61] - 2026-09-18
 
 ### Added
 

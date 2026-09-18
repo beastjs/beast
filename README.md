@@ -7,7 +7,7 @@
 
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-d97706?style=flat-square)](#project-status)
 [![Version](https://img.shields.io/badge/version-0.2.60-6f42c1?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.2.60-111827?style=flat-square)](https://beast-docs.vercel.app)
+[![Docs](https://img.shields.io/badge/docs-0.2.60-111827?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
 [![Octane](https://img.shields.io/badge/Octane-0.2.8-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
@@ -38,16 +38,16 @@ validation, lowering, development serving, and production bundling.
 
 ## At a glance
 
-| Capability          | What it does                                                          | Why it matters                                       |
-| ------------------- | --------------------------------------------------------------------- | ---------------------------------------------------- |
-| BTSX compiler       | Converts indentation-based `.btsx` into native `.tsrx`                | Keeps generated output inspectable                   |
-| Component setup     | Emits local TypeScript and Octane hooks before the template root      | Keeps stateful components self-contained             |
-| Scoped child setup  | Emits nested Octane `@{ ... }` render scopes                          | Keeps child hook state at its authored sibling       |
-| Native control flow | Emits Octane condition, loop, switch, and boundary directives         | Preserves TSRX semantics and identity                |
-| Project builder     | Recursively compiles BTSX, validates native TSRX, and watches changes | Supports mixed source trees and recoverable rebuilds |
-| Vite integration    | Runs Beast before Octane in memory                                    | Enables normal dev and production builds             |
-| Diagnostics         | Reports stable codes with file and source spans                       | Makes compiler failures actionable                   |
-| Project creator     | Scaffolds a typed Beast and Octane application with selectable tooling | Provides a coherent starting point                 |
+| Capability          | What it does                                                           | Why it matters                                       |
+| ------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------- |
+| BTSX compiler       | Converts indentation-based `.btsx` into native `.tsrx`                 | Keeps generated output inspectable                   |
+| Component setup     | Emits local TypeScript and Octane hooks before the template root       | Keeps stateful components self-contained             |
+| Scoped child setup  | Emits nested Octane `@{ ... }` render scopes                           | Keeps child hook state at its authored sibling       |
+| Native control flow | Emits Octane condition, loop, switch, and boundary directives          | Preserves TSRX semantics and identity                |
+| Project builder     | Recursively compiles BTSX, validates native TSRX, and watches changes  | Supports mixed source trees and recoverable rebuilds |
+| Vite integration    | Runs Beast before Octane in memory                                     | Enables normal dev and production builds             |
+| Diagnostics         | Reports stable codes with file and source spans                        | Makes compiler failures actionable                   |
+| Project creator     | Scaffolds a typed Beast and Octane application with selectable tooling | Provides a coherent starting point                   |
 
 ## Quick start
 
@@ -83,15 +83,15 @@ The generated project includes:
 
 Creator options:
 
-| Option           | Effect                                                                                  |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| `--bundler NAME` | Select `vite`, `rspack`, or `rsbuild` without the interactive prompt                    |
-| `--ui NAME`      | Select `base-ui`, `radix`, or `shadcn` without the interactive prompt                   |
-| `--no-install`   | Write the project without running `bun install`                                         |
-| `--no-git`       | Skip `git init`                                                                         |
-| `--force`        | Write known template files into a non-empty directory without deleting unrelated files  |
-| `-h`, `--help`   | Print command help                                                                      |
-| `--tailwind`     | Add Tailwind CSS support; selecting shadcn enables it automatically                     |
+| Option           | Effect                                                                                 |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| `--bundler NAME` | Select `vite`, `rspack`, or `rsbuild` without the interactive prompt                   |
+| `--ui NAME`      | Select `base-ui`, `radix`, or `shadcn` without the interactive prompt                  |
+| `--no-install`   | Write the project without running `bun install`                                        |
+| `--no-git`       | Skip `git init`                                                                        |
+| `--force`        | Write known template files into a non-empty directory without deleting unrelated files |
+| `-h`, `--help`   | Print command help                                                                     |
+| `--tailwind`     | Add Tailwind CSS support; selecting shadcn enables it automatically                    |
 
 ## LSP
 
