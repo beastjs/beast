@@ -275,11 +275,11 @@ async function configureProject(
     packageJson.devDependencies["@rspack/core"] = "^2.2.2";
     packageJson.devDependencies["@rspack/cli"] = "^2.2.2";
     packageJson.devDependencies["@rspack/dev-server"] = "^2.2.1";
-    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.1.49";
+    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.1.50";
   }
   if (bundler === "rsbuild") {
     packageJson.devDependencies["@rsbuild/core"] = "^2.2.2";
-    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.49";
+    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.50";
   }
 
   if (tailwind) {

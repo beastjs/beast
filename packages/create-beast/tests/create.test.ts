@@ -58,7 +58,7 @@ describe("create-beast", () => {
     ) as { name: string; dependencies: Record<string, string> };
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
-    expect(packageJson.dependencies.octane).toBe("0.2.8");
+    expect(packageJson.dependencies.octane).toBe("0.2.13");
     expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.51");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
@@ -124,7 +124,7 @@ describe("create-beast", () => {
       dependencies: Record<string, string>;
       devDependencies: Record<string, string>;
     };
-    expect(packageJson.dependencies.octane).toBe("0.2.8");
+    expect(packageJson.dependencies.octane).toBe("0.2.13");
     expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.3.3");
     expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.3.3");
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
@@ -192,7 +192,7 @@ describe("create-beast", () => {
     expect(result.bundler).toBe("rspack");
     expect(result.ui).toBe("radix");
     expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.52");
-    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.49");
+    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.50");
     expect(packageJson.devDependencies.vite).toBeUndefined();
     expect(packageJson.scripts.build).toBe("rspack build --mode production");
     const config = await readFile(resolve(result.directory, "rspack.config.ts"), "utf8");
@@ -226,7 +226,7 @@ describe("create-beast", () => {
     };
 
     expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.38");
-    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.49");
+    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.50");
     expect(packageJson.devDependencies["@rsbuild/plugin-tailwindcss"]).toBe("^2.0.3");
     const config = await readFile(resolve(result.directory, "rsbuild.config.ts"), "utf8");
     expect(config).toContain('from "beast-tsrx/rsbuild"');

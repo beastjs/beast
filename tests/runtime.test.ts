@@ -88,7 +88,7 @@ function restoreDom(): void {
 function rewriteRuntimeImports(code: string, mode: CompileMode): string {
   const specifiers = mode === "client"
     ? ["octane/internal/client", "octane/hydration", "octane"]
-    : ["octane/hydration", "octane/server"];
+    : ["octane/internal/server", "octane/hydration", "octane/server"];
   let executable = code;
 
   for (const specifier of specifiers) {

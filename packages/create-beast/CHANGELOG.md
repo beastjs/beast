@@ -3,6 +3,20 @@
 All notable changes to `create-beast` and its generated starter projects are
 recorded here. See the repository's [changelog policy](../../docs/changelogs.md).
 
+## [Unreleased]
+
+## [0.2.62] - 2026-09-18
+
+### Changed
+
+- Updated generated projects to pin `octane@0.2.13`, and Rspack and Rsbuild
+  projects to the `0.1.50` Octane plugins.
+
+### Fixed
+
+- Starter READMEs and the generated `App.btsx` badge announced `octane@0.1.49`
+  while the template pinned a newer Octane. Both now report the pinned version.
+
 ## [0.2.61] - 2026-09-18
 
 ### Added

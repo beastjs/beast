@@ -27,7 +27,7 @@ async function renderCompiledServer(code: string, props?: unknown): Promise<stri
 
 async function renderCompiledServerResult(code: string, props?: unknown) {
   let executable = code
-  for (const specifier of ['octane/server', 'octane/hydration']) {
+  for (const specifier of ['octane/internal/server', 'octane/server', 'octane/hydration']) {
     const resolved = JSON.stringify(import.meta.resolve(specifier))
     executable = executable.replaceAll(JSON.stringify(specifier), resolved).replaceAll(`'${specifier}'`, resolved)
   }
@@ -437,9 +437,9 @@ describe('BTSX to TSRX', () => {
     })
     expect(client.diagnostics).toHaveLength(0)
     expect(client.code).toContain('__useReducerWithGetter')
-    expect(client.code).toContain('useMemo(() => memo(CountSummary, sameSummary), [], 2)')
-    expect(client.code).toContain('useCallback(() => dispatch({ type: "increment" }), [], 3)')
-    expect(client.code).toContain('useEffectEvent(() => onReport(getCount()), 4)')
+    expect(client.code).toContain('useMemo(() => memo(CountSummary, sameSummary), [], _hs$ + 2)')
+    expect(client.code).toContain('useCallback(() => dispatch({ type: "increment" }), [], _hs$ + 3)')
+    expect(client.code).toContain('useEffectEvent(() => onReport(getCount()), _hs$ + 4)')
     expect(client.code).toContain('useImperativeHandle(handleRef')
     expect(client.code).toContain('useInsertionEffect(')
     expect(client.code).toContain('useLayoutEffect(')
@@ -592,10 +592,10 @@ describe('BTSX to TSRX', () => {
   })
 
   test('installs early hydration event capture once per document', () => {
-    const registrations: Array<{ type: string; capture: boolean }> = []
+    const registrations: Array<{ type: string; listener: EventListener; capture: boolean }> = []
     const ownerDocument = {
-      addEventListener(type: string, _listener: EventListener, capture: boolean) {
-        registrations.push({ type, capture })
+      addEventListener(type: string, listener: EventListener, capture: boolean) {
+        registrations.push({ type, listener, capture })
       }
     } as unknown as Document
 
@@ -605,7 +605,12 @@ describe('BTSX to TSRX', () => {
 
     expect(firstCount).toBeGreaterThan(0)
     expect(registrations).toHaveLength(firstCount)
-    expect(new Set(registrations.map(({ type }) => type)).size).toBe(firstCount)
+    // Octane 0.2.13 installs two independent capture layers — native-control
+    // capture and early hydration-intent capture — so an event type may appear
+    // once per layer. No single listener may be registered for a type twice.
+    expect(new Set(registrations.map(({ type, listener }) => `${type}\u0000${listener.name}`)).size).toBe(
+      firstCount
+    )
     expect(registrations.every(({ capture }) => capture)).toBe(true)
   })
 
@@ -692,25 +697,28 @@ describe('BTSX to TSRX', () => {
     expect(version).toBe(manifest.devDependencies.octane.replace(/^\^/, ''))
 
     const selector = '::view-transition-new(hero)'
-    const matching = { effect: { pseudoElement: selector } } as unknown as Animation
-    const other = {
-      effect: { pseudoElement: '::view-transition-old(hero)' }
-    } as unknown as Animation
     const calls: Array<{ keyframes: unknown; options: unknown }> = []
+    // Octane 0.2.13 scopes pseudo-element handles: getAnimations() now also
+    // requires effect.target to be the handle's scope (documentElement here).
+    const documentElement = {
+      animate(keyframes: unknown, options: unknown) {
+        calls.push({ keyframes, options })
+        return matching
+      },
+      getAnimations() {
+        return [matching, other]
+      }
+    }
+    const matching = {
+      effect: { pseudoElement: selector, target: documentElement }
+    } as unknown as Animation
+    const other = {
+      effect: { pseudoElement: '::view-transition-old(hero)', target: documentElement }
+    } as unknown as Animation
     const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
     Object.defineProperty(globalThis, 'document', {
       configurable: true,
-      value: {
-        documentElement: {
-          animate(keyframes: unknown, options: unknown) {
-            calls.push({ keyframes, options })
-            return matching
-          },
-          getAnimations() {
-            return [matching, other]
-          }
-        }
-      }
+      value: { documentElement }
     })
 
     try {
@@ -1057,7 +1065,7 @@ describe('BTSX to TSRX', () => {
       ],
       'OCTANE_STRONG_RENDER_STATE_GETTER_CALL'
     ]
-  ])('preserves Octane 0.2.8 Strong-mode diagnostics for %s', (_name, lines, diagnostic) => {
+  ])('preserves Octane 0.2.13 Strong-mode diagnostics for %s', (_name, lines, diagnostic) => {
     const code = compileBeast(lines.join('\n'), { filename: 'InvalidStrongRead.btsx' })
 
     expect(() => compile(code, 'InvalidStrongRead.tsrx', {
@@ -1226,7 +1234,7 @@ describe('BTSX to TSRX', () => {
       dev: true
     })
     expect(client.diagnostics).toHaveLength(0)
-    expect(client.code).toContain('useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot, 0)')
+    expect(client.code).toContain('useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot, _hs$ + 0)')
 
     const server = compile(result.code, filename.replace(/\.btsx$/u, '.tsrx'), {
       mode: 'server',
@@ -1234,7 +1242,7 @@ describe('BTSX to TSRX', () => {
       dev: true
     })
     expect(server.diagnostics).toHaveLength(0)
-    expect(server.code).toContain('useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot, 0)')
+    expect(server.code).toContain('useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot, _hs$ + 0)')
 
     expect(await renderCompiledServer(server.code)).toContain(
       '<p class="network-status" role="status" aria-live="polite">Online</p>'
@@ -1257,10 +1265,10 @@ describe('BTSX to TSRX', () => {
       dev: true
     })
     expect(client.diagnostics).toHaveLength(0)
-    expect(client.code).toContain('useState("overview", 0)')
-    expect(client.code).toContain('useTransition(1)')
-    expect(client.code).toContain('useState("", 2)')
-    expect(client.code).toContain('useDeferredValue(query, 3)')
+    expect(client.code).toContain('useState("overview", _hs$ + 0)')
+    expect(client.code).toContain('useTransition(_hs$ + 1)')
+    expect(client.code).toContain('useState("", _hs$ + 2)')
+    expect(client.code).toContain('useDeferredValue(query, _hs$ + 3)')
 
     const server = compile(result.code, tsrxFilename, {
       mode: 'server',
@@ -1367,10 +1375,10 @@ describe('BTSX to TSRX', () => {
       dev: true
     })
     expect(client.diagnostics).toHaveLength(0)
-    expect(client.code).toContain('useFormStatus(0)')
-    expect(client.code).toContain('useRef(null, 1)')
-    expect(client.code).toContain('useOptimistic(names, (current, name) => [...current, name], 2)')
-    expect(client.code).toMatch(/useActionState\([\s\S]*?"Save a name\.",\s*undefined,\s*3\s*\)/u)
+    expect(client.code).toContain('useFormStatus(_hs$ + 0)')
+    expect(client.code).toContain('useRef(null, _hs$ + 1)')
+    expect(client.code).toContain('useOptimistic(names, (current, name) => [...current, name], _hs$ + 2)')
+    expect(client.code).toMatch(/useActionState\([\s\S]*?"Save a name\.",\s*undefined,\s*_hs\$ \+ 3\s*\)/u)
     expect(client.code).toContain('requestFormReset(formRef.current)')
     expect(client.code).toContain('_$setFormAction')
 

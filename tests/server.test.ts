@@ -53,7 +53,7 @@ function fulfilledProfile(name: string, role: string): PromiseLike<ProfileData> 
 
 function rewriteServerImports(code: string): string {
   let executable = code;
-  for (const specifier of ["octane/hydration", "octane/server"]) {
+  for (const specifier of ["octane/internal/server", "octane/hydration", "octane/server"]) {
     const resolved = JSON.stringify(import.meta.resolve(specifier));
     executable = executable
       .replaceAll(JSON.stringify(specifier), resolved)
