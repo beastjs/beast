@@ -107,10 +107,11 @@ module
   ]
 
 props { docsUrl }: Props
-setup const [activeId, setActiveId] = useState<PanelId>('language');
-setup const [copiedSide, setCopiedSide] = useState<PanelSide | null>(null);
-setup const active = panels.find((panel) => panel.id === activeId) ?? panels[0];
 setup const copyNote = async (side: PanelSide, note: string) => { await navigator.clipboard.writeText(note); setCopiedSide(side); window.setTimeout(() => setCopiedSide(null), 1600); };
+setup
+  const [activeId, setActiveId] = useState<PanelId>('language');
+  const [copiedSide, setCopiedSide] = useState<PanelSide | null>(null);
+  const active = panels.find((panel) => panel.id === activeId) ?? panels[0];
 
 main(className='grid min-h-screen min-w-80 place-items-center p-3 sm:p-8 lg:p-16')
   section(
@@ -185,10 +186,8 @@ main(className='grid min-h-screen min-w-80 place-items-center p-3 sm:p-8 lg:p-16
           code(className='mb-0 mt-auto pb-5 pt-16 text-sm text-[#858681]') #{active.right.note}
 
   footer(className='pt-0')
-    scope
-      setup const releaseLabel = 'Octane 0.1.49';
-      a(href='https://beast-docs.vercel.app/'
-        ~ target='_blank'
-        ~ rel='noopener noreferrer'
-        ~ className='mt-1 px-1 py-0.5 ml-3 underline underline-offset-4 decoration-dotted')
-        span(className='font-mono text-xs tracking-wider') BEAST DOCS · #{releaseLabel}
+    a(href='https://beast-docs.vercel.app/'
+      ~ target='_blank'
+      ~ rel='noopener noreferrer'
+      ~ className='mt-1 px-1 py-0.5 ml-3 underline underline-offset-4 decoration-dotted')
+      span(className='font-mono text-xs tracking-wider') BEAST DOCS

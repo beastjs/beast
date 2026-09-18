@@ -87,6 +87,46 @@ async function runRspack(config: Configuration): Promise<Stats> {
   });
 }
 
+async function writeAliasedApplication(root: string): Promise<void> {
+  await mkdir(resolve(root, "src", "components"), { recursive: true });
+  await Bun.write(resolve(root, "src", "label.ts"), 'export const label = "Aliased label";\n');
+  await Bun.write(
+    resolve(root, "src", "components", "Badge.btsx"),
+    'import { label } from "@/label";\nspan.badge #{label}\n',
+  );
+  await Bun.write(
+    resolve(root, "src", "components", "Native.tsrx"),
+    "export function Native() @{\n  <aside>Aliased TSRX</aside>\n}\n",
+  );
+  await Bun.write(
+    resolve(root, "src", "App.btsx"),
+    [
+      'import Badge from "@/components/Badge";',
+      'import { Native } from "@/components/Native.tsrx";',
+      "main",
+      "  Badge",
+      "  Native",
+    ].join("\n"),
+  );
+  await Bun.write(
+    resolve(root, "src", "main.ts"),
+    [
+      'import { createRoot } from "octane";',
+      'import App from "@/App.btsx";',
+      'createRoot(document.getElementById("app")!).render(App);',
+    ].join("\n"),
+  );
+}
+
+async function readScripts(directory: string): Promise<string> {
+  const files = await readdir(directory, { recursive: true });
+  const scripts = await Promise.all(
+    files.filter((file) => file.endsWith(".js"))
+      .map((file) => readFile(resolve(directory, file), "utf8")),
+  );
+  return scripts.join("\n");
+}
+
 describe("Octane bundler integrations", () => {
   test("Rspack resolves Beast and explicit ESM/CommonJS module extensions", () => {
     const compiler = {
@@ -177,6 +217,51 @@ describe("Octane bundler integrations", () => {
     const html = server.default.render();
     expect(html).toContain("Native TSRX");
     expect(html).toContain('data-octane-hydrate-when="interaction"');
+  });
+
+  test("Rspack resolves aliased BTSX, TSRX, and TypeScript imports", async () => {
+    const root = await temporaryProject("beast-rspack-alias-test-");
+    await writeAliasedApplication(root);
+    const outDir = resolve(root, "dist");
+
+    await runRspack({
+      context: root,
+      mode: "production",
+      target: "web",
+      entry: "./src/main.ts",
+      resolve: { alias: { "@": resolve(root, "src") } },
+      output: { path: outDir, filename: "main.js", clean: true },
+      optimization: { minimize: false },
+      plugins: [beastOctaneRspack()],
+    });
+
+    const scripts = await readScripts(outDir);
+    expect(scripts).toContain("Aliased label");
+    expect(scripts).toContain("Aliased TSRX");
+  });
+
+  test("Rsbuild resolves aliased BTSX, TSRX, and TypeScript imports", async () => {
+    const root = await temporaryProject("beast-rsbuild-alias-test-");
+    await writeAliasedApplication(root);
+    const outDir = resolve(root, "dist");
+    const instance = await createRsbuild({
+      cwd: root,
+      config: {
+        plugins: beastOctaneRsbuild(),
+        source: { entry: { index: "./src/main.ts" } },
+        resolve: { alias: { "@": resolve(root, "src") } },
+        output: { distPath: { root: outDir }, filenameHash: false, minify: false },
+      },
+    });
+    const result = await instance.build();
+    try {
+      expect(result.stats?.hasErrors()).toBe(false);
+      const scripts = await readScripts(outDir);
+      expect(scripts).toContain("Aliased label");
+      expect(scripts).toContain("Aliased TSRX");
+    } finally {
+      await result.close();
+    }
   });
 
   test("Rsbuild composes its Octane integration with mixed BTSX/TSRX", async () => {

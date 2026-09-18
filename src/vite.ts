@@ -41,7 +41,6 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         dev: resolved.command === "serve",
         profile: profileEnabled,
         strong: options.octane?.strong === true,
-        nativeReads: options.octane?.nativeReads === true,
         ...(options.octane?.exclude === undefined ? {} : { exclude: options.octane.exclude }),
         ...(options.octane?.renderers === undefined
           ? {}
@@ -88,7 +87,6 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         dev: config.command === "serve",
         profile: environment === "client" && profileEnabled,
         strong: options.octane?.strong === true,
-        nativeReads: options.octane?.nativeReads === true,
       });
       if (result === null) {
         throw new Error(`Octane declined to compile generated TSRX for ${projectName}.`);

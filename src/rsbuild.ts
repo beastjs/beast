@@ -26,7 +26,6 @@ export function beast(options: BeastRsbuildOptions = {}): RsbuildPlugin {
       const projectConfig = octaneConfigExists(root) ? await loadOctaneConfig(root) : null;
       const inline = options.octane;
       const strong = inline?.strong ?? projectConfig?.compiler.strong;
-      const nativeReads = inline?.nativeReads ?? projectConfig?.compiler.nativeReads;
       const rspackOctane: NonNullable<BeastRspackOptions["octane"]> = {
         ...(inline?.hmr === undefined ? {} : { hmr: inline.hmr }),
         ...(inline?.profile === undefined ? {} : { profile: inline.profile }),
@@ -35,7 +34,6 @@ export function beast(options: BeastRsbuildOptions = {}): RsbuildPlugin {
           ? {}
           : { requireDirective: inline.requireDirective }),
         ...(strong === undefined ? {} : { strong }),
-        ...(nativeReads === undefined ? {} : { nativeReads }),
         ...(projectConfig?.compiler.renderers === undefined
           ? {}
           : { renderers: projectConfig.compiler.renderers }),

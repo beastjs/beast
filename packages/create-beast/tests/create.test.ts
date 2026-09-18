@@ -7,6 +7,17 @@ import { compileBeast } from "../../../src/index.js";
 import { createProject } from "../src/index.js";
 
 const temporaryDirectories: string[] = [];
+const SOURCE_ALIAS = '"@": fileURLToPath(new URL("./src", import.meta.url))';
+
+async function readTsconfig(directory: string): Promise<{
+  types?: string[];
+  paths?: Record<string, string[]>;
+}> {
+  const { compilerOptions } = JSON.parse(
+    await readFile(resolve(directory, "tsconfig.json"), "utf8"),
+  ) as { compilerOptions: { types?: string[]; paths?: Record<string, string[]> } };
+  return { types: compilerOptions.types, paths: compilerOptions.paths };
+}
 
 afterEach(async () => {
   await Promise.all(
@@ -47,7 +58,7 @@ describe("create-beast", () => {
     ) as { name: string; dependencies: Record<string, string> };
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
-    expect(packageJson.dependencies.octane).toBe("0.2.6");
+    expect(packageJson.dependencies.octane).toBe("0.2.8");
     expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.51");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
@@ -56,16 +67,22 @@ describe("create-beast", () => {
     expect(app).toContain("navigator.clipboard.writeText(note)");
     expect(app).toContain("label: 'Integration'");
     expect(app).toContain("label: 'Skills'");
-    expect(app).toContain("scope\n      setup const releaseLabel = 'Octane 0.1.49';");
     expect(app).toContain('role="tablist"');
     expect(app).toContain("each panel in panels key panel.id");
     const tsrx = compileBeast(app, { filename: "src/App.btsx" });
     expect(compile(tsrx, "src/App.tsrx", { mode: "client", hmr: false }).diagnostics).toEqual(
       [],
     );
-    expect(await readFile(resolve(result.directory, "vite.config.ts"), "utf8")).toContain(
-      "plugins: [beastOctane()]",
+    const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
+    expect(viteConfig).toContain("plugins: [beastOctane()]");
+    expect(viteConfig).toContain(SOURCE_ALIAS);
+    expect(viteConfig).toBe(
+      await readFile(resolve(import.meta.dir, "../template/vite.config.ts"), "utf8"),
     );
+    expect(await readTsconfig(result.directory)).toEqual({
+      types: ["vite/client", "node"],
+      paths: { "@/*": ["./src/*"] },
+    });
     expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).not.toContain(
       "@import \"tailwindcss\"",
     );
@@ -107,19 +124,21 @@ describe("create-beast", () => {
       dependencies: Record<string, string>;
       devDependencies: Record<string, string>;
     };
-    expect(packageJson.dependencies.octane).toBe("0.2.6");
+    expect(packageJson.dependencies.octane).toBe("0.2.8");
     expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.3.3");
     expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.3.3");
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
     expect(viteConfig).toContain('import tailwindcss from "@tailwindcss/vite"');
     expect(viteConfig).toContain("plugins: [tailwindcss(), beastOctane()]");
+    expect(viteConfig).toBe(
+      await readFile(resolve(import.meta.dir, "../template-tailwind/vite.config.ts"), "utf8"),
+    );
     const style = await readFile(resolve(result.directory, "src/style.css"), "utf8");
     expect(style).toContain('@import "tailwindcss"');
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("useState<PanelId>('language')");
     expect(app).toContain("navigator.clipboard.writeText(note)");
-    expect(app).toContain("scope\n      setup const releaseLabel = 'Octane 0.1.49';");
     expect(app).toContain("lg:grid-cols-[0.92fr_1.08fr]");
     expect(app).toContain('role="tablist"');
     expect(await readFile(resolve(result.directory, "public/beast.svg"), "utf8")).toContain(
@@ -173,12 +192,18 @@ describe("create-beast", () => {
     expect(result.bundler).toBe("rspack");
     expect(result.ui).toBe("radix");
     expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.52");
-    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.48");
+    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.49");
     expect(packageJson.devDependencies.vite).toBeUndefined();
     expect(packageJson.scripts.build).toBe("rspack build --mode production");
     const config = await readFile(resolve(result.directory, "rspack.config.ts"), "utf8");
     expect(config).toContain('from "beast-tsrx/rspack"');
     expect(config).toContain("new HtmlRspackPlugin");
+    expect(config).toContain('import { fileURLToPath } from "node:url";');
+    expect(config).toContain(SOURCE_ALIAS);
+    expect(await readTsconfig(result.directory)).toEqual({
+      types: ["node"],
+      paths: { "@/*": ["./src/*"] },
+    });
     expect(await readFile(resolve(result.directory, "index.html"), "utf8"))
       .not.toContain('/src/main.ts');
   });
@@ -201,11 +226,17 @@ describe("create-beast", () => {
     };
 
     expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.38");
-    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.48");
+    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.49");
     expect(packageJson.devDependencies["@rsbuild/plugin-tailwindcss"]).toBe("^2.0.3");
     const config = await readFile(resolve(result.directory, "rsbuild.config.ts"), "utf8");
     expect(config).toContain('from "beast-tsrx/rsbuild"');
     expect(config).toContain("pluginTailwindcss()");
+    expect(config).toContain('import { fileURLToPath } from "node:url";');
+    expect(config).toContain(SOURCE_ALIAS);
+    expect(await readTsconfig(result.directory)).toEqual({
+      types: ["node"],
+      paths: { "@/*": ["./src/*"] },
+    });
     expect(await readFile(resolve(result.directory, "src/style.css"), "utf8"))
       .toContain('@source "../node_modules/@octanejs/shadcn"');
   });

@@ -139,6 +139,21 @@ describe("BeastTypeScriptFeatures", () => {
     expect(diagnostics.map((diagnostic) => diagnostic.code)).not.toContain(2307);
   });
 
+  test("keeps the default export of an imported Beast file that does not compile", async () => {
+    const root = await createProject();
+    await writeFile(join(root, "components", "Broken.btsx"), "article.card #{title\n");
+    const features = new BeastTypeScriptFeatures(root);
+    const document = open(
+      root,
+      "App.btsx",
+      'import Broken from "./components/Broken.btsx";\nBroken(title="x")\n',
+    );
+
+    const codes = features.diagnostics(document).map((diagnostic) => diagnostic.code);
+    expect(codes).not.toContain(1192);
+    expect(codes).not.toContain(2307);
+  });
+
   test("completes members of values imported from TypeScript", async () => {
     const root = await createProject();
     const features = new BeastTypeScriptFeatures(root);

@@ -49,7 +49,8 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | Vite application lifecycle | Mixed BTSX/TSRX production build plus a BTSX SSR render, server-DOM adoption, interaction replay, and compiler-split deferred chunk | Executable project integration tests |
 | Rspack application lifecycle | Mixed BTSX/TSRX client build with a compiler-split deferred chunk plus an executable Node-target SSR render | Executable bundler integration test |
 | Rsbuild application lifecycle | Mixed compiler-only build plus routed browser and Node environments whose generated handler SSR-renders a BTSX route | Executable bundler integration tests |
-| Experimental native reads | `nativeReads` reaches the generated BTSX compiler in the Vite, Rspack, and Rsbuild adapters | Compiler-option forwarding regressions |
+| Signals | An `octane/signals` import enables native reads in generated BTSX without a build option, `$`-suffixed names alone do not, and adapters forward only options Octane accepts | Compiler-option forwarding regressions |
+| Strong-mode render diagnostics | Ambient browser reads, reassigned module bindings, ref reads, state getters, Effect Event calls, and nondeterministic calls surface through generated TSRX | Strong-mode compiler regressions |
 | Source-map pipeline | Declaration, multiline source-body, template-node, branch, attribute, and computed-key anchors compose through Octane to original BTSX in Vite and Rspack output; valid literal less-than text reaches Octane's parser fallback | Compiler mapping/parser assertions plus emitted Vite and Rspack map tests |
 | Standalone watch lifecycle | Debounced and serialized project rebuilds, ignored output events, stale cleanup, compile-error reporting, and recovery after a valid edit | Executable project API and CLI watcher tests |
 
@@ -62,9 +63,9 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.2.6` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.2.8` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
-and the experimental `octane/signals` API are outside this stable Core API scope.
+and the `octane/signals` API are outside this stable Core API scope.
 
 | Area | API | Status | Proof |
 | --- | --- | --- | --- |

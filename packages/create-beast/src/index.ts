@@ -275,11 +275,11 @@ async function configureProject(
     packageJson.devDependencies["@rspack/core"] = "^2.2.2";
     packageJson.devDependencies["@rspack/cli"] = "^2.2.2";
     packageJson.devDependencies["@rspack/dev-server"] = "^2.2.1";
-    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.1.48";
+    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.1.49";
   }
   if (bundler === "rsbuild") {
     packageJson.devDependencies["@rsbuild/core"] = "^2.2.2";
-    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.48";
+    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.49";
   }
 
   if (tailwind) {
@@ -297,11 +297,7 @@ async function configureProject(
 
   const viteConfigPath = resolve(target, "vite.config.ts");
   if (bundler === "vite") {
-    await writeFile(
-      viteConfigPath,
-      `import { defineConfig } from "vite";\n${tailwind ? 'import tailwindcss from "@tailwindcss/vite";\n' : ""}import { beastOctane } from "beast-tsrx/vite";\n\nexport default defineConfig({\n  plugins: [${tailwind ? "tailwindcss(), " : ""}beastOctane()],\n});\n`,
-      "utf8",
-    );
+    await writeFile(viteConfigPath, viteConfig(tailwind), "utf8");
   } else {
     await rm(viteConfigPath);
     const htmlPath = resolve(target, "index.html");
@@ -326,8 +322,8 @@ async function configureProject(
     compilerOptions: { types?: string[] };
     include: string[];
   };
-  if (bundler === "vite") tsconfig.compilerOptions.types = ["vite/client"];
-  else delete tsconfig.compilerOptions.types;
+  // Generated bundler configs resolve the `@/*` source alias through `node:url`.
+  tsconfig.compilerOptions.types = bundler === "vite" ? ["vite/client", "node"] : ["node"];
   tsconfig.include = ["src", `${bundler}.config.ts`];
   await writeFile(tsconfigPath, `${JSON.stringify(tsconfig, null, 2)}\n`, "utf8");
 
@@ -355,12 +351,19 @@ async function configureProject(
   }
 }
 
+/** Mirrors the tsconfig `@/*` path so bundlers resolve imports from `src`. */
+const SOURCE_ALIAS = `  resolve: {\n    alias: {\n      "@": fileURLToPath(new URL("./src", import.meta.url)),\n    },\n  },\n`;
+
+function viteConfig(tailwind: boolean): string {
+  return `import { fileURLToPath } from "node:url";\n${tailwind ? 'import tailwindcss from "@tailwindcss/vite";\n' : ""}import { beastOctane } from "beast-tsrx/vite";\nimport { defineConfig } from "vite";\n\nexport default defineConfig({\n${SOURCE_ALIAS}  plugins: [${tailwind ? "tailwindcss(), " : ""}beastOctane()],\n});\n`;
+}
+
 function rspackConfig(tailwind: boolean): string {
-  return `import { HtmlRspackPlugin, type Configuration } from "@rspack/core";\nimport { beastOctane } from "beast-tsrx/rspack";\n\nconst config: Configuration = {\n  entry: "./src/main.ts",\n  experiments: { css: true },\n  module: { rules: [${tailwind ? '{ test: /\\.css$/u, type: "css", use: ["postcss-loader"] }' : '{ test: /\\.css$/u, type: "css" }'}] },\n  plugins: [new HtmlRspackPlugin({ template: "./index.html" }), beastOctane()],\n  devServer: { historyApiFallback: true },\n};\n\nexport default config;\n`;
+  return `import { fileURLToPath } from "node:url";\nimport { HtmlRspackPlugin, type Configuration } from "@rspack/core";\nimport { beastOctane } from "beast-tsrx/rspack";\n\nconst config: Configuration = {\n  entry: "./src/main.ts",\n${SOURCE_ALIAS}  experiments: { css: true },\n  module: { rules: [${tailwind ? '{ test: /\\.css$/u, type: "css", use: ["postcss-loader"] }' : '{ test: /\\.css$/u, type: "css" }'}] },\n  plugins: [new HtmlRspackPlugin({ template: "./index.html" }), beastOctane()],\n  devServer: { historyApiFallback: true },\n};\n\nexport default config;\n`;
 }
 
 function rsbuildConfig(tailwind: boolean): string {
-  return `import { defineConfig } from "@rsbuild/core";\n${tailwind ? 'import { pluginTailwindcss } from "@rsbuild/plugin-tailwindcss";\n' : ""}import { beastOctane } from "beast-tsrx/rsbuild";\n\nexport default defineConfig({\n  source: { entry: { index: "./src/main.ts" } },\n  html: { template: "./index.html" },\n  plugins: [${tailwind ? "pluginTailwindcss(), " : ""}...beastOctane()],\n});\n`;
+  return `import { fileURLToPath } from "node:url";\nimport { defineConfig } from "@rsbuild/core";\n${tailwind ? 'import { pluginTailwindcss } from "@rsbuild/plugin-tailwindcss";\n' : ""}import { beastOctane } from "beast-tsrx/rsbuild";\n\nexport default defineConfig({\n  source: { entry: { index: "./src/main.ts" } },\n${SOURCE_ALIAS}  html: { template: "./index.html" },\n  plugins: [${tailwind ? "pluginTailwindcss(), " : ""}...beastOctane()],\n});\n`;
 }
 
 function normalizePackageName(name: string): string {

@@ -9,7 +9,7 @@
 [![Version](https://img.shields.io/badge/version-0.2.60-6f42c1?style=flat-square)](package.json)
 [![Docs](https://img.shields.io/badge/docs-0.2.60-111827?style=flat-square)](https://beast-docs.vercel.app)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.2.6-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.2.8-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -1013,17 +1013,19 @@ its public parameter type.
 
 `beast()` is also exported for advanced configurations that only need the
 BTSX pre-transform. Most applications should use `beastOctane()` exactly once.
-The experimental Octane signal engine remains opt-in: setting `nativeReads` in
-the nested `octane` options is forwarded to both native TSRX and generated BTSX
-compilation.
+Octane signals are stable and need no build option. A module that imports
+`octane/signals` at runtime enables native signal reads in both native TSRX and
+generated BTSX; `$`-suffixed names alone do not. Octane's experimental
+`textTypes` TypeScript text proof applies to native `.tsrx` modules only;
+generated BTSX keeps syntax-based text inference.
 
 ## Rspack integration
 
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.2.6
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.48
+npm install octane@0.2.8
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.49
 ```
 
 ```js
@@ -1056,8 +1058,9 @@ graph-level optimizations; plugin-only callbacks are not serialized into it.
 
 `beast()` and `BeastRspackPlugin` are also exported for configurations that
 already install `OctaneRspackPlugin` themselves.
-The `nativeReads` compiler option is forwarded to Beast's generated-TSRX loader
-as well as Octane's native-source plugin.
+Beast's generated-TSRX loader receives only the compiler options Octane's
+Rspack loader accepts. Octane 0.2.7 removed `nativeReads`; delete it from
+existing configurations, since the 0.1.49 Rspack and Rsbuild plugins reject unknown options.
 
 ## Rsbuild integration
 
@@ -1065,7 +1068,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.2.6 @octanejs/rsbuild-plugin@0.1.48
+npm install octane@0.2.8 @octanejs/rsbuild-plugin@0.1.49
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1090,7 +1093,8 @@ BTSX transform. Use the exported Rsbuild `beast()` plugin alone when
 
 As with Rspack, Octane's `parallel` and `cssModuleConstants` graph optimizations
 cover native Octane modules; generated BTSX uses Beast's compiler loader.
-Inline or `octane.config.ts` `nativeReads` settings also reach generated BTSX.
+Signal reads are detected from `octane/signals` imports, so no signal setting is
+needed in inline options or `octane.config.ts`.
 
 ## Programmatic API
 
@@ -1210,9 +1214,9 @@ editors.
 | Bun                           | Current stable    | Workspace, tests, project creation, and dependency installation |
 | TypeScript                    | `^5.9.3`          | Package declarations and generated-project checking             |
 | TSRX TypeScript plugin        | `0.3.135`         | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.2.6`           | TSRX validation, lowering, and runtime                          |
+| Octane                        | `0.2.8`           | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`         | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.48`          | Bundler integration compatible with Octane `0.2.6`              |
+| Octane Rspack/Rsbuild plugins | `0.1.49`          | Bundler integration compatible with Octane `0.2.8`              |
 | Rspack / Rsbuild              | `^2.0.0`          | Low-level and application-level production builds               |
 
 Octane and TSRX are evolving. Beast pins the versions used by its conformance
@@ -1360,7 +1364,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.2.6`.
+the release checks. Every row in that ledger is covered for `octane@0.2.8`.
 
 ## License
 

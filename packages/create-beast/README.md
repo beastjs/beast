@@ -29,13 +29,16 @@ Add `--tailwind` to scaffold with Tailwind CSS through the selected bundler's
 adapter and `@import "tailwindcss"`.
 The shadcn choice enables Tailwind automatically.
 
+Every bundler resolves `@/*` imports from `src`, matching the generated
+`tsconfig.json` paths, so `.btsx`, `.tsrx`, and TypeScript modules can use
+`import Card from "@/components/Card.btsx"` in Vite, Rspack, and Rsbuild projects.
+
 Both templates pin the tested Octane version, include TSRX-aware type checking,
 a production-build check, a project-owned `CHANGELOG.md`, and an interactive
 `App.btsx` that exercises typed props, keyed loops, native control flow, and
 scoped child setup.
 
-The experimental Octane signal engine is not enabled by default. Generated
-projects can opt in by passing `octane: { nativeReads: true }` to
-`beastOctane()` in `vite.config.ts`.
+Octane signals need no build option. Import `octane/signals` in a `.btsx` or
+`.tsrx` module to enable native signal reads there.
 
 Package changes are tracked in [CHANGELOG.md](CHANGELOG.md).

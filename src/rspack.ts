@@ -122,7 +122,6 @@ function beastCompilerOptions(
     ...(options.dev === undefined ? {} : { dev: options.dev }),
     ...(options.profile === undefined ? {} : { profile: options.profile }),
     ...(options.strong === undefined ? {} : { strong: options.strong }),
-    ...(options.nativeReads === undefined ? {} : { nativeReads: options.nativeReads }),
     ...(options.exclude === undefined ? {} : { exclude: options.exclude }),
     ...(options.renderers === undefined ? {} : { renderers: options.renderers }),
     ...(options.requireDirective === undefined

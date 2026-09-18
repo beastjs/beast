@@ -70,8 +70,10 @@ export default defineConfig({
 
 Import `.btsx` and native `.tsrx` normally. Beast generates TSRX in memory before Octane. The complete adapter forwards HMR, selects server lowering during SSR transforms, and routes compiler-split `Hydrate` child queries back through the originating `.btsx` module.
 
-Octane's experimental signal engine remains opt-in. Set `octane.nativeReads`
-to enable native reads consistently in both `.btsx` and `.tsrx` modules.
+Octane signals are stable and need no build option: importing `octane/signals`
+enables native reads in both `.btsx` and `.tsrx` modules. Octane 0.2.7 removed
+`nativeReads`, and the 0.1.49 Rspack/Rsbuild plugins reject it as unknown.
+The experimental `textTypes` proof covers native `.tsrx` modules only.
 
 `create-beast --tailwind` adds `tailwindcss()` before `beastOctane()` and places `@import "tailwindcss"` in the generated stylesheet.
 
@@ -92,7 +94,7 @@ export default {
 ```
 
 The adapter selects client or server output from the Rspack target, registers source dependencies for caching/watch, resolves `.btsx`, `.mjs`, `.mts`, `.cjs`, and `.cts` modules, and resolves compiler-split `.tsrx` hydration requests back to `.btsx` while preferring a real native `.tsrx` file. `BeastRspackPlugin` and `beast()` are available when `OctaneRspackPlugin` is installed separately.
-Compiler-level `nativeReads` is forwarded to Beast's generated-TSRX loader.
+Only compiler options accepted by Octane's Rspack loader reach Beast's generated-TSRX loader.
 
 ## Rsbuild
 
@@ -108,7 +110,7 @@ export default defineConfig({
 });
 ```
 
-Without Octane routes, this preserves ordinary Rsbuild entries. With `octane.config.ts`, render routes can target `.btsx` and use Octane's browser hydration and Node SSR environments. Inline options plus project Strong-mode, `nativeReads`, and renderer settings are forwarded to the BTSX transform. Use Rsbuild's `beast()` alone only when `pluginOctane()` is already present.
+Without Octane routes, this preserves ordinary Rsbuild entries. With `octane.config.ts`, render routes can target `.btsx` and use Octane's browser hydration and Node SSR environments. Inline options plus project Strong-mode and renderer settings are forwarded to the BTSX transform. Use Rsbuild's `beast()` alone only when `pluginOctane()` is already present.
 
 ## Source maps and programmatic builds
 

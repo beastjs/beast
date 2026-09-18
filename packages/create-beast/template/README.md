@@ -28,11 +28,11 @@ scope
   p #{label}
 ```
 
-Octane's experimental native-read signal mode remains opt-in. Enable it for
-both generated BTSX and native TSRX through the Vite adapter:
+Octane signals need no build option. Import `octane/signals` in a module to
+enable native signal reads there:
 
-```ts
-beastOctane({ octane: { nativeReads: true } })
+```btsx
+import { createScope } from "octane/signals"
 ```
 
 Record application changes in [CHANGELOG.md](CHANGELOG.md).

@@ -13,34 +13,45 @@ const NATIVE_SIGNAL_COMPONENT = [
   "p #{String(scope.get(count$))}",
 ].join("\n");
 
+const SUFFIXED_NAME_COMPONENT = [
+  "module",
+  "  const label$ = \"Ready\";",
+  "p #{label$}",
+].join("\n");
+
+function transformWithVite(source: string, filename: string): string {
+  const plugin = beastVite();
+  const hooks = plugin as unknown as {
+    configResolved(config: {
+      root: string;
+      command: "build";
+      logger: { warn(message: string): void };
+    }): void;
+    transform(
+      source: string,
+      id: string,
+      options: { ssr: boolean },
+    ): { code: string } | null;
+  };
+  hooks.configResolved({
+    root: resolve("."),
+    command: "build",
+    logger: { warn: () => {} },
+  });
+  const result = hooks.transform(source, resolve(`tests/fixtures/${filename}`), { ssr: false });
+  if (result === null) throw new Error("Vite declined to transform BTSX.");
+  return result.code;
+}
+
 describe("Octane compiler option forwarding", () => {
-  test("Vite enables native reads in the compiler for generated BTSX", () => {
-    const plugin = beastVite({ octane: { nativeReads: true } });
-    const hooks = plugin as unknown as {
-      configResolved(config: {
-        root: string;
-        command: "build";
-        logger: { warn(message: string): void };
-      }): void;
-      transform(
-        source: string,
-        id: string,
-        options: { ssr: boolean },
-      ): { code: string } | null;
-    };
-    hooks.configResolved({
-      root: resolve("."),
-      command: "build",
-      logger: { warn: () => {} },
-    });
+  test("Vite detects native signal reads from an octane/signals import", () => {
+    expect(transformWithVite(NATIVE_SIGNAL_COMPONENT, "NativeSignal.btsx"))
+      .toContain("enableNativeReadCollection");
+  });
 
-    const result = hooks.transform(
-      NATIVE_SIGNAL_COMPONENT,
-      resolve("tests/fixtures/NativeSignal.btsx"),
-      { ssr: false },
-    );
-
-    expect(result?.code).toContain("enableNativeReadCollection");
+  test("Vite leaves $-suffixed names alone without an octane/signals import", () => {
+    expect(transformWithVite(SUFFIXED_NAME_COMPONENT, "SuffixedName.btsx"))
+      .not.toContain("enableNativeReadCollection");
   });
 
   test("Vite mirrors Octane's HMR, profile, SSR, and renderer controls", () => {
@@ -94,7 +105,7 @@ describe("Octane compiler option forwarding", () => {
     }, "build", "view")).toContain("from '@test/native'");
   });
 
-  test("Rspack retains nativeReads in the Beast loader options", () => {
+  test("Rspack forwards only loader options Octane accepts", () => {
     const compiler = {
       options: {
         context: resolve("."),
@@ -103,16 +114,16 @@ describe("Octane compiler option forwarding", () => {
       },
     } as unknown as Compiler;
 
-    new BeastRspackPlugin({ octane: { nativeReads: true } }).apply(compiler);
+    new BeastRspackPlugin({ octane: { strong: true, parallel: true } }).apply(compiler);
 
     const rule = compiler.options.module.rules.at(-1) as {
-      use: Array<{ options: { octane: { nativeReads?: boolean } } }>;
+      use: Array<{ options: { octane: Record<string, unknown> } }>;
     };
-    expect(rule.use[0]?.options.octane.nativeReads).toBe(true);
+    expect(rule.use[0]?.options.octane).toEqual({ strong: true });
   });
 
-  test("Rsbuild passes nativeReads to its generated BTSX plugin", async () => {
-    const plugin = beastRsbuild({ octane: { nativeReads: true } });
+  test("Rsbuild passes Strong mode to its generated BTSX plugin", async () => {
+    const plugin = beastRsbuild({ octane: { strong: true } });
     let modify:
       | ((config: { plugins?: unknown[] }) => { plugins?: unknown[] })
       | undefined;
@@ -133,6 +144,6 @@ describe("Octane compiler option forwarding", () => {
 
     const config = modify({ plugins: [] });
     const beastPlugin = config.plugins?.at(-1) as BeastRspackPlugin;
-    expect(beastPlugin.options.octane?.nativeReads).toBe(true);
+    expect(beastPlugin.options.octane?.strong).toBe(true);
   });
 });

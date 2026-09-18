@@ -1026,6 +1026,48 @@ describe('BTSX to TSRX', () => {
     })).toThrow('OCTANE_STRONG_RENDER_IMPURE_CALL')
   })
 
+  test.each([
+    [
+      'ambient browser-state reads',
+      ['module "use strong";', 'p #{window.location.pathname}'],
+      'OCTANE_STRONG_RENDER_AMBIENT_READ'
+    ],
+    [
+      'reassigned module-scope bindings',
+      ['module "use strong";', 'module', '  let hits = 0;', '  hits = 1;', 'p #{String(hits)}'],
+      'OCTANE_STRONG_RENDER_MODULE_STATE_READ'
+    ],
+    [
+      'ref reads',
+      [
+        'module "use strong";',
+        'import { useRef } from "octane";',
+        'setup const count = useRef(0);',
+        'p #{String(count.current)}'
+      ],
+      'OCTANE_STRONG_RENDER_REF_READ'
+    ],
+    [
+      'state getter calls',
+      [
+        'module "use strong";',
+        'import { useState } from "octane";',
+        'setup const [, , getCount] = useState(0);',
+        'p #{String(getCount())}'
+      ],
+      'OCTANE_STRONG_RENDER_STATE_GETTER_CALL'
+    ]
+  ])('preserves Octane 0.2.8 Strong-mode diagnostics for %s', (_name, lines, diagnostic) => {
+    const code = compileBeast(lines.join('\n'), { filename: 'InvalidStrongRead.btsx' })
+
+    expect(() => compile(code, 'InvalidStrongRead.tsrx', {
+      mode: 'client',
+      hmr: false,
+      dev: true,
+      strong: true
+    })).toThrow(diagnostic)
+  })
+
   test('retains Octane development nesting checks for Beast hosts', () => {
     const code = compileBeast('p\n  div Invalid nesting\n', {
       filename: 'InvalidNesting.btsx'

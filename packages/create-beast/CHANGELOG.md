@@ -5,6 +5,24 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+### Added
+
+- Rspack and Rsbuild projects now resolve `@/*` imports from `src` through a
+  `resolve.alias` entry that matches the generated `tsconfig.json` paths.
+
+### Fixed
+
+- Generated Vite projects keep the `@/*` source alias and Node types; the
+  bundler-specific config previously replaced the template's `vite.config.ts`
+  and `tsconfig.json` types without them.
+
+### Changed
+
+- Updated generated projects to pin `octane@0.2.8`, and Rspack and Rsbuild
+  projects to the `0.1.49` Octane plugins.
+- Replaced the opt-in `nativeReads` guidance in template documentation with
+  Octane's automatic `octane/signals` detection.
+
 ## [0.2.12] - 2026-08-29
 
 ### Added

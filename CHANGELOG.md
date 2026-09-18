@@ -9,6 +9,27 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Added Strong-mode regression coverage for Octane 0.2.8 render diagnostics:
+  ambient browser-state reads, reassigned module bindings, `useRef.current`
+  reads, and state getter calls.
+- Added signal-detection coverage: an `octane/signals` import enables native
+  reads in generated BTSX, while `$`-suffixed names alone do not.
+
+### Changed
+
+- Updated the supported Octane toolchain to `octane@0.2.8` with
+  `@octanejs/rspack-plugin@0.1.49` and `@octanejs/rsbuild-plugin@0.1.49`.
+- Documented that Octane's experimental `textTypes` TypeScript text proof
+  applies to native `.tsrx` modules, not generated BTSX.
+
+### Removed
+
+- Removed `nativeReads` forwarding from the Vite, Rspack, and Rsbuild adapters.
+  Octane 0.2.7 made signals stable and detects them automatically, and the
+  0.1.49 Rspack loader rejects the option as unknown.
+
 ## [0.2.9] - 2026-08-29
 
 ### Added

@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { createBeastVirtualCode, type BeastVirtualCode } from "./virtual-code.js";
 
 const VIRTUAL_EXTENSION = ".tsx";
+const UNCOMPILED_MODULE = "declare const component: (props: any) => any;\nexport default component;\n";
 
 /** `/app/Card.btsx` is analyzed by TypeScript as `/app/Card.btsx.tsx`. */
 export function toVirtualPath(btsxPath: string): string {
@@ -150,9 +151,10 @@ export class BeastTypeScriptHost implements ts.LanguageServiceHost {
   getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
     if (isVirtualPath(fileName)) {
       const code = this.getVirtualCode(toBtsxPath(fileName));
-      // A Beast file that does not compile still exists as a module; it just
-      // exports nothing TypeScript can see until it is fixed.
-      return ts.ScriptSnapshot.fromString(code?.code ?? "export {};\n");
+      // A Beast file that does not compile still exists as a module, and every
+      // Beast file default-exports its component. Keep that export (untyped) so
+      // importers don't report "has no default export" until the file is fixed.
+      return ts.ScriptSnapshot.fromString(code?.code ?? UNCOMPILED_MODULE);
     }
     const content = ts.sys.readFile(fileName);
     return content === undefined ? undefined : ts.ScriptSnapshot.fromString(content);
