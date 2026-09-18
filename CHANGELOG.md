@@ -7,6 +7,27 @@ separate changelogs for independently versioned deliverables; see
 This project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.2.62] - 2026-09-18
+
+### Changed
+
+- Updated the supported Octane toolchain to `octane@0.2.13` with
+  `@octanejs/rspack-plugin@0.1.50` and `@octanejs/rsbuild-plugin@0.1.50`.
+- Relaxed the `octane` peer range to `^0.2.8` and the Octane bundler-plugin peer
+  ranges to `^0.1.49`. Octane publishes compatible patch releases faster than
+  Beast cuts releases, and the exact pin blocked installs on any newer Octane.
+  Beast's generated TSRX is byte-identical across `octane@0.2.8` through
+  `0.2.13`; development still pins one exact, tested toolchain.
+
+### Notes
+
+- Octane 0.2.13 changes its compiler site identity, so server and client output
+  must be rebuilt and deployed together when upgrading. Mixed output causes
+  hydration identity mismatches for controls in conditional, loop, and switch
+  arms.
+
 ## [0.2.61] - 2026-09-18
 
 ### Added

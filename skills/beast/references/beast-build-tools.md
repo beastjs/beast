@@ -72,7 +72,7 @@ Import `.btsx` and native `.tsrx` normally. Beast generates TSRX in memory befor
 
 Octane signals are stable and need no build option: importing `octane/signals`
 enables native reads in both `.btsx` and `.tsrx` modules. Octane 0.2.7 removed
-`nativeReads`, and the 0.1.49 Rspack/Rsbuild plugins reject it as unknown.
+`nativeReads`, and the 0.1.49 and newer Rspack/Rsbuild plugins reject it as unknown.
 The experimental `textTypes` proof covers native `.tsrx` modules only.
 
 `create-beast --tailwind` adds `tailwindcss()` before `beastOctane()` and places `@import "tailwindcss"` in the generated stylesheet.

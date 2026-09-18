@@ -7,8 +7,8 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
-- Updated the coverage ledger and compatibility guidance for `octane@0.2.8`
-  and the `0.1.49` Rspack/Rsbuild plugins.
+- Updated the coverage ledger and compatibility guidance for `octane@0.2.13`
+  and the `0.1.50` Rspack/Rsbuild plugins.
 - Replaced `nativeReads` build-tool guidance with Octane's automatic signal
   detection, and noted that `textTypes` covers native `.tsrx` only.
 - Expanded Strong-mode coverage notes for ambient, module-state, ref, and state

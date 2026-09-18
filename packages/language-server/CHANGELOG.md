@@ -5,6 +5,12 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+### Changed
+
+- Depends on `octane@0.2.13` for TSX virtual code, and on `beast-tsrx@^0.2.61`
+  so the language server tracks the compiler's Octane peer range.
+
+
 ## [0.2.1] - 2026-09-14
 
 ### Fixed

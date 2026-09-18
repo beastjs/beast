@@ -70,7 +70,7 @@ module
         title: 'Vite',
         description: 'The Vite plugin compiles .btsx modules in memory before Octane processes the generated TSRX, so normal imports stay in one module graph.',
         tags: ['HMR', 'SSR transforms', 'production builds'],
-        note: 'octane@0.1.49 · vite@^8.0.16'
+        note: 'octane@0.2.13 · vite@^8.0.16'
       },
       right: {
         eyebrow: 'Beast Styling',
