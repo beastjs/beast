@@ -19,8 +19,8 @@ const SUFFIXED_NAME_COMPONENT = [
   "p #{label$}",
 ].join("\n");
 
-function transformWithVite(source: string, filename: string): string {
-  const plugin = beastVite();
+function transformWithVite(source: string, filename: string, options: Parameters<typeof beastVite>[0] = {}): string {
+  const plugin = beastVite(options);
   const hooks = plugin as unknown as {
     configResolved(config: {
       root: string;
@@ -44,6 +44,24 @@ function transformWithVite(source: string, filename: string): string {
 }
 
 describe("Octane compiler option forwarding", () => {
+  const knownAttributeSpreads = [{
+    source: "@example/styles",
+    imported: "props",
+    fields: ["className", "style"],
+    style: "object" as const,
+    jsxAttribute: "sx",
+  }];
+
+  test("Vite lowers native sx with the configured attribute factory", () => {
+    const code = transformWithVite(
+      'import { props } from "@example/styles";\ndiv(sx={{ color: "red" }})',
+      "NativeStyles.btsx",
+      { octane: { knownAttributeSpreads } },
+    );
+    expect(code).toContain('props({ color: "red" })');
+    expect(code).not.toContain('"sx"');
+  });
+
   test("Vite detects native signal reads from an octane/signals import", () => {
     expect(transformWithVite(NATIVE_SIGNAL_COMPONENT, "NativeSignal.btsx"))
       .toContain("enableNativeReadCollection");
@@ -114,12 +132,12 @@ describe("Octane compiler option forwarding", () => {
       },
     } as unknown as Compiler;
 
-    new BeastRspackPlugin({ octane: { strong: true, parallel: true } }).apply(compiler);
+    new BeastRspackPlugin({ octane: { strong: true, parallel: true, knownAttributeSpreads } }).apply(compiler);
 
     const rule = compiler.options.module.rules.at(-1) as {
       use: Array<{ options: { octane: Record<string, unknown> } }>;
     };
-    expect(rule.use[0]?.options.octane).toEqual({ strong: true });
+    expect(rule.use[0]?.options.octane).toEqual({ strong: true, knownAttributeSpreads });
   });
 
   test("Rsbuild passes Strong mode to its generated BTSX plugin", async () => {

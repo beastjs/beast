@@ -6,6 +6,7 @@ import {
 } from "octane/compiler/vite";
 import type { Plugin, PluginOption, ResolvedConfig } from "vite";
 import { compileBeastResult, componentNameFromPath } from "./compiler.js";
+import { mapGeneratedError } from "./diagnostics.js";
 import type { ProjectComponentOptions } from "./project.js";
 import { composeSourceMaps } from "./source-map.js";
 
@@ -41,6 +42,9 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         dev: resolved.command === "serve",
         profile: profileEnabled,
         strong: options.octane?.strong === true,
+        ...(options.octane?.knownAttributeSpreads === undefined
+          ? {}
+          : { knownAttributeSpreads: options.octane.knownAttributeSpreads }),
         ...(options.octane?.exclude === undefined ? {} : { exclude: options.octane.exclude }),
         ...(options.octane?.renderers === undefined
           ? {}
@@ -81,13 +85,18 @@ export function beast(options: BeastViteOptions = {}): Plugin {
       const server = options.octane?.ssr ??
         (transformOptions?.ssr === true || this.environment?.config.consumer === "server");
       const environment = server ? "server" : "client";
-      const result = octaneCompiler.transform(tsrx.code, tsrxId, {
-        environment,
-        hmr: environment === "client" && hmrEnabled ? "vite" : false,
-        dev: config.command === "serve",
-        profile: environment === "client" && profileEnabled,
-        strong: options.octane?.strong === true,
-      });
+      let result: ReturnType<typeof octaneCompiler.transform>;
+      try {
+        result = octaneCompiler.transform(tsrx.code, tsrxId, {
+          environment,
+          hmr: environment === "client" && hmrEnabled ? "vite" : false,
+          dev: config.command === "serve",
+          profile: environment === "client" && profileEnabled,
+          strong: options.octane?.strong === true,
+        });
+      } catch (error) {
+        throw mapGeneratedError(error, tsrx.map, source, filename);
+      }
       if (result === null) {
         throw new Error(`Octane declined to compile generated TSRX for ${projectName}.`);
       }

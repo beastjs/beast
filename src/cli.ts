@@ -3,8 +3,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compileBeast, componentNameFromPath } from "./compiler.js";
-import { BeastCompileError, formatDiagnostic } from "./diagnostics.js";
+import { compileBeastResult, componentNameFromPath } from "./compiler.js";
+import { BeastCompileError, formatDiagnostic, mapGeneratedError } from "./diagnostics.js";
 import { buildBeastProject, watchBeastProject } from "./project.js";
 
 const HELP = `Beast — compile indentation-based BTSX to Octane TSRX
@@ -53,14 +53,20 @@ async function runCompile(rawArgs: string[]): Promise<number> {
     optionOutput ?? positional[1] ?? inputArg.replace(/\.btsx$/u, ".tsrx"),
   );
   if (input === output) throw new Error("The output path must differ from the input path.");
-  const code = compileBeast(await readFile(input, "utf8"), {
+  const inputSource = await readFile(input, "utf8");
+  const compiled = compileBeastResult(inputSource, {
     filename: input,
     componentName: configuredName ?? componentNameFromPath(input),
     ...(propsParam === undefined ? {} : { propsParam }),
   });
+  const code = compiled.code;
   if (validate) {
     const { validateTsrx } = await import("./octane.js");
-    validateTsrx(code, output);
+    try {
+      validateTsrx(code, output);
+    } catch (error) {
+      throw mapGeneratedError(error, compiled.map, inputSource, input);
+    }
   }
   await mkdir(dirname(output), { recursive: true });
   await writeFile(output, code, "utf8");

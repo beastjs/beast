@@ -20,11 +20,11 @@ function ThemeSwatch() @{
 }
 
 export default function Provider({ theme, children }: ProviderProps) @{
-	<Theme.Provider value={theme}>
+	<Theme value={theme}>
 		<section className="theme-shell" data-theme={theme}>
 			<ThemeLabel />
 			<ThemeSwatch />
 			{children}
 		</section>
-	</Theme.Provider>
+	</Theme>
 }

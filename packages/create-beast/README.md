@@ -33,7 +33,7 @@ Every bundler resolves `@/*` imports from `src`, matching the generated
 `tsconfig.json` paths, so `.btsx`, `.tsrx`, and TypeScript modules can use
 `import Card from "@/components/Card.btsx"` in Vite, Rspack, and Rsbuild projects.
 
-Both templates pin the tested Octane version, include TSRX-aware type checking,
+Release `0.3.2` mirrors Octane. Both templates pin `beast-tsrx@0.3.2` and `octane@0.3.2`, include TSRX-aware type checking,
 a production-build check, a project-owned `CHANGELOG.md`, and an interactive
 `App.btsx` that exercises typed props, keyed loops, native control flow, and
 scoped child setup.

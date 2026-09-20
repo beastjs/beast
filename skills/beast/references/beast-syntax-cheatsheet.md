@@ -57,7 +57,7 @@ section
 | `section.hero` | element plus class shorthand |
 | `section#intro.hero` | element with ID and class shorthand |
 | `Card` | component reference |
-| `Theme.Provider` | dotted component API |
+| `Menu.Item` | dotted component API |
 | `Card.featured` | component plus class shorthand |
 
 Capitalized selectors are component references. After a capitalized selector, PascalCase and `_`/`$` dotted segments remain part of the component API; a lowercase dotted segment is class shorthand.
@@ -90,7 +90,7 @@ article.card({...cardProps} data-id={id}) #{title}
 | `disabled` | boolean attribute |
 | `{...props}` | ordered TypeScript spread |
 
-`class` normalizes to `className`. Selector classes combine with one explicit `class` or `className`. ID shorthand cannot be combined with an explicit `id`, and duplicate explicit class attributes are rejected. Spreads keep their authored order, so normal TSRX precedence applies.
+`class` normalizes to `className`. Selector classes combine with one explicit `class` or `className`; a string value merges at compile time, while an expression becomes `className={["shorthand", expr]}` so Octane composes it clsx-style and object/array `ClassValue`s survive the merge. ID shorthand cannot be combined with an explicit `id`, and duplicate explicit class attributes are rejected. Spreads keep their authored order, so normal TSRX precedence applies.
 
 ## Text, interpolation, entities, and comments
 

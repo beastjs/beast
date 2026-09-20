@@ -17,7 +17,7 @@ component ThemeSwatch
   span(aria-label={"Theme swatch: " + theme} data-theme={theme})
 props { theme, children }: ProviderProps
 
-Theme.Provider(value={theme})
+Theme(value={theme})
   section.theme-shell(data-theme={theme})
     ThemeLabel
     ThemeSwatch

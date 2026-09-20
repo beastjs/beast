@@ -7,6 +7,7 @@ import {
 import type { LoaderDefinition, RawSourceMap } from "@rspack/core";
 import { createOctaneCompiler } from "octane/compiler/bundler";
 import { compileBeastResult, componentNameFromPath } from "./compiler.js";
+import { mapGeneratedError } from "./diagnostics.js";
 import type { ProjectComponentOptions } from "./project.js";
 import { composeSourceMaps } from "./source-map.js";
 
@@ -17,6 +18,7 @@ type BeastOctaneCompilerOptions = Pick<
   | "dev"
   | "profile"
   | "strong"
+  | "knownAttributeSpreads"
   | "exclude"
   | "renderers"
   | "requireDirective"
@@ -69,6 +71,9 @@ const beastRspackLoader: LoaderDefinition<BeastRspackLoaderOptions> = function (
       dev,
       profile,
       ...(octane.strong === undefined ? {} : { strong: octane.strong }),
+      ...(octane.knownAttributeSpreads === undefined
+        ? {}
+        : { knownAttributeSpreads: octane.knownAttributeSpreads }),
       ...(octane.exclude === undefined ? {} : { exclude: octane.exclude }),
       ...(octane.renderers === undefined ? {} : { renderers: octane.renderers }),
       ...(octane.requireDirective === undefined
@@ -79,12 +84,17 @@ const beastRspackLoader: LoaderDefinition<BeastRspackLoaderOptions> = function (
         : { universalRuntime: octane.universalRuntime }),
       warn: (message) => this.emitWarning?.(new Error(message)),
     });
-    const result = compiler.transform(tsrx.code, tsrxId, {
-      environment,
-      hmr,
-      dev,
-      profile,
-    });
+    let result: ReturnType<typeof compiler.transform>;
+    try {
+      result = compiler.transform(tsrx.code, tsrxId, {
+        environment,
+        hmr,
+        dev,
+        profile,
+      });
+    } catch (error) {
+      throw mapGeneratedError(error, tsrx.map, source, filename);
+    }
     if (result === null) {
       throw new Error(`Octane declined to compile generated TSRX for ${projectName}.`);
     }

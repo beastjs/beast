@@ -109,3 +109,5 @@ After a component compiles, enable `module "use strong";` for the slice when pra
 - Any deliberate semantic improvement is listed separately from parity changes.
 
 When the destination uses a different Octane version than the generated Beast project, recheck the current [Core APIs](https://octanejs.dev/docs/core-apis) and [Differences from React](https://octanejs.dev/docs/differences-from-react) before applying these mappings.
+
+On Octane 0.3.2 with Strong mode, use a lazy initializer such as `useState(() => initialName)` to preserve React’s initial-only prop state. Use `useLinkedState` only when following future prop changes is intended. Redundant explicit dependency arrays can produce compiler hints; retain them during a parity port unless equivalence has been reviewed. Strong mode rejects compatibility imports such as `flushSync`; test code can use `act` to settle scheduled updates.

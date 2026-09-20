@@ -7,6 +7,15 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Use Octane `0.3.2` virtual code and depend on `beast-tsrx@^0.3.2`.
+
+### Fixed
+
+- Hide generated helper names in auto-import completions as well as local
+  completions after Octane added internal exports.
+
+### Changed
+
 - Depends on `octane@0.2.13` for TSX virtual code, and on `beast-tsrx@^0.2.61`
   so the language server tracks the compiler's Octane peer range.
 

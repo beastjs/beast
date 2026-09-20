@@ -5,6 +5,14 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+### Changed
+
+- Aligned create-beast version `0.3.2` with Octane and pinned generated projects
+  to `beast-tsrx@0.3.2` and `octane@0.3.2` rather than a floating compiler.
+- Updated Rspack/Rsbuild plugins to `0.1.51` / `0.1.52` and UI bindings to
+  Base UI `0.1.54`, Radix `0.1.54`, and shadcn `0.0.43`, whose peer ranges
+  accept Octane 0.3.
+
 ## [0.2.62] - 2026-09-18
 
 ### Changed

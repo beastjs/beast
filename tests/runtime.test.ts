@@ -87,8 +87,8 @@ function restoreDom(): void {
 
 function rewriteRuntimeImports(code: string, mode: CompileMode): string {
   const specifiers = mode === "client"
-    ? ["octane/internal/client", "octane/hydration", "octane"]
-    : ["octane/internal/server", "octane/hydration", "octane/server"];
+    ? ["octane/internal/client", "octane/hydration", "octane/signals", "octane"]
+    : ["octane/internal/server", "octane/hydration", "octane/signals", "octane/server"];
   let executable = code;
 
   for (const specifier of specifiers) {
@@ -105,12 +105,13 @@ async function loadCompiledComponent(
   source: string,
   filename: string,
   mode: CompileMode,
+  dev = true,
 ): Promise<CompiledComponent> {
   const tsrx = compileBeast(source, { filename });
   const result = compile(tsrx, filename.replace(/\.btsx$/u, ".tsrx"), {
     mode,
     hmr: false,
-    dev: true,
+    dev,
   });
   expect(result.diagnostics).toHaveLength(0);
 
@@ -167,6 +168,107 @@ beforeEach(() => {
 afterAll(restoreDom);
 
 describe("Octane client lifecycle", () => {
+  test.each([false, true])("textarea hydration adopts restored values and retains the reset text node (dev=%s)", async (dev) => {
+    const source = [
+      'import type { SignalHandle } from "octane/signals";',
+      'props { draft$ }: { draft$: SignalHandle<string> }',
+      'form',
+      '  textarea(value={draft$})',
+    ].join("\n");
+    const Client = await loadCompiledComponent(source, "Draft.btsx", "client", dev);
+    const Server = await loadCompiledComponent(source, "Draft.btsx", "server", dev);
+    const { act, hydrateRoot, requestFormReset } = await import("octane");
+    const { createScope } = await import("octane/signals");
+    const scope = createScope({ scopeKey: `beast-textarea-${dev}` });
+    const draft$ = scope.signal$("draft", "server draft");
+    const props = { draft$ };
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    container.innerHTML = renderToString(Server, props, { signalOwner: scope }).html;
+    const textarea = requiredElement<HTMLTextAreaElement>(container, "textarea");
+    textarea.value = "restored draft";
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      await act(() => { root = hydrateRoot(container, Client, props, { signalOwner: scope }); });
+      expect(container.querySelector("textarea")).toBe(textarea);
+      expect(draft$.get()).toBe("restored draft");
+      expect(textarea.value).toBe("restored draft");
+      const baseline = textarea.firstChild;
+      expect(baseline).not.toBeNull();
+      textarea.focus();
+      textarea.value = "native edit";
+      textarea.setSelectionRange(2, 5, "backward");
+      await act(() => {
+        textarea.dispatchEvent(new browser.InputEvent("input", { bubbles: true }));
+      });
+      expect(draft$.get()).toBe("native edit");
+      expect(textarea.defaultValue).toBe("native edit");
+      expect(textarea.firstChild).toBe(baseline);
+      expect([textarea.selectionStart, textarea.selectionEnd, textarea.selectionDirection])
+        .toEqual([2, 5, "backward"]);
+      await act(() => draft$.set("model update"));
+      expect(textarea.value).toBe("model update");
+      expect(textarea.defaultValue).toBe("model update");
+      expect(textarea.firstChild).toBe(baseline);
+      textarea.value = "uncommitted edit";
+      await act(() => requestFormReset(requiredElement<HTMLFormElement>(container, "form")));
+      expect(textarea.value).toBe("model update");
+    } finally {
+      await act(() => root?.unmount());
+      scope.dispose();
+    }
+  });
+
+  test.each([false, true])("satisfies-wrapped constructor writes preserve live signal bindings (dev=%s)", async (dev) => {
+    const source = [
+      'import type { SignalHandle } from "octane/signals";',
+      'props { value$, replacement }: { value$: SignalHandle<string>; replacement: typeof String }',
+      'setup',
+      '  (String satisfies typeof String) = replacement;',
+      '  const value = String(value$);',
+      'section',
+      '  output(title={value}) #{value as string}',
+      '  input(value={value})',
+    ].join("\n");
+    const Client = await loadCompiledComponent(source, "Conversion.btsx", "client", dev);
+    const Server = await loadCompiledComponent(source, "Conversion.btsx", "server", dev);
+    const { flushSync, hydrateRoot } = await import("octane");
+    const { createScope } = await import("octane/signals");
+    const scope = createScope({ scopeKey: `beast-conversion-${dev}` });
+    const value$ = scope.signal$("value", "initial");
+    const original = Object.getOwnPropertyDescriptor(globalThis, "String")!;
+    const builtin = String;
+    const replacement = (value: unknown) => value === value$ ? value : builtin(value);
+    Object.setPrototypeOf(replacement, builtin);
+    const props = { value$, replacement };
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      try {
+        container.innerHTML = renderToString(Server, props, { signalOwner: scope }).html;
+      } finally {
+        Object.defineProperty(globalThis, "String", original);
+      }
+      const output = requiredElement<HTMLOutputElement>(container, "output");
+      const input = requiredElement<HTMLInputElement>(container, "input");
+      try {
+        flushSync(() => { root = hydrateRoot(container, Client, props, { signalOwner: scope }); });
+      } finally {
+        Object.defineProperty(globalThis, "String", original);
+      }
+      expect([output.textContent, output.title, input.value]).toEqual(["initial", "initial", "initial"]);
+      flushSync(() => value$.set("still live"));
+      expect(container.querySelector("output")).toBe(output);
+      expect(container.querySelector("input")).toBe(input);
+      expect([output.textContent, output.title, input.value]).toEqual(["still live", "still live", "still live"]);
+    } finally {
+      Object.defineProperty(globalThis, "String", original);
+      root?.unmount();
+      scope.dispose();
+    }
+  });
+
   test("createRoot, act, flushSync, prop updates, and unmount execute compiled BTSX", async () => {
     const Counter = await loadFixture("counter", "client");
     const { act, createRoot, flushSync } = await import("octane");

@@ -42,7 +42,7 @@ through `import`, `setup`, attributes, and nesting unchanged.
 | Deferred hydration | Every activation strategy, dynamic selection, strategy/procedural prefetch, fallback/completion props, default child extraction, permanent-static ranges, server markers, and idempotent early event capture | `hydration` golden, extracted-child compile, SSR assertions, and capture test |
 | Library and resources | Element creation/cloning, descriptor and children-block checks, all five `Children` methods, six resource/connection APIs, transition pseudo-element handles, and package version | `library` golden and SSR assertions plus pseudo-element/version runtime test |
 | Fragments and text holes | Explicit and automatic output fragments, text-only lines, escaping, and interpolation | `fragment`, `styling` goldens |
-| Context | Module-scoped `createContext`, dotted `Theme.Provider`, and local `use()`/`useContext()` consumers | `provider` golden |
+| Context | Module-scoped `createContext`, direct `Theme` provider, and local `use()`/`useContext()` consumers | `provider` golden |
 | Client ownership | Root mount/update/unmount, root-level suspension retry with committed-ref ownership, server-DOM adoption, framed primitive hydration and boolean clearing, dormant-boundary activation and event replay, responsive continuous events during pending Actions, synchronous/test scheduling, cross-container portals, and non-reconciling behavior ownership | Executable Happy DOM lifecycle suite |
 | Server and static rendering | Hydratable/static buffered output, scoped CSS/head channels, Node and Web progressive streams, await-everything output, aborts, deadlines, and complete Node preludes | Executable renderer lifecycle suite |
 | Public entry points | Every tracked name is present in the pinned `octane`, hydration, behavior, server, and static module namespaces | Machine-readable Core API inventory test |
@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.2.13` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.3.2` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -132,3 +132,7 @@ plugin.
 [TSRX vs TSX/JSX]: https://octanejs.dev/docs/tsrx-vs-tsx
 [Differences from React]: https://octanejs.dev/docs/differences-from-react
 [Build tools]: https://octanejs.dev/docs/build-tools
+
+## Octane 0.3.2 regression coverage
+
+Direct context providers compile for client/server; project validation maps legacy-provider errors to BTSX. Development and production runtime tests cover restored writable textarea adoption, text-node identity across edits, current-value reset, and live signal bindings after a `satisfies`-wrapped constructor assignment. Adapter tests cover configured native attribute factories. Native browser Undo/Redo and early-binding takeover remain upstream coverage, not claims established by the DOM-emulator suite.

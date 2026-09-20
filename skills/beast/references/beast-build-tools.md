@@ -2,6 +2,8 @@
 
 Read this reference for Beast CLI, watch mode, source maps, or Vite/Rspack/Rsbuild integration. Prefer the project's installed versions and package manager; Beast and Octane are still alpha and pin compatible peers in `beast-tsrx`.
 
+For the coordinated `0.3.2` release and migration changes, read [Octane 0.3](octane-0.3.md).
+
 ## Choose one integration boundary
 
 | Need | Integration |
@@ -70,7 +72,7 @@ export default defineConfig({
 
 Import `.btsx` and native `.tsrx` normally. Beast generates TSRX in memory before Octane. The complete adapter forwards HMR, selects server lowering during SSR transforms, and routes compiler-split `Hydrate` child queries back through the originating `.btsx` module.
 
-Octane signals are stable and need no build option: importing `octane/signals`
+Octane signals need no build option: importing `octane/signals`
 enables native reads in both `.btsx` and `.tsrx` modules. Octane 0.2.7 removed
 `nativeReads`, and the 0.1.49 and newer Rspack/Rsbuild plugins reject it as unknown.
 The experimental `textTypes` proof covers native `.tsrx` modules only.

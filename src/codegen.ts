@@ -467,7 +467,10 @@ function generateClassAttribute(attr: NamedAttr, shorthand: string): string {
   }
   if (attr.value.type === "expr") {
     if (shorthand.length === 0) return `className={${attr.value.code}}`;
-    return `className={[${attr.value.code}, ${JSON.stringify(shorthand)}].filter(Boolean).join(" ")}`;
+    // Octane composes class/className clsx-style, so hand the merge to it as an array
+    // literal instead of joining here. Joining stringifies object and array ClassValues
+    // ("[object Object]"); an array literal keeps them composable.
+    return `className={[${JSON.stringify(shorthand)}, ${attr.value.code}]}`;
   }
   return shorthand.length > 0 ? `className=${JSON.stringify(shorthand)}` : "className";
 }

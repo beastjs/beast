@@ -1,6 +1,7 @@
 # Changelog policy
 
-Beast has independently versioned deliverables. Record a user-visible change
+`beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
+number (currently `0.3.2`). The language server retains its own version. Record a user-visible change
 in every affected component's changelog:
 
 | Deliverable | Changelog |
@@ -27,7 +28,7 @@ in every affected component's changelog:
    lockfile, starter manifests, documentation, and conformance tests.
 2. Move each affected component's entries from `Unreleased` into a versioned,
    ISO-dated section and recreate an empty `Unreleased` section above it.
-3. Bump only the affected manifests and update badges or exact inter-package
+3. Align the compiler, project builder, and skill versions with Octane; bump other affected manifests and update badges or exact inter-package
    dependencies in the same change.
 4. Release `beast-tsrx` before packages that depend on its new version, then
    release the language server, `create-beast`, and skill as applicable.

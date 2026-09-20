@@ -9,6 +9,30 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Aligned `beast-tsrx` and `create-beast` versions with `octane@0.3.2`; raised
+  the Octane peer minimum to `^0.3.2` and tested Rspack/Rsbuild plugins
+  `0.1.51` / `0.1.52`.
+- Migrated context examples to direct context providers after Octane removed
+  `Context.Provider`. Generic dotted component references remain supported.
+- Forwarded `knownAttributeSpreads` through Vite, Rspack, and Rsbuild for native
+  attribute factories and configured `sx` lowering.
+
+### Added
+
+- Development/production regressions for restored writable textarea hydration,
+  native-edit baseline identity, form reset, and live signal conversion after
+  `satisfies`-wrapped constructor writes.
+- Project-build coverage for source-mapped legacy-provider diagnostics.
+
+### Migration
+
+- Rebuild server and client output together. Use `Theme(value={theme})` instead
+  of `Theme.Provider(value={theme})` for contexts returned by `createContext`.
+- See the [Octane 0.3 migration guide](docs/octane-0.3.md) for
+  signal declaration keys, removed `scope.asyncSignal$`, and native controls.
+
 ## [0.2.62] - 2026-09-18
 
 ### Changed

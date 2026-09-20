@@ -7,6 +7,12 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Align the skill version with the Beast/Octane `0.3.2` release and add the
+  migration guide for contexts, signals, textarea restoration, and native
+  attribute contracts.
+
+### Changed
+
 - Updated the coverage ledger and compatibility guidance for `octane@0.2.13`
   and the `0.1.50` Rspack/Rsbuild plugins.
 - Replaced `nativeReads` build-tool guidance with Octane's automatic signal

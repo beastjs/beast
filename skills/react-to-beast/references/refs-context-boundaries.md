@@ -38,7 +38,7 @@ For `useImperativeHandle`, accept the handle ref as a normal prop and preserve t
 
 ## Context ownership
 
-`createContext`, `useContext`, and `use(context)` are supported. Preserve:
+`createContext`, `useContext`, and `use(context)` are supported. Octane 0.3 removed `Context.Provider`: port React providers to `Theme(value={theme})`, rendering the context object directly. Preserve:
 
 - the context object's module identity;
 - its default value when no provider exists;
@@ -59,7 +59,7 @@ component ThemeLabel
   p Theme: #{theme}
 
 props { theme }: { theme: ThemeName }
-Theme.Provider(value={theme})
+Theme(value={theme})
   ThemeLabel
 ```
 

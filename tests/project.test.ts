@@ -114,6 +114,29 @@ async function waitForFileText(path: string, text: string, message: string): Pro
 }
 
 describe("project building", () => {
+  test("reports removed Context.Provider at its BTSX source and accepts direct contexts", async () => {
+    const root = await temporaryProject();
+    const filename = resolve(root, "Context.btsx");
+    const source = [
+      'import { createContext } from "octane";',
+      'module const Theme = createContext("light");',
+      'Theme.Provider(value={"dark"})',
+      '  p Child',
+    ].join("\n");
+    await Bun.write(filename, source);
+    try {
+      await buildBeastProject({ root });
+      throw new Error("Expected the legacy context provider to fail validation.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(BeastCompileError);
+      expect(String(error)).toContain("OCTANE_CONTEXT_PROVIDER");
+      expect(String(error)).toContain("Context.btsx:3:");
+    }
+    await Bun.write(filename, source.replace("Theme.Provider", "Theme"));
+    const result = await buildBeastProject({ root });
+    expect(result.generated).toHaveLength(1);
+  });
+
   test("builds a mirrored TSRX source tree and validates native TSRX", async () => {
     const root = await temporaryProject();
     await mkdir(resolve(root, "components"), { recursive: true });

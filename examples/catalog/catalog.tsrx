@@ -11,7 +11,7 @@ export default function Catalog({
 		<h2>Products</h2>
 		<ul className="product-grid">
 			@for (const product of products; index index; key product.id) {
-				<li className={[product.id === selectedId ? "selected" : "", "product-card"].filter(Boolean).join(" ")} data-index={index}>
+				<li className={["product-card", product.id === selectedId ? "selected" : ""]} data-index={index}>
 					@if (product.featured) {
 						<span className="badge">Featured</span>
 					}

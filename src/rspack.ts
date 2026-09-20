@@ -122,6 +122,9 @@ function beastCompilerOptions(
     ...(options.dev === undefined ? {} : { dev: options.dev }),
     ...(options.profile === undefined ? {} : { profile: options.profile }),
     ...(options.strong === undefined ? {} : { strong: options.strong }),
+    ...(options.knownAttributeSpreads === undefined
+      ? {}
+      : { knownAttributeSpreads: options.knownAttributeSpreads }),
     ...(options.exclude === undefined ? {} : { exclude: options.exclude }),
     ...(options.renderers === undefined ? {} : { renderers: options.renderers }),
     ...(options.requireDirective === undefined

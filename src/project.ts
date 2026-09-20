@@ -1,7 +1,8 @@
 import { watch as watchFileSystem } from "node:fs";
 import { lstat, mkdir, readdir, readFile, rmdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { compileBeast, componentNameFromPath } from "./compiler.js";
+import { compileBeastResult, componentNameFromPath } from "./compiler.js";
+import { mapGeneratedError } from "./diagnostics.js";
 import type { CompileOptions } from "./compiler.js";
 
 export interface ProjectComponentOptions {
@@ -95,12 +96,19 @@ export async function buildBeastProject(
       componentName,
       ...(configured?.propsParam === undefined ? {} : { propsParam: configured.propsParam }),
     };
-    const code = compileBeast(await readFile(filename, "utf8"), compileOptions);
+    const btsxSource = await readFile(filename, "utf8");
+    const { code, map } = compileBeastResult(btsxSource, compileOptions);
     const outputRelative = relativeName.replace(/\.btsx$/u, ".tsrx");
     const output = resolve(outDir, outputRelative);
     await mkdir(dirname(output), { recursive: true });
     await writeFile(output, code, "utf8");
-    if (shouldValidate) await validateWithOctane(code, output);
+    if (shouldValidate) {
+      try {
+        await validateWithOctane(code, output);
+      } catch (error) {
+        throw mapGeneratedError(error, map, btsxSource, filename);
+      }
+    }
     generated.push({ source: relativeName, output: outputRelative, componentName });
   }
 

@@ -8,7 +8,7 @@ import { compile } from 'octane/compiler'
 import { initializeHydrationEventCapture } from 'octane/hydration'
 import { renderToString } from 'octane/server'
 import { eachMapping, originalPositionFor, TraceMap } from '@jridgewell/trace-mapping'
-import { BeastCompileError, compileBeast, compileBeastResult, componentNameFromPath } from '../src/index.js'
+import { BeastCompileError, compileBeast, compileBeastResult, componentNameFromPath, mapGeneratedError } from '../src/index.js'
 import { composeSourceMaps } from '../src/source-map.js'
 
 function getCompileError(source: string, filename = 'Invalid.btsx'): BeastCompileError {
@@ -81,7 +81,7 @@ describe('BTSX to TSRX', () => {
     )
 
     expect(result.code).toContain(
-      '<button type="button" {...defaults} className={[className, "primary"].filter(Boolean).join(" ")} {...overrides}>'
+      '<button type="button" {...defaults} className={["primary", className]} {...overrides}>'
     )
     const button = result.ast.children[0]
     expect(button?.kind).toBe('element')
@@ -93,6 +93,40 @@ describe('BTSX to TSRX', () => {
         { kind: 'spread', code: 'overrides' }
       ])
     }
+  })
+
+  test('composes non-string class expressions with selector shorthand', async () => {
+    const result = compileBeastResult(
+      [
+        'setup const isActive = true;',
+        'setup const extra = ["wide", null];',
+        'div.checkbox',
+        '  span.checkbox-box(class={{ "checkbox-box-active": isActive }}) Box',
+        '  span.checkbox-label(class={extra}) Label',
+        '  span.checkbox-hint(class={isActive ? "on" : ""}) Hint',
+        ''
+      ].join('\n'),
+      { filename: 'Checkbox.btsx' }
+    )
+
+    // Octane composes ClassValues clsx-style, so the merge stays an array literal.
+    // Joining here would stringify the object and the array as "[object Object]"/"wide,".
+    expect(result.code).toContain('<span className={["checkbox-box", { "checkbox-box-active": isActive }]}>')
+    expect(result.code).toContain('<span className={["checkbox-label", extra]}>')
+    expect(result.code).toContain('<span className={["checkbox-hint", isActive ? "on" : ""]}>')
+
+    const server = compile(result.code, 'Checkbox.tsrx', { mode: 'server', hmr: false })
+    expect(server.diagnostics).toHaveLength(0)
+
+    const rendered = await renderCompiledServer(server.code)
+    expect(rendered).toContain('<span class="checkbox-box checkbox-box-active">Box</span>')
+    expect(rendered).toContain('<span class="checkbox-label wide">Label</span>')
+    expect(rendered).toContain('<span class="checkbox-hint on">Hint</span>')
+  })
+
+  test('merges a string class attribute with selector shorthand at compile time', () => {
+    const output = compileBeast('span.checkbox-box(class="extra") Box\n', { filename: 'StringClass.btsx' })
+    expect(output).toContain('<span className="checkbox-box extra">Box</span>')
   })
 
   test('maps generated TSRX nodes and attributes back to BTSX', () => {
@@ -1140,7 +1174,7 @@ describe('BTSX to TSRX', () => {
     expect(octane.diagnostics).toHaveLength(0)
   })
 
-  test('compiles tagless local context consumers and a dotted provider', () => {
+  test('compiles tagless local context consumers and a direct context provider', () => {
     const result = compileBeastResult(
       [
         'import { createContext, use, useContext } from "octane";',
@@ -1150,7 +1184,7 @@ describe('BTSX to TSRX', () => {
         '  setup const explicit = useContext(Theme);',
         '  p #{direct + ":" + explicit}',
         'props { theme }: { theme: string }',
-        'Theme.Provider(value={theme})',
+        'Theme(value={theme})',
         '  ThemeReader'
       ].join('\n'),
       { filename: 'ContextReader.btsx' }
@@ -1159,7 +1193,7 @@ describe('BTSX to TSRX', () => {
     expect(result.code).toContain('const Theme = createContext("light");')
     expect(result.code).toContain('const direct = use(Theme);')
     expect(result.code).toContain('const explicit = useContext(Theme);')
-    expect(result.code).toContain('<Theme.Provider value={theme}>')
+    expect(result.code).toContain('<Theme value={theme}>')
     const octane = compile(result.code, 'ContextReader.tsrx', {
       mode: 'client',
       hmr: false,
@@ -1476,5 +1510,24 @@ describe('BTSX to TSRX', () => {
 
   test('sanitizes component names derived from filenames', () => {
     expect(componentNameFromPath('123-user.card.btsx')).toBe('Beast123UserCard')
+  })
+})
+
+describe('error locations', () => {
+  test('compile errors carry file:line:column in the message', () => {
+    expect(() => compileBeast('div\n  <p>x</p>\n', { filename: 'a.btsx' })).toThrow(/a\.btsx:2:3 - BEAST1101/u)
+  })
+
+  test('Octane syntax errors map back to the .btsx source', () => {
+    const source = 'props { a }: { a: number }\n\ndiv\n  p Hello #{a +}\n'
+    const result = compileBeastResult(source, { filename: 'a.btsx' })
+    let caught: unknown
+    try {
+      compile(result.code, 'a.tsrx', { mode: 'client', hmr: false, dev: false })
+    } catch (error) {
+      caught = mapGeneratedError(error, result.map, source, 'a.btsx')
+    }
+    expect(caught).toBeInstanceOf(BeastCompileError)
+    expect((caught as BeastCompileError).diagnostic.span.start.line).toBe(4)
   })
 })

@@ -162,7 +162,7 @@ export class BeastTypeScriptFeatures {
     const defaultRange = wordRangeAt(document, position);
     const items: CompletionItem[] = [];
     for (const entry of info.entries) {
-      if (entry.source === undefined && (generatedOnly.has(entry.name) || isGeneratedName(entry.name))) {
+      if ((entry.source === undefined && generatedOnly.has(entry.name)) || isGeneratedName(entry.name)) {
         continue;
       }
       let range = defaultRange;

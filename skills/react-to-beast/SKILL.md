@@ -6,6 +6,8 @@ license: ISC
 
 # React to Beast
 
+This revision targets `beast-tsrx@0.3.2`, `create-beast@0.3.2`, and `octane@0.3.2`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+
 Port applications as verified vertical slices. Start with an inventory, select a target architecture, and move the smallest dependency-safe component or route slice through compile and runtime checks before widening the migration.
 
 Version 0.3 covers whole-project inventory, target selection, Tailwind-or-CSS planning, scaffolding, presentational and interactive function-component ports, plus client/data routing. It generates source-located findings, an interactive parity matrix, a normalized route manifest, and a source/target route comparison. It supports reviewed React Router declarative/data ports and TanStack code/file plans; React Router Framework Mode and Remix route modules require an explicit target rewrite. Next.js and broader server-framework conversion remain later milestones.

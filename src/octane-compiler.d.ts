@@ -1,5 +1,5 @@
 declare module "octane/compiler/bundler" {
-  import type { CompileResult } from "octane/compiler";
+  import type { CompileOptions, CompileResult } from "octane/compiler";
 
   export interface OctaneBundlerTransformResult extends CompileResult {
     kind: string;
@@ -29,6 +29,8 @@ declare module "octane/compiler/bundler" {
     dev?: boolean;
     profile?: boolean;
     strong?: boolean;
+    knownAttributeSpreads?: CompileOptions["knownAttributeSpreads"];
+    universalRuntime?: CompileOptions["universalRuntime"];
     exclude?: string[];
     renderers?: import("octane/compiler/vite").OctaneRendererConfigOptions;
     requireDirective?: boolean;

@@ -5,11 +5,11 @@
 > An indentation-first component language that compiles BTSX into native TSRX
 > for Octane.
 
-[![Status: Alpha](https://img.shields.io/badge/status-alpha-d97706?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.2.60-6f42c1?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.2.60-111827?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
+[![Status: Alpha](https://img.shields.io/badge/status-beta-9dcbff?style=flat-square)](#project-status)
+[![Version](https://img.shields.io/badge/version-0.3.2-0E0E0E?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.3.2-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.2.13-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.3.2-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -215,7 +215,7 @@ Selectors follow a compact CSS-like form:
 | -------------------- | ------------------------------------------ |
 | `section`            | HTML element                               |
 | `Card`               | Component reference                        |
-| `Theme.Provider`     | Dotted component reference                 |
+| `Menu.Item`          | Dotted component reference                 |
 | `.card`              | `div` with class `card`                    |
 | `section.hero`       | `section` with class `hero`                |
 | `section#intro.hero` | `section` with ID `intro` and class `hero` |
@@ -223,8 +223,8 @@ Selectors follow a compact CSS-like form:
 **Capitalized** tag names are treated as `component` references. Referenced
 components can be imported at the top of the BTSX file or otherwise be in
 scope in the eventual TSRX module. PascalCase or `_`/`$` segments after a
-capitalized tag are preserved as a dotted component API, so `Theme.Provider`
-emits `<Theme.Provider>`. A lowercase dotted suffix remains class shorthand:
+capitalized tag are preserved as a dotted component API, so `Menu.Item`
+emits `<Menu.Item>`. A lowercase dotted suffix remains class shorthand:
 `Card.featured` emits `<Card className="featured">`.
 
 ### Module code, imports, local components, props, and setup
@@ -277,7 +277,7 @@ component ThemeLabel
   p #{"Current theme: " + currentTheme}
 props { theme }: ThemeProviderProps
 
-Theme.Provider(value={theme})
+Theme(value={theme})
   ThemeLabel
 ```
 
@@ -1024,8 +1024,8 @@ generated BTSX keeps syntax-based text inference.
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.2.13
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.50
+npm install octane@0.3.2
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.51
 ```
 
 ```js
@@ -1068,7 +1068,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.2.13 @octanejs/rsbuild-plugin@0.1.50
+npm install octane@0.3.2 @octanejs/rsbuild-plugin@0.1.52
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1208,19 +1208,22 @@ editors.
 
 ## Compatibility
 
-| Tool                          | Supported version | Role                                                            |
-| ----------------------------- | ----------------- | --------------------------------------------------------------- |
-| Node.js                       | `>=22.22.2`       | Required by the supported Octane toolchain                      |
-| Bun                           | Current stable    | Workspace, tests, project creation, and dependency installation |
-| TypeScript                    | `^5.9.3`          | Package declarations and generated-project checking             |
-| TSRX TypeScript plugin        | `0.3.135`         | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.2.13`          | TSRX validation, lowering, and runtime                          |
-| Vite                          | `^8.0.16`         | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.50`          | Bundler integration compatible with Octane `0.2.13`             |
-| Rspack / Rsbuild              | `^2.0.0`          | Low-level and application-level production builds               |
+| Tool                          | Supported version   | Role                                                            |
+| ----------------------------- | ------------------- | --------------------------------------------------------------- |
+| Node.js                       | `>=22.22.2`         | Required by the supported Octane toolchain                      |
+| Bun                           | Current stable      | Workspace, tests, project creation, and dependency installation |
+| TypeScript                    | `^5.9.3`            | Package declarations and generated-project checking             |
+| TSRX TypeScript plugin        | `0.3.135`           | `.tsrx` and `.btsx` project type checking                       |
+| Octane                        | `0.3.2`             | TSRX validation, lowering, and runtime                          |
+| Vite                          | `^8.0.16`           | Development server and production bundling                      |
+| Octane Rspack/Rsbuild plugins | `0.1.51` / `0.1.52` | Bundler integration compatible with Octane `0.3.2`              |
+| Rspack / Rsbuild              | `^2.0.0`            | Low-level and application-level production builds               |
 
-Octane and TSRX are evolving. Beast pins the versions used by its conformance
-suite and starter project so failures are reproducible.
+`beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
+number: `0.3.2`. Starters pin both compiler and runtime to this version.
+Rebuild server and client output together when upgrading. Octane 0.3 removes
+`Context.Provider`; render the context directly with `Theme(value={theme})`.
+See the [migration guide](docs/octane-0.3.md).
 
 ## Correctness contract
 
@@ -1364,7 +1367,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.2.13`.
+the release checks. Every row in that ledger is covered for `octane@0.3.2`.
 
 ## License
 

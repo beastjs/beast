@@ -6,6 +6,8 @@ license: ISC
 
 # Beast
 
+This revision targets `beast-tsrx@0.3.2`, `create-beast@0.3.2`, and `octane@0.3.2`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+
 Ship indentation-first components that compile to native TSRX for Octane.
 
 Use five stages: scaffold or locate → author → compile → diagnose → build.
@@ -53,6 +55,7 @@ For an existing project, locate `*.btsx`, the `beast-tsrx` dependency, and one o
 
 Beast owns compact authoring; Octane owns rendering. BTSX compiles to readable TSRX, while ordinary TypeScript and Octane APIs pass through imports, module/setup source, attributes, and component references.
 
+- Read [Octane 0.3 migration](references/octane-0.3.md) when upgrading context, signals, native controls, or compiler integrations.
 - Read `references/beast-syntax-cheatsheet.md` before writing BTSX.
 - Read `references/beast-diagnostics.md` before fixing compile errors.
 - Read `references/beast-build-tools.md` for CLI, watch, Vite, Rspack, Rsbuild, SSR, hydration-split, or source-map work.
