@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "beast-tsrx": "__BEAST_PACKAGE_SPEC__",
-    "octane": "0.3.2"
+    "octane": "0.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

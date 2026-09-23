@@ -48,7 +48,7 @@ Do not add a no-op `onInput` just to hide a warning. The suppression marks an in
 
 For named handlers, remove React event types. Prefer inline inference. When a named function is necessary, type it against the native event and the required `currentTarget` shape supported by the destination's Octane/DOM typings; do not retain `React.ChangeEvent` behind a cast.
 
-For writable signal textareas on Octane 0.3.2, keep the handle in `textarea(value={draft$})` when two-way native binding is intended. Eventless browser-restored values can be adopted into the signal during hydration or early-control takeover, while newer model/native edits retain precedence. Check restored text, selection, composition, Undo/Redo, and form reset; scalar snapshots remain ordinary controlled values.
+For writable signal textareas on Octane 0.3.2 and later, keep the handle in `textarea(value={draft$})` when two-way native binding is intended. Eventless browser-restored values can be adopted into the signal during hydration or early-control takeover, while newer model/native edits retain precedence. Check restored text, selection, composition, Undo/Redo, and form reset; scalar snapshots remain ordinary controlled values.
 
 ## Checkbox and radio timing
 

@@ -471,7 +471,10 @@ describe('BTSX to TSRX', () => {
     })
     expect(client.diagnostics).toHaveLength(0)
     expect(client.code).toContain('__useReducerWithGetter')
-    expect(client.code).toContain('useMemo(() => memo(CountSummary, sameSummary), [], _hs$ + 2)')
+    // Octane 0.4.3 marks direct memo/createContext/lazy/createPortal calls pure for esbuild.
+    expect(client.code).toContain(
+      'useMemo(() => /* @__PURE__ */ memo(CountSummary, sameSummary), [], _hs$ + 2)'
+    )
     expect(client.code).toContain('useCallback(() => dispatch({ type: "increment" }), [], _hs$ + 3)')
     expect(client.code).toContain('useEffectEvent(() => onReport(getCount()), _hs$ + 4)')
     expect(client.code).toContain('useImperativeHandle(handleRef')
@@ -1007,6 +1010,30 @@ describe('BTSX to TSRX', () => {
     )
   })
 
+  test('lowers TypeScript enums and value namespaces from module blocks', async () => {
+    const code = compileBeast(
+      [
+        'module',
+        '  enum Tone { Calm, Loud = "loud" }',
+        '  namespace Labels { export const prefix = "Tone"; }',
+        'p #{`${Labels.prefix} ${Tone[Tone.Calm]} ${Tone.Loud}`}'
+      ].join('\n'),
+      { filename: 'Mood.btsx' }
+    )
+    expect(code).toStartWith('enum Tone { Calm, Loud = "loud" }\nnamespace Labels {')
+
+    // Octane 0.4.3 emits plain JavaScript for runtime TypeScript declarations in .tsrx.
+    const client = compile(code, 'Mood.tsrx', { mode: 'client', hmr: false, dev: false })
+    expect(client.diagnostics).toHaveLength(0)
+    expect(client.code).toContain('Tone[Tone["Calm"] = 0] = "Calm";')
+    expect(client.code).not.toContain('enum Tone')
+    expect(client.code).not.toContain('namespace Labels')
+
+    const server = compile(code, 'Mood.tsrx', { mode: 'server', hmr: false, dev: false })
+    expect(server.diagnostics).toHaveLength(0)
+    expect(await renderCompiledServer(server.code)).toContain('<p>Tone Calm loud</p>')
+  })
+
   test('gives method-style custom hooks their own component update boundary', () => {
     const code = compileBeast(
       [
@@ -1370,7 +1397,9 @@ describe('BTSX to TSRX', () => {
       dev: true
     })
     expect(client.diagnostics).toHaveLength(0)
-    expect(client.code).toContain('return createPortal(ToastBody, target, { onDismiss });')
+    expect(client.code).toContain(
+      'return /* @__PURE__ */ createPortal(ToastBody, target, { onDismiss });'
+    )
     expect(client.code).toContain("SavedToast, { 'target': target")
 
     const server = compile(result.code, tsrxFilename, {
@@ -1529,5 +1558,20 @@ describe('error locations', () => {
     }
     expect(caught).toBeInstanceOf(BeastCompileError)
     expect((caught as BeastCompileError).diagnostic.span.start.line).toBe(4)
+  })
+
+  test('TypeScript lowering errors map to BTSX without the generated TSRX location', () => {
+    const source = 'module\n  const x = 1;\n  import fs = require("fs");\np Ready\n'
+    const result = compileBeastResult(source, { filename: 'a.btsx' })
+    let caught: unknown
+    try {
+      compile(result.code, 'a.tsrx', { mode: 'client', hmr: false, dev: false })
+    } catch (error) {
+      caught = mapGeneratedError(error, result.map, source, 'a.btsx')
+    }
+    expect(caught).toBeInstanceOf(BeastCompileError)
+    const { message } = caught as BeastCompileError
+    expect(message).toStartWith('a.btsx:3:3 - BEAST9001_OCTANE: `import x = require(…)` cannot be compiled')
+    expect(message).not.toContain('a.tsrx')
   })
 })

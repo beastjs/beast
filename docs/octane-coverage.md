@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.3.2` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.4.3` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -136,3 +136,7 @@ plugin.
 ## Octane 0.3.2 regression coverage
 
 Direct context providers compile for client/server; project validation maps legacy-provider errors to BTSX. Development and production runtime tests cover restored writable textarea adoption, text-node identity across edits, current-value reset, and live signal bindings after a `satisfies`-wrapped constructor assignment. Adapter tests cover configured native attribute factories. Native browser Undo/Redo and early-binding takeover remain upstream coverage, not claims established by the DOM-emulator suite.
+
+## Octane 0.4.3 regression coverage
+
+Compiler tests cover TypeScript enums and value namespaces in `module` blocks, lowered to JavaScript for client and server and rendered through SSR. They also map TypeScript-lowering errors such as `import x = require(…)` to the authored BTSX location without the generated TSRX suffix, and check Octane's `/* @__PURE__ */` marks on `memo` and `createPortal`. Adapter tests cover Vite forwarding of `domBindingFixedProps` to a `module`-exported `"use dom bindings"` view. Independent `Hydrate` activation strategies, keyed `@for` liveness for module and host-global reads, and empty text-hole hydration remain upstream coverage.

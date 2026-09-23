@@ -1,7 +1,7 @@
 # Changelog policy
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
-number (currently `0.3.2`). The language server retains its own version. Record a user-visible change
+number (currently `0.4.3`). The language server retains its own version. Record a user-visible change
 in every affected component's changelog:
 
 | Deliverable | Changelog |

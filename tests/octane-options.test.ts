@@ -62,6 +62,26 @@ describe("Octane compiler option forwarding", () => {
     expect(code).not.toContain('"sx"');
   });
 
+  test("Vite forwards fixed DOM-binding prop names for module-exported binding views", () => {
+    const source = [
+      "module",
+      '  export function Badge({ tone, label }: { tone: "info" | "warn"; label: string }) @{',
+      '    "use dom bindings";',
+      '    <span class={tone === "warn" ? "badge warn" : "badge"}>{label}</span>',
+      "  }",
+      "Badge(tone=\"info\" label=\"Ready\")",
+    ].join("\n");
+    const transform = (domBindingFixedProps: unknown) => transformWithVite(
+      source,
+      "BindingViews.btsx",
+      { octane: { domBindingFixedProps: domBindingFixedProps as readonly string[] } },
+    );
+    expect(transform(["tone"])).toContain("export const Badge = /* @__PURE__ */ _$bindPresentationView(");
+    // Octane validates the option only when it reaches the compiler.
+    expect(() => transform("tone"))
+      .toThrow("Octane domBindingFixedProps must be an array of child prop names.");
+  });
+
   test("Vite detects native signal reads from an octane/signals import", () => {
     expect(transformWithVite(NATIVE_SIGNAL_COMPONENT, "NativeSignal.btsx"))
       .toContain("enableNativeReadCollection");

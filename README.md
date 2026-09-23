@@ -6,10 +6,10 @@
 > for Octane.
 
 [![Status: Alpha](https://img.shields.io/badge/status-beta-9dcbff?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.3.2-0E0E0E?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.3.2-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
+[![Version](https://img.shields.io/badge/version-0.4.3-0E0E0E?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.4.3-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.3.2-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.4.3-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -1011,6 +1011,11 @@ The `components` option remains available for per-file `componentName` and
 `propsParam` overrides. Source-level props are preferred when a component owns
 its public parameter type.
 
+Octane compiler options such as `knownAttributeSpreads` and
+`domBindingFixedProps` apply to generated BTSX as well as native TSRX.
+`domBindingFixedProps` affects `"use dom bindings"` views, which BTSX can export
+from a `module` block.
+
 `beast()` is also exported for advanced configurations that only need the
 BTSX pre-transform. Most applications should use `beastOctane()` exactly once.
 Octane signals are stable and need no build option. A module that imports
@@ -1024,8 +1029,8 @@ generated BTSX keeps syntax-based text inference.
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.3.2
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.51
+npm install octane@0.4.3
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.52
 ```
 
 ```js
@@ -1068,7 +1073,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.3.2 @octanejs/rsbuild-plugin@0.1.52
+npm install octane@0.4.3 @octanejs/rsbuild-plugin@0.1.54
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1214,16 +1219,18 @@ editors.
 | Bun                           | Current stable      | Workspace, tests, project creation, and dependency installation |
 | TypeScript                    | `^5.9.3`            | Package declarations and generated-project checking             |
 | TSRX TypeScript plugin        | `0.3.135`           | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.3.2`             | TSRX validation, lowering, and runtime                          |
+| Octane                        | `0.4.3`             | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`           | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.51` / `0.1.52` | Bundler integration compatible with Octane `0.3.2`              |
+| Octane Rspack/Rsbuild plugins | `0.1.52` / `0.1.54` | Bundler integration compatible with Octane `0.4.3`              |
 | Rspack / Rsbuild              | `^2.0.0`            | Low-level and application-level production builds               |
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
-number: `0.3.2`. Starters pin both compiler and runtime to this version.
-Rebuild server and client output together when upgrading. Octane 0.3 removes
-`Context.Provider`; render the context directly with `Theme(value={theme})`.
-See the [migration guide](docs/octane-0.3.md).
+number: `0.4.3`. Starters pin both compiler and runtime to this version.
+Rebuild server and client output together when upgrading. Octane 0.4 requires
+UI and router bindings from its `^0.4.0` peer line, and lowers TypeScript enums
+and value namespaces in `module` blocks to JavaScript. See the
+[0.4 migration guide](docs/octane-0.4.md); projects still on 0.2 should also
+follow the [0.3 guide](docs/octane-0.3.md) for direct context providers.
 
 ## Correctness contract
 
@@ -1367,7 +1374,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.3.2`.
+the release checks. Every row in that ledger is covered for `octane@0.4.3`.
 
 ## License
 

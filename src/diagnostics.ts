@@ -92,7 +92,7 @@ export function mapGeneratedError(
   offset += original.column;
   const position = { offset, line: original.line, column: original.column + 1 };
   const message = octaneError.diagnostic?.message === undefined
-    ? error.message.replace(/\s*\(\d+:\d+\)$/u, "")
+    ? error.message.replace(/\s*\((?:[^()\n]*:)?\d+:\d+\)\s*$/u, "")
     : `${octaneError.diagnostic.code ?? "OCTANE"}: ${octaneError.diagnostic.message}`;
   return new BeastCompileError({
     code: "BEAST9001_OCTANE",

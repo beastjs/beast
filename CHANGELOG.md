@@ -11,6 +11,28 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Aligned `beast-tsrx` with `octane@0.4.3`; raised the Octane peer minimum to
+  `^0.4.3` and the Rspack/Rsbuild plugin peers to `^0.1.52` / `^0.1.54`.
+- Octane errors mapped back to `.btsx` no longer repeat the generated TSRX
+  location when Octane includes a filename in the suffix.
+
+### Added
+
+- The Vite adapter forwards `octane.domBindingFixedProps` to the compiler for
+  generated BTSX, so `"use dom bindings"` views exported from a `module` block
+  can specialize caller-fixed primitive props.
+- Coverage for TypeScript enums and value namespaces in `module` blocks, which
+  Octane 0.4.3 lowers to JavaScript for client and server output.
+
+### Migration
+
+- Upgrade `@octanejs/*` bindings to their Octane `^0.4.0` releases together with
+  the runtime. See the [Octane 0.4 migration guide](docs/octane-0.4.md).
+
+## [0.3.2] - 2026-09-20
+
+### Changed
+
 - Aligned `beast-tsrx` and `create-beast` versions with `octane@0.3.2`; raised
   the Octane peer minimum to `^0.3.2` and tested Rspack/Rsbuild plugins
   `0.1.51` / `0.1.52`.

@@ -45,6 +45,9 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         ...(options.octane?.knownAttributeSpreads === undefined
           ? {}
           : { knownAttributeSpreads: options.octane.knownAttributeSpreads }),
+        ...(options.octane?.domBindingFixedProps === undefined
+          ? {}
+          : { domBindingFixedProps: options.octane.domBindingFixedProps }),
         ...(options.octane?.exclude === undefined ? {} : { exclude: options.octane.exclude }),
         ...(options.octane?.renderers === undefined
           ? {}
