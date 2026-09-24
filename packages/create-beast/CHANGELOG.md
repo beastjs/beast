@@ -5,6 +5,8 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-24
+
 ### Changed
 
 - Aligned create-beast version `0.4.3` with Octane and pinned generated projects

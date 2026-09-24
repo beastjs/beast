@@ -9,6 +9,8 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-24
+
 ### Changed
 
 - Aligned `beast-tsrx` with `octane@0.4.3`; raised the Octane peer minimum to
