@@ -21,6 +21,7 @@ const PUBLIC_CORE_API = [
       "act",
       "addTransitionType",
       "attachBehaviorRoot",
+      "captureFormSubmissions",
       "cloneElement",
       "createContext",
       "createElement",
@@ -82,7 +83,7 @@ const PUBLIC_CORE_API = [
   {
     entry: "octane/behavior",
     exports: behavior,
-    names: ["attachBehaviorRoot"],
+    names: ["attachBehaviorRoot", "captureFormSubmissions"],
   },
   {
     entry: "octane/server",

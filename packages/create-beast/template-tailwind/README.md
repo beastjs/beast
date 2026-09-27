@@ -8,11 +8,15 @@ bun install
 bun run dev
 ```
 
+The starter includes an orbital hero, an interactive launch counter, and a
+keyboard-accessible workflow explorer. Edit `src/style.css` to change the palette,
+typography, and motion. Reduced-motion preferences disable the orbital animation.
+
 Edit `src/App.btsx` to get started. Declare typed props at the top of the BTSX
 file; the Beast bundler adapter compiles it into native TSRX and then lets Octane
 produce the browser module.
 
-The starter pins the tested `octane@0.4.3` toolchain. Run the complete local
+The starter pins the tested `octane@0.6.0` toolchain. Run the complete local
 verification before shipping:
 
 ```bash

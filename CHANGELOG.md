@@ -9,6 +9,12 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-27
+
+### Changed
+
+- Align the supported toolchain and coordinated package version with Octane `0.6.0`, using Rspack/Rsbuild plugins `0.1.54` / `0.1.56`. Add compiler regressions for universal scopes and JSX values, assigned styles, spread-child diagnostics, and form-capture attributes. Correct the ref example to use compatibility mode for its explicit callback and array memoization; document the Strong-mode restriction. See the [migration guide](docs/octane-0.6.md).
+
 ## [0.4.3] - 2026-09-24
 
 ### Changed

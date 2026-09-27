@@ -5,6 +5,14 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-27
+
+### Changed
+
+- Redesign both starters with a charcoal and pale-green palette, oversized typography, an animated orbital hero, and a responsive workflow explorer. Add keyboard tab navigation, reduced-motion styling, and clipboard success/failure feedback.
+
+- Align create-beast and generated Beast/Octane pins with `0.6.0`. Update Rspack/Rsbuild plugins to `0.1.54` / `0.1.56`, Base UI and Radix to `0.1.57`, and shadcn to `0.0.46`, whose peer ranges accept Octane 0.6.
+
 ## [0.4.3] - 2026-09-24
 
 ### Changed

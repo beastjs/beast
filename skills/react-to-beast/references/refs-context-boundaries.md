@@ -15,7 +15,6 @@ Octane does not use `forwardRef` or `createRef`.
 Example:
 
 ```btsx
-module "use strong";
 import { useCallback, useMemo, useRef } from "octane";
 props { label, onAttach }: { label: string; onAttach: (attached: boolean) => void }
 setup
@@ -32,7 +31,7 @@ section
   button(type="button" onClick={() => inputRef.current?.focus()}) Focus
 ```
 
-Stabilize a composite ref array when attach/detach churn matters. A freshly created array is a new ref value and can legitimately detach and attach its members during rerenders. Test node replacement and unmount cleanup, not only initial attachment.
+This example uses compatibility mode to retain explicit callback and array identity. Do not add `"use strong"`: Strong mode rejects `useCallback` and `useMemo` because it owns calculation caching. A Strong-mode port must verify ref identity separately; replacing these hooks with plain declarations can cause attach/detach churn. Test node replacement, prop changes, and unmount cleanup, not only initial attachment.
 
 For `useImperativeHandle`, accept the handle ref as a normal prop and preserve the handle's lifetime and method semantics. Do not expose a DOM node when the source exposed a narrower imperative API.
 

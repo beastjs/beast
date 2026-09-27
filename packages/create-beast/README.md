@@ -33,10 +33,11 @@ Every bundler resolves `@/*` imports from `src`, matching the generated
 `tsconfig.json` paths, so `.btsx`, `.tsrx`, and TypeScript modules can use
 `import Card from "@/components/Card.btsx"` in Vite, Rspack, and Rsbuild projects.
 
-Release `0.4.3` mirrors Octane. Both templates pin `beast-tsrx@0.4.3` and `octane@0.4.3`, include TSRX-aware type checking,
+Release `0.6.0` mirrors Octane. Both templates pin `beast-tsrx@0.6.0` and `octane@0.6.0`, include TSRX-aware type checking,
 a production-build check, a project-owned `CHANGELOG.md`, and an interactive
-`App.btsx` that exercises typed props, keyed loops, native control flow, and
-scoped child setup.
+`App.btsx` with a dark orbital hero, a working launch counter, and a keyboard-accessible
+Language / Integration / Skills explorer. Both variants share the same responsive
+design and reduced-motion support; the Tailwind variant also loads Tailwind v4.
 
 Octane signals need no build option. Import `octane/signals` in a `.btsx` or
 `.tsrx` module to enable native signal reads there.

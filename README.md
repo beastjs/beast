@@ -6,10 +6,10 @@
 > for Octane.
 
 [![Status: Alpha](https://img.shields.io/badge/status-beta-9dcbff?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.4.3-0E0E0E?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.4.3-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
+[![Version](https://img.shields.io/badge/version-0.6.0-0E0E0E?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.6.0-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.4.3-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.6.0-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -360,6 +360,14 @@ The same `ref={...}` attribute can be passed to a component that declares a
 ref prop; Beast does not require or insert a forwarding wrapper. See the
 complete [refs golden](examples/refs/refs.btsx).
 
+A newly created ref array can detach and reattach its members on updates. When
+stable attachment is required, use explicit `useCallback` and `useMemo` in
+compatibility mode, as shown in the
+[ref identity example](skills/react-to-beast/references/refs-context-boundaries.md).
+Octane Strong mode rejects those manual memo hooks. Replacing them with plain
+declarations requires checking callback and array identity, including cleanup
+on prop changes and unmount.
+
 The remaining component hook APIs use the same setup passthrough. The
 [advanced hooks golden](examples/hooks/hooks.btsx) combines an initialized
 `useReducer` (including its current-state getter), `useId`, `useCallback`,
@@ -380,6 +388,10 @@ section(aria-labelledby={descriptionId})
   button(type="button" onClick={increment}) Increment
   button(type="button" onClick={reportLatest}) Report latest
 ```
+
+This hook example uses compatibility mode. Do not enable `"use strong"` or
+`octane.strong: true` for code using `useCallback` or `useMemo`; Strong mode
+owns calculation caching and requires plain declarations instead.
 
 Octane infers dependencies when the optional arrays are omitted. The
 conformance test checks the lowered hook slots and server rendering, including
@@ -1029,8 +1041,8 @@ generated BTSX keeps syntax-based text inference.
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.4.3
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.52
+npm install octane@0.6.0
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.54
 ```
 
 ```js
@@ -1073,7 +1085,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.4.3 @octanejs/rsbuild-plugin@0.1.54
+npm install octane@0.6.0 @octanejs/rsbuild-plugin@0.1.56
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1219,18 +1231,18 @@ editors.
 | Bun                           | Current stable      | Workspace, tests, project creation, and dependency installation |
 | TypeScript                    | `^5.9.3`            | Package declarations and generated-project checking             |
 | TSRX TypeScript plugin        | `0.3.135`           | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.4.3`             | TSRX validation, lowering, and runtime                          |
+| Octane                        | `0.6.0`             | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`           | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.52` / `0.1.54` | Bundler integration compatible with Octane `0.4.3`              |
+| Octane Rspack/Rsbuild plugins | `0.1.54` / `0.1.56` | Bundler integration compatible with Octane `0.6.0`              |
 | Rspack / Rsbuild              | `^2.0.0`            | Low-level and application-level production builds               |
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
-number: `0.4.3`. Starters pin both compiler and runtime to this version.
-Rebuild server and client output together when upgrading. Octane 0.4 requires
-UI and router bindings from its `^0.4.0` peer line, and lowers TypeScript enums
-and value namespaces in `module` blocks to JavaScript. See the
-[0.4 migration guide](docs/octane-0.4.md); projects still on 0.2 should also
-follow the [0.3 guide](docs/octane-0.3.md) for direct context providers.
+number: `0.6.0`. Starters pin both compiler and runtime to this version.
+Rebuild server and client output together when upgrading. Upgrade UI and router
+bindings to their `^0.6.0` peer line. See the
+[0.6 migration guide](docs/octane-0.6.md), including changes inherited from 0.5;
+projects still on 0.2 should also follow the
+[0.3 guide](docs/octane-0.3.md) for direct context providers.
 
 ## Correctness contract
 
@@ -1310,11 +1322,13 @@ beast/
 │   ├── transitions/             # View-transition classes and typed directions
 │   └── variant/                 # Multi-way switch output
 ├── docs/
+│   ├── octane-0.6.md            # Octane 0.6 migration and companion versions
 │   └── octane-coverage.md       # Official-doc coverage map and roadmap
 ├── tests/
 │   ├── compiler.test.ts         # Compiler and Octane behavior conformance
 │   ├── bundlers.test.ts         # Rspack and Rsbuild production lifecycles
 │   ├── core-api.test.ts         # Pinned public Core API export inventory
+│   ├── octane-0.6.test.ts        # Universal scopes, styles, diagnostics, and refs
 │   ├── project.test.ts          # Project builder and Vite tests
 │   ├── runtime.test.ts          # Client hydration, roots, portals, and behavior
 │   └── server.test.ts           # Buffered, streaming, and static rendering
@@ -1333,20 +1347,26 @@ bun install --frozen-lockfile
 bun run check
 ```
 
-| Script               | Purpose                                              |
-| -------------------- | ---------------------------------------------------- |
-| `bun run build`      | Compile both publishable workspace packages          |
-| `bun run typecheck`  | Type-check both packages without emitting files      |
-| `bun run test`       | Run compiler, builder, Vite, and creator tests       |
-| `bun run check`      | Run type checking, tests, and builds in sequence     |
-| `bun run pack:check` | Inspect both npm package tarballs without publishing |
+| Script | Purpose |
+| --- | --- |
+| `bun run build` | Compile the compiler, creator, and language-server packages |
+| `bun run typecheck` | Type-check all three packages without emitting files |
+| `bun test` / `bun run test` | Run the full discovered test suite |
+| `bun run check` | Run type checking, tests, and builds in sequence |
+| `bun run pack:check` | Inspect all three npm package tarballs without publishing |
+
+The Octane 0.6 alignment was verified on 2026-09-27 with **233 passing tests,
+0 failures**, plus successful type checking and builds. This full local run
+included the separately maintained `react-to-beast-skill/` checkout; a clean
+clone without that git-ignored repository discovers fewer tests. The test
+script runs unfiltered `bun test`.
 
 When changing the language or generator:
 
 1. Update the parser, AST, or generator at the smallest appropriate layer.
 2. Add or revise a paired `.btsx` and `.tsrx` golden fixture when output changes.
 3. Add diagnostic coverage for invalid syntax and ambiguous constructs.
-4. Run `bun run check` and both package dry runs.
+4. Run `bun run check` and `bun run pack:check` for all three packages.
 5. Confirm generated TSRX remains readable and valid through Octane.
 
 Focused issues and pull requests are welcome. Changes should preserve
@@ -1374,7 +1394,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.4.3`.
+the release checks. Every row in that ledger is covered for `octane@0.6.0`.
 
 ## License
 

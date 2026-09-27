@@ -2,192 +2,133 @@ import { useState } from 'octane'
 
 module
   type PanelId = 'language' | 'integration' | 'skills'
-  type PanelSide = 'left' | 'right'
-
-  interface Props {
-    docsUrl: string
-  }
-
-  interface LeftPanel {
-    docsPath: string
-    eyebrow: string
-    title: string
-    description: string
-    tags: string[]
-    note: string
-  }
-
-  interface RightPanel {
-    eyebrow: string
-    title: string
-    description: string
-    note: string
-    status: string
-    action?: {
-      label: string
-      docsPath: string
-    }
-  }
-
-  interface Panel {
-    id: PanelId
-    label: string
-    left: LeftPanel
-    right: RightPanel
-    copyableNotes?: boolean
-  }
-
-  const panels: Panel[] = [
-    {
-      id: 'language',
-      label: 'Language',
-      left: {
-        docsPath: '/docs/language',
-        eyebrow: 'Input',
-        title: 'Structured components',
-        description: 'Write familiar elements, selectors, attributes, text, and interpolation in .btsx—without closing tags. Leading spaces define the component tree.',
-        tags: ['.btsx', 'typed props', 'native control flow', 'child scopes'],
-        note: 'elements, props, and control flow'
-      },
-      right: {
-        eyebrow: 'Output',
-        title: 'Compiles to Octane',
-        description: 'Beast keeps TypeScript expressions intact, emits source-located TSRX, and leaves final validation and runtime compilation to Octane.',
-        note: 'small syntax. native output.',
-        status: 'Source-located',
-        action: {
-          label: 'Explore the language',
-          docsPath: '/docs/language'
-        }
-      }
-    },
-    {
-      id: 'integration',
-      label: 'Integration',
-      left: {
-        docsPath: '/docs/vite',
-        eyebrow: 'Beast → Octane → Vite',
-        title: 'Vite',
-        description: 'The Vite plugin compiles .btsx modules in memory before Octane processes the generated TSRX, so normal imports stay in one module graph.',
-        tags: ['HMR', 'SSR transforms', 'production builds'],
-        note: 'octane@0.4.3 · vite@^8.0.16'
-      },
-      right: {
-        eyebrow: 'Beast Styling',
-        title: 'Tailwind v4',
-        description: 'Use standard source imports, Tailwind utilities, and the same Beast–Octane pipeline for development, SSR, and production builds.',
-        // note: 'Integrated by default.',
-        status: 'Tailwind v4'
-      }
-    },
-    {
-      id: 'skills',
-      label: 'Skills',
-      copyableNotes: true,
-      left: {
-        docsPath: '/docs/skills',
-        eyebrow: 'Beast Core',
-        title: 'Beast Skills',
-        description: 'The Beast skill gives coding agents a repeatable workflow to establish scope, scaffold or locate a project, author BTSX, diagnose compiler output, and verify the build.',
-        tags: ['scaffold', 'diagnose', 'verify'],
-        note: 'npx skills add https://github.com/phtn/beast-skill --skill beast'
-      },
-      right: {
-        eyebrow: 'Migrate to beast',
-        title: 'React to Beast',
-        description: 'Audit routes, state, styling, and behavior; port the application to BTSX while preserving the user-visible experience and recording migration evidence.',
-        note: 'npx skills add https://github.com/phtn/react-to-beast --skill react-to-beast',
-        status: 'migration ready',
-        action: {
-          label: 'Explore React migration',
-          docsPath: '/docs/react-to-beast'
-        }
-      }
-    }
-  ]
+  interface Props { docsUrl: string }
+  const panels = [
+    { id: 'language', label: 'Language', number: '01', title: 'Less syntax. More intent.', description: 'A little structure goes a long way. Write typed components with indentation, native control flow, and the full expression of TypeScript.', tags: ['BTSX', 'TypeScript', 'Native control flow'], path: '/docs/language', note: 'src/App.btsx', code: 'import { useState } from "octane"\n\nsetup const [count, setCount] = useState(0);\n\nbutton(onClick={() => setCount(count + 1)})\n  | Launch #{count}' },
+    { id: 'integration', label: 'Integration', number: '02', title: 'One seamless pipeline.', description: 'Beast turns your components into TSRX. Octane brings them to life. Choose Vite, Rspack, or Rsbuild and stay in your flow.', tags: ['Vite', 'Rspack', 'Rsbuild'], path: '/docs/vite', note: 'Your first edit', code: '01  Open src/App.btsx\n02  Make it yours\n03  Save. See it live.\n\nBTSX → TSRX → Octane\n\nReady for your next idea.' },
+    { id: 'skills', label: 'Skills', number: '03', title: 'Build with a co-pilot.', description: 'Give your coding agent a shared language. Scaffold, create, and refine with the Beast skill, or bring an existing React experience along.', tags: ['Scaffold', 'Create', 'Migrate'], path: '/docs/skills', note: 'Add the Beast skill', code: 'npx skills add https://github.com/phtn/beast-skill --skill beast' }
+  ] as const
 
 props { docsUrl }: Props
-setup const copyNote = async (side: PanelSide, note: string) => { await navigator.clipboard.writeText(note); setCopiedSide(side); window.setTimeout(() => setCopiedSide(null), 1600); };
 setup
   const [activeId, setActiveId] = useState<PanelId>('language');
-  const [copiedSide, setCopiedSide] = useState<PanelSide | null>(null);
+  const [launches, setLaunches] = useState(0);
+  const [copyStatus, setCopyStatus] = useState('Copy command');
   const active = panels.find((panel) => panel.id === activeId) ?? panels[0];
+  const copyNote = async (note: string) => {
+    try {
+      await navigator.clipboard.writeText(note);
+      setCopyStatus('Copied');
+    } catch {
+      setCopyStatus('Select the command to copy');
+    }
+  };
+  const selectPanel = (id: PanelId) => { setActiveId(id); setCopyStatus('Copy command'); };
+  const onTabKey = (event: KeyboardEvent, index: number) => {
+    const next = event.key === 'ArrowRight' ? (index + 1) % panels.length : event.key === 'ArrowLeft' ? (index + panels.length - 1) % panels.length : event.key === 'Home' ? 0 : event.key === 'End' ? panels.length - 1 : -1;
+    if (next < 0) return;
+    event.preventDefault();
+    selectPanel(panels[next].id);
+    document.getElementById(`tab-${panels[next].id}`)?.focus();
+  };
 
-main(className='grid min-h-screen min-w-80 place-items-center p-3 sm:p-8 lg:p-16')
-  section(
-    ~ aria-labelledby="showcase-title"
-    ~ className='w-full max-w-[1080px] overflow-hidden rounded-[1.75rem] border border-white/85 bg-white/75 p-4 shadow-[0_24px_55px_rgba(28,28,25,0.09)] backdrop-blur-xl sm:rounded-[2.8rem] sm:p-6 lg:p-8'
-    ~ )
-    header(className='flex flex-col items-start justify-between gap-6 px-1 pb-6 pt-2 md:flex-row md:items-center md:gap-8 md:px-3 md:pb-8 md:pt-3')
-      h1#showcase-title(className='m-0 max-w-xl text-[clamp(1.7rem,3.3vw,2.7rem)] font-medium leading-[1.08] tracking-[-0.045em] text-[#161616]')
-        div(className='flex items-center text-[#161616]')
-          img(src='/beast.svg' alt='Beast' className='size-6 sm:size-7 md:size-8 lg:size-9 opacity-60')
-          p(className='ml-3 opacity-70') Beast
-        span(className='ml-6 mr-3 opacity-50') &rarr;
-        span(className='text-[#ff415a]') Octane
-      nav(className='inline-flex w-full shrink-0 items-center rounded-full border border-black/[0.025] bg-[#f0f0ee] p-1 md:w-auto' aria-label="Product workflow" role="tablist")
-        each panel in panels key panel.id
-          button(
+a.skip-link(href="#main") Skip to content
+header.site-header
+  a.brand(href="#" aria-label="Beast home")
+    img(src="/beast.svg" alt="" width="30" height="30")
+    | beast
+    span.brand-mark /
+  nav.site-nav(aria-label="Main navigation")
+    a(href="#explore") Explore
+    a(href={docsUrl} target="_blank" rel="noopener noreferrer") Documentation ↗
+  span.release-label v0.6.0 / Octane
+
+main#main
+  section.hero(aria-labelledby="hero-title")
+    div.hero-copy
+      p.eyebrow
+        span.status-dot(aria-hidden="true")
+        | YOUR NEXT IDEA STARTS HERE
+      h1#hero-title
+        | Simply
+        br
+        em extraordinary.
+      p.hero-description A small language for ambitious ideas. Build expressive interfaces with Beast. Brought to life by Octane.
+      div.hero-actions
+        a.primary-link(href="#explore")
+          | Make something
+          span(aria-hidden="true") ↗
+        span.hero-caption Less ceremony.
+          br
+          | More possibility.
+    div(aria-hidden="true" className={launches % 2 === 0 ? 'orbit-scene' : 'orbit-scene orbit-shift'})
+      div.orbit-grid
+      div.orbit-halo
+      div.orbit-ring.ring-one
+      div.orbit-ring.ring-two
+      div.orbit-ring.ring-three
+      div.orbit-core
+        img(src="/beast.svg" alt="" width="80" height="80")
+      span.orbit-point.point-one
+      span.orbit-point.point-two
+      span.orbit-coordinate.coordinate-top 01 / FORM
+      span.orbit-coordinate.coordinate-bottom 02 / POSSIBILITY
+    div.hero-bottom
+      span A NEW START. AN OPEN CANVAS.
+      button.launch-button(type="button" onClick={() => setLaunches(launches + 1)} aria-label="Launch the interactive demo")
+        span.status-dot(aria-hidden="true")
+        | #{launches === 0 ? 'System ready. Give it a spin' : `Signal received / ${String(launches).padStart(2, '0')}`}
+        span(aria-hidden="true") ↗
+      a.scroll-link(href="#explore" aria-label="Scroll to explore") ↓
+
+  section.explorer#explore(aria-labelledby="explore-title")
+    div.section-heading
+      p.eyebrow THE STARTING POINT
+      h2#explore-title Everything you need.
+        br
+        span Nothing in your way.
+      p.section-intro From the first line to the finished experience. Find your rhythm, then make it your own.
+    div.workspace
+      div.panel-tabs(role="tablist" aria-label="Product workflow")
+        each panel, index in panels key panel.id
+          button.panel-tab(
             ~ type="button"
             ~ id={`tab-${panel.id}`}
             ~ role="tab"
             ~ aria-controls="workflow-panel"
             ~ aria-selected={activeId === panel.id}
-            ~ className={activeId === panel.id ? 'inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-white/95 px-2.5 py-3 text-xs font-semibold text-[#242422] shadow-[0_1px_4px_rgba(26,26,24,0.14)] outline-none transition focus-visible:ring-3 focus-visible:ring-orange-200 sm:px-2 sm:text-sm md:min-w-32'
-              ~ : 'inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-transparent px-2.5 py-3 text-xs font-semibold text-[#595956] outline-none transition hover:text-[#111] focus-visible:ring-3 focus-visible:ring-orange-200 sm:px-2 sm:text-sm md:min-w-32'}
-            ~ onClick={() => { setActiveId(panel.id); setCopiedSide(null); }}
+            ~ tabIndex={activeId === panel.id ? 0 : -1}
+            ~ onClick={() => selectPanel(panel.id)}
+            ~ onKeyDown={(event) => onTabKey(event, index)}
             ~ )
+            span.tab-number #{panel.number}
             | #{panel.label}
+            span.tab-arrow(aria-hidden="true") ↗
+      div#workflow-panel.panel-content(role="tabpanel" aria-labelledby={`tab-${activeId}`} tabIndex={0})
+        article.panel-story
+          p.eyebrow #{active.number} / #{active.label}
+          h3 #{active.title}
+          p.panel-description #{active.description}
+          ul.tags(aria-label="Features")
+            each tag in active.tags key tag
+              li #{tag}
+          a.text-link(href={`${docsUrl}${active.path}`} target="_blank" rel="noopener noreferrer") Read the guide ↗
+        div.code-window
+          div.code-heading
+            span #{active.note}
+            span.code-dots(aria-hidden="true") ● ● ●
+          pre
+            code #{active.code}
+          div.code-footer
+            if activeId === 'skills'
+              button.copy-button(type="button" onClick={() => copyNote(active.code)}) #{copyStatus}
+            else
+              span Made for humans. And their agents.
+            span.code-symbol(aria-hidden="true") ↗
+          if activeId === 'skills'
+            p.copy-feedback(role="status") #{copyStatus === 'Copied' ? 'Command copied to clipboard.' : ''}
 
-    section#workflow-panel(
-      ~ role="tabpanel"
-      ~ aria-live="polite"
-      ~ aria-labelledby={`tab-${activeId}`}
-      ~ className='grid grid-cols-1 gap-4 rounded-3xl bg-[#eeeeeb]/90 p-2 sm:rounded-[2rem] sm:p-4 lg:grid-cols-[0.92fr_1.08fr]'
-      ~ )
-
-      // LEFT
-      article(className='flex min-h-[400px] flex-col rounded-[1.15rem] border border-black/8 bg-white/35 p-6 sm:min-h-[430px] sm:rounded-[1.45rem] sm:p-9 lg:min-h-[480px] lg:p-10')
-        div
-          p(className='mb-6 mt-0 text-[0.72rem] font-bold uppercase tracking-[0.11em] text-[#9b9b96]') #{active.left.eyebrow}
-          h2(className='m-0 max-w-sm text-[clamp(1.55rem,2.8vw,2.05rem)] font-medium leading-[1.16] tracking-[-0.035em] text-[#161616]') #{active.left.title}
-          p(className='mb-0 mt-5 max-w-md text-base leading-relaxed text-[#73736f]') #{active.left.description}
-          ul(className='mb-0 mt-9 flex list-none flex-wrap gap-2 p-0' aria-label="Issue tags")
-            each tag, index in active.left.tags key tag
-              li(className={index === 1 ? 'rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[#3f3f3c] shadow-xs' : 'rounded-full border border-black/10 bg-white/65 px-3 py-2 text-xs font-semibold text-[#3f3f3c] shadow-xs'}) #{tag}
-        if active.copyableNotes
-          button(
-            ~ type="button"
-            ~ className='group mb-5 mt-auto flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl border border-black/8 bg-white/55 px-4 py-3 text-left outline-none transition hover:bg-white/85 focus-visible:ring-3 focus-visible:ring-orange-200'
-            ~ aria-label={`Copy note: ${active.left.note}`}
-            ~ onClick={() => copyNote('left', active.left.note)}
-            ~ )
-            code(className='min-w-0 max-w-[35ch] overflow-x-auto whitespace-nowrap text-xs text-[#666661] scrollbar-none') #{active.left.note}
-            span(className='shrink-0 text-xs font-semibold text-[#343431]') #{copiedSide === 'left' ? 'Copied' : 'Copy'}
-        else
-          code(className='mb-0 mt-auto pb-5 pt-16 text-sm text-[#858681]') #{active.left.note}
-
-      // RIGHT
-      article(className='flex min-h-[390px] flex-col rounded-[1.15rem] bg-[radial-gradient(circle_at_88%_10%,rgba(255,255,255,0.07),transparent_28rem),linear-gradient(145deg,#2a2b29,#111211_72%)] p-6 text-[#f6f6f2] shadow-[0_22px_36px_rgba(15,16,14,0.18)] sm:min-h-[430px] sm:rounded-[1.45rem] sm:p-9 lg:min-h-[510px] lg:p-10')
-        div
-          p(className='mb-6 mt-0 text-[0.72rem] font-bold uppercase tracking-[0.11em] text-[#858681]') #{active.right.eyebrow}
-          h2(className='m-0 max-w-sm text-[clamp(1.55rem,2.8vw,2.05rem)] font-medium leading-[1.16] tracking-[-0.035em]') #{active.right.title}
-          p(className='mb-0 mt-5 max-w-md text-base leading-relaxed text-[#a4a5a0]') #{active.right.description}
-        if active.copyableNotes
-          button(
-            ~ type="button"
-            ~ className='group mb-5 mt-auto flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.045] px-4 py-3 text-left outline-none transition hover:bg-white/[0.075] focus-visible:ring-3 focus-visible:ring-orange-200'
-            ~ aria-label={`Copy note: ${active.right.note}`}
-            ~ onClick={() => copyNote('right', active.right.note)}
-            ~ )
-            code(className='min-w-0 max-w-[40ch] overflow-x-auto whitespace-nowrap text-xs text-[#a4a5a0] scrollbar-none') #{active.right.note}
-            span(className='shrink-0 text-xs font-semibold text-[#f6f6f2]') #{copiedSide === 'right' ? 'Copied' : 'Copy'}
-        else
-          code(className='mb-0 mt-auto pb-5 pt-16 text-sm text-[#858681]') #{active.right.note}
-
-  footer(className='pt-0')
-    a(href='https://beast-docs.vercel.app/'
-      ~ target='_blank'
-      ~ rel='noopener noreferrer'
-      ~ className='mt-1 px-1 py-0.5 ml-3 underline underline-offset-4 decoration-dotted')
-      span(className='font-mono text-xs tracking-wider') BEAST DOCS
+  footer.site-footer
+    a.brand.footer-brand(href="#" aria-label="Back to top") beast
+    p Your canvas. Your rules.
+    a(href="https://github.com/beastjs/beast" target="_blank" rel="noopener noreferrer") Find us on GitHub ↗

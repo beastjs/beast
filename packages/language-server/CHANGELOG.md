@@ -7,6 +7,8 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Use Octane `0.6.0` virtual code and depend on `beast-tsrx@^0.6.0`.
+
 - Use Octane `0.4.3` virtual code and depend on `beast-tsrx@^0.4.3`.
 
 ### Changed

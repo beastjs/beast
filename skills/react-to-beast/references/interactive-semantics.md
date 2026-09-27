@@ -22,7 +22,7 @@ Confirm every source-located finding in the file. The audit is static and intent
 | `useEffect` | Direct for external synchronization. Preserve cleanup and dependency behavior explicitly. |
 | `useLayoutEffect` | Direct when work must occur before paint; do not promote ordinary effects. |
 | `useInsertionEffect` | Direct for styling infrastructure, after verifying style ordering and SSR. |
-| `useMemo`, `useCallback`, `memo` | Supported. Preserve identity/recomputation boundaries when callers rely on them. |
+| `useMemo`, `useCallback`, `memo` | Compatibility mode supports these APIs. Strong mode rejects manual `useMemo`/`useCallback`; use plain declarations and verify compiler-managed identity/recomputation boundaries. |
 | `useRef` | Direct for DOM nodes, timers, and other non-render state. Strong mode rejects writes during render. |
 | `useImperativeHandle` | Supported with an ordinary `ref` prop; `forwardRef` is not used. |
 | `createContext`, `useContext`, `use(context)` | Supported. Preserve fallback values and provider ownership. |

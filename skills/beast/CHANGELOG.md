@@ -7,6 +7,8 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Align the skill target with Beast/Octane `0.6.0` and add the Octane 0.6 migration reference, including the intervening 0.5 changes.
+
 - Align the skill version with the Beast/Octane `0.4.3` release and add the
   Octane 0.4 migration guide for companion package peers, TypeScript in
   `module` blocks, new `Hydrate` diagnostics, and `domBindingFixedProps`.
