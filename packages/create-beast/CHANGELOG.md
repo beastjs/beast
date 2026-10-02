@@ -5,6 +5,14 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-03
+
+### Changed
+
+- Replace both starters with a single quiet screen: one headline, a stateful counter, and a keyed loop over resource links in about 30 lines of BTSX. The stylesheet shrinks from the orbital hero and workflow explorer to a short sheet of custom properties with automatic light/dark themes and reduced-motion support.
+
+- Align create-beast and generated Beast/Octane pins with `0.7.1`. Update Rspack/Rsbuild plugins to `0.1.55` / `0.1.57`, Base UI and Radix to `0.1.58`, and shadcn to `0.0.47`, whose peer ranges accept Octane 0.7.
+
 ## [0.6.0] - 2026-09-27
 
 ### Changed

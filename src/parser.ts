@@ -25,6 +25,7 @@ import type {
 } from "./ast.js";
 import { decodeHTML } from "entities";
 import { BeastCompileError } from "./diagnostics.js";
+import { findScopeReturn } from "./scope-return.js";
 
 interface LogicalLine {
   content: string;
@@ -576,6 +577,7 @@ class Parser {
       nextLine !== undefined && nextLine.indent > line.indent
         ? this.parseBlock(bodyIndent)
         : [];
+    for (const declaration of setup) this.rejectScopeReturn(declaration);
     if (setup.length === 0 && children.length === 0) {
       this.fail(
         "BEAST1903_EMPTY_SCOPE",
@@ -1000,6 +1002,34 @@ class Parser {
     const next = this.lines[this.index];
     if (next === undefined || next.indent <= parentIndent) return [];
     return this.parseBlock(next.indent);
+  }
+
+  private rejectScopeReturn(declaration: SetupDeclaration): void {
+    const offset = findScopeReturn(declaration.code);
+    if (offset === null) return;
+    const fragment = declaration.codeFragments.find(
+      (candidate) => offset >= candidate.start && offset < candidate.end,
+    );
+    const start = fragment === undefined
+      ? declaration.span.start
+      : {
+          offset: fragment.source.start.offset + offset - fragment.start,
+          line: fragment.source.start.line,
+          column: fragment.source.start.column + offset - fragment.start,
+        };
+    const width = "return".length;
+    throw new BeastCompileError({
+      code: "BEAST1904_SCOPE_RETURN",
+      severity: "error",
+      message:
+        "`return` cannot leave a `scope`. A scope is a nested template with no early exit.",
+      hint: "Render the content from an `if` branch, or move the early return into a component's own `setup`.",
+      filename: this.filename,
+      span: {
+        start,
+        end: { ...start, offset: start.offset + width, column: start.column + width },
+      },
+    });
   }
 
   private fail(code: string, message: string, line: LogicalLine): never {

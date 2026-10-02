@@ -93,7 +93,7 @@ const beastRspackLoader: LoaderDefinition<BeastRspackLoaderOptions> = function (
         profile,
       });
     } catch (error) {
-      throw mapGeneratedError(error, tsrx.map, source, filename);
+      throw mapGeneratedError(error, tsrx.map, source, filename, tsrx.code);
     }
     if (result === null) {
       throw new Error(`Octane declined to compile generated TSRX for ${projectName}.`);

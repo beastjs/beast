@@ -6,7 +6,7 @@ license: ISC
 
 # React to Beast
 
-This revision targets `beast-tsrx@0.6.0`, `create-beast@0.6.0`, and `octane@0.6.0`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+This revision targets `beast-tsrx@0.7.1`, `create-beast@0.7.1`, and `octane@0.7.1`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
 
 Port applications as verified vertical slices. Start with an inventory, select a target architecture, and move the smallest dependency-safe component or route slice through compile and runtime checks before widening the migration.
 

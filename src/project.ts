@@ -106,7 +106,7 @@ export async function buildBeastProject(
       try {
         await validateWithOctane(code, output);
       } catch (error) {
-        throw mapGeneratedError(error, map, btsxSource, filename);
+        throw mapGeneratedError(error, map, btsxSource, filename, code);
       }
     }
     generated.push({ source: relativeName, output: outputRelative, componentName });

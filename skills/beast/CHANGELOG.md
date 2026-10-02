@@ -7,6 +7,8 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Align the skill target with Beast/Octane `0.7.1`, add the Octane 0.7 migration reference, and list the new `scope`-exit, `textarea`, and `"use strong"` placement errors in the syntax cheatsheet.
+
 - Align the skill target with Beast/Octane `0.6.0` and add the Octane 0.6 migration reference, including the intervening 0.5 changes.
 
 - Align the skill version with the Beast/Octane `0.4.3` release and add the
