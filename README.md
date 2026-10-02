@@ -6,10 +6,10 @@
 > for Octane.
 
 [![Status: Alpha](https://img.shields.io/badge/status-beta-9dcbff?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.6.0-0E0E0E?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.6.0-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
+[![Version](https://img.shields.io/badge/version-0.7.1-0E0E0E?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.7.1-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.6.0-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.7.1-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -1041,8 +1041,8 @@ generated BTSX keeps syntax-based text inference.
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.6.0
-npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.54
+npm install octane@0.7.1
+npm install --save-dev @rspack/core@^2 @octanejs/rspack-plugin@0.1.55
 ```
 
 ```js
@@ -1085,7 +1085,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.6.0 @octanejs/rsbuild-plugin@0.1.56
+npm install octane@0.7.1 @octanejs/rsbuild-plugin@0.1.57
 npm install --save-dev @rsbuild/core@^2
 ```
 
@@ -1231,17 +1231,17 @@ editors.
 | Bun                           | Current stable      | Workspace, tests, project creation, and dependency installation |
 | TypeScript                    | `^5.9.3`            | Package declarations and generated-project checking             |
 | TSRX TypeScript plugin        | `0.3.135`           | `.tsrx` and `.btsx` project type checking                       |
-| Octane                        | `0.6.0`             | TSRX validation, lowering, and runtime                          |
+| Octane                        | `0.7.1`             | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`           | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.1.54` / `0.1.56` | Bundler integration compatible with Octane `0.6.0`              |
+| Octane Rspack/Rsbuild plugins | `0.1.55` / `0.1.57` | Bundler integration compatible with Octane `0.7.1`              |
 | Rspack / Rsbuild              | `^2.0.0`            | Low-level and application-level production builds               |
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
-number: `0.6.0`. Starters pin both compiler and runtime to this version.
+number: `0.7.1`. Starters pin both compiler and runtime to this version.
 Rebuild server and client output together when upgrading. Upgrade UI and router
-bindings to their `^0.6.0` peer line. See the
-[0.6 migration guide](docs/octane-0.6.md), including changes inherited from 0.5;
-projects still on 0.2 should also follow the
+bindings to their `^0.7.0` peer line. See the
+[0.7 migration guide](docs/octane-0.7.md); projects on 0.5 or earlier should
+also read the [0.6 guide](docs/octane-0.6.md), and projects still on 0.2 the
 [0.3 guide](docs/octane-0.3.md) for direct context providers.
 
 ## Correctness contract
@@ -1322,13 +1322,15 @@ beast/
 │   ├── transitions/             # View-transition classes and typed directions
 │   └── variant/                 # Multi-way switch output
 ├── docs/
-│   ├── octane-0.6.md            # Octane 0.6 migration and companion versions
+│   ├── octane-0.7.md            # Octane 0.7 migration and companion versions
+│   ├── octane-0.6.md            # Octane 0.6 migration notes
 │   └── octane-coverage.md       # Official-doc coverage map and roadmap
 ├── tests/
 │   ├── compiler.test.ts         # Compiler and Octane behavior conformance
 │   ├── bundlers.test.ts         # Rspack and Rsbuild production lifecycles
 │   ├── core-api.test.ts         # Pinned public Core API export inventory
-│   ├── octane-0.6.test.ts        # Universal scopes, styles, diagnostics, and refs
+│   ├── octane-0.6.test.ts       # Universal scopes, styles, diagnostics, and refs
+│   ├── octane-0.7.test.ts       # Block exits, textarea text, Strong placement
 │   ├── project.test.ts          # Project builder and Vite tests
 │   ├── runtime.test.ts          # Client hydration, roots, portals, and behavior
 │   └── server.test.ts           # Buffered, streaming, and static rendering
@@ -1355,11 +1357,12 @@ bun run check
 | `bun run check` | Run type checking, tests, and builds in sequence |
 | `bun run pack:check` | Inspect all three npm package tarballs without publishing |
 
-The Octane 0.6 alignment was verified on 2026-09-27 with **233 passing tests,
-0 failures**, plus successful type checking and builds. This full local run
-included the separately maintained `react-to-beast-skill/` checkout; a clean
-clone without that git-ignored repository discovers fewer tests. The test
-script runs unfiltered `bun test`.
+The Octane 0.7.1 alignment was verified on 2026-10-03 with **265 passing
+tests, 0 failures**, plus successful type checking, builds, and package dry
+runs. This full local run included the separately maintained, git-ignored
+`react-to-beast-skill/` checkout, which pins its own Octane runtime and router
+bindings; a clean clone without it discovers 232 tests. The test script runs
+unfiltered `bun test`.
 
 When changing the language or generator:
 
@@ -1394,7 +1397,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.6.0`.
+the release checks. Every row in that ledger is covered for `octane@0.7.1`.
 
 ## License
 

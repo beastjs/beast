@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.6.0` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.7.1` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -149,3 +149,14 @@ selector preservation, source-mapped spread-child diagnostics in both modes,
 and SSR form-capture attribute preservation. `tests/core-api.test.ts` tracks
 `captureFormSubmissions` in both public entry points. Parser-time form delivery
 and universal runtime lifecycle execution are not covered by these compiler tests.
+
+## Octane 0.7.1 regression coverage
+
+`tests/octane-0.7.test.ts` checks that `continue` inside a `scope` block and
+element children inside `textarea` fail with errors mapped to the authored BTSX
+line in both modes. It also checks that a `"use strong"` directive in `setup`
+reports `OCTANE_STRONG_DIRECTIVE_PLACEMENT`. Interpolated `textarea` text
+server-renders as one run without hydration markers, and an `Object.assign`
+compound component with `if`/`else` arms renders through SSR. The upstream
+early-exit, hydration-recovery, and universal `useOptimistic`/`useActionState`
+fixes have no BTSX-specific syntax and remain upstream coverage.

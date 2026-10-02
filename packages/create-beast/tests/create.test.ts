@@ -58,21 +58,20 @@ describe("create-beast", () => {
     ) as { name: string; dependencies: Record<string, string> };
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
-    expect(packageJson.dependencies.octane).toBe("0.6.0");
-    expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.57");
+    expect(packageJson.dependencies.octane).toBe("0.7.1");
+    expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.58");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("interface Props");
-    expect(app).toContain("useState<PanelId>('language')");
-    expect(app).toContain("navigator.clipboard.writeText(note)");
-    expect(app).toContain("label: 'Integration'");
-    expect(app).toContain("label: 'Skills'");
-    expect(app).toContain('role="tablist"');
-    expect(app).toContain("each panel, index in panels key panel.id");
+    expect(app).toContain("useState(0)");
+    expect(app).toContain("{ label: 'Documentation', href: docsUrl }");
+    expect(app).toContain("each link in links key link.label");
+    expect(app).toContain('output(aria-live="polite") #{count}');
+    expect(app.split("\n").length).toBeLessThan(45);
     const tsrx = compileBeast(app, { filename: "src/App.btsx" });
-    expect(compile(tsrx, "src/App.tsrx", { mode: "client", hmr: false }).diagnostics).toEqual(
-      [],
-    );
+    for (const mode of ["client", "server"] as const) {
+      expect(compile(tsrx, "src/App.tsrx", { mode, hmr: false }).diagnostics).toEqual([]);
+    }
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
     expect(viteConfig).toContain("plugins: [beastOctane()]");
     expect(viteConfig).toContain(SOURCE_ALIAS);
@@ -96,7 +95,10 @@ describe("create-beast", () => {
       '<svg xmlns="http://www.w3.org/2000/svg"',
     );
     expect(await readFile(resolve(result.directory, "index.html"), "utf8")).toContain(
-      "Beast — Simply extraordinary",
+      "<title>Beast</title>",
+    );
+    expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).toContain(
+      "light-dark(",
     );
     expect(await readFile(resolve(result.directory, "CHANGELOG.md"), "utf8")).toContain(
       "## [Unreleased]",
@@ -124,7 +126,7 @@ describe("create-beast", () => {
       dependencies: Record<string, string>;
       devDependencies: Record<string, string>;
     };
-    expect(packageJson.dependencies.octane).toBe("0.6.0");
+    expect(packageJson.dependencies.octane).toBe("0.7.1");
     expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.3.3");
     expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.3.3");
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
@@ -137,10 +139,7 @@ describe("create-beast", () => {
     expect(style).toContain('@import "tailwindcss"');
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
-    expect(app).toContain("useState<PanelId>('language')");
-    expect(app).toContain("navigator.clipboard.writeText(note)");
-    expect(app).toContain("onKeyDown={(event) => onTabKey(event, index)}");
-    expect(app).toContain('role="tablist"');
+    expect(app).toContain("each link in links key link.label");
     expect(await readFile(resolve(result.directory, "public/beast.svg"), "utf8")).toContain(
       '<svg xmlns="http://www.w3.org/2000/svg"',
     );
@@ -189,12 +188,12 @@ describe("create-beast", () => {
       devDependencies: Record<string, string>;
     };
 
-    expect(packageJson.dependencies["beast-tsrx"]).toBe("0.6.0");
-    expect(packageJson.dependencies.octane).toBe("0.6.0");
+    expect(packageJson.dependencies["beast-tsrx"]).toBe("0.7.1");
+    expect(packageJson.dependencies.octane).toBe("0.7.1");
     expect(result.bundler).toBe("rspack");
     expect(result.ui).toBe("radix");
-    expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.57");
-    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.54");
+    expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.58");
+    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.1.55");
     expect(packageJson.devDependencies.vite).toBeUndefined();
     expect(packageJson.scripts.build).toBe("rspack build --mode production");
     const config = await readFile(resolve(result.directory, "rspack.config.ts"), "utf8");
@@ -227,8 +226,8 @@ describe("create-beast", () => {
       devDependencies: Record<string, string>;
     };
 
-    expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.46");
-    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.56");
+    expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.47");
+    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.1.57");
     expect(packageJson.devDependencies["@rsbuild/plugin-tailwindcss"]).toBe("^2.0.3");
     const config = await readFile(resolve(result.directory, "rsbuild.config.ts"), "utf8");
     expect(config).toContain('from "beast-tsrx/rsbuild"');

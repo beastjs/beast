@@ -245,3 +245,7 @@ Generated TSRX stays readable. Fix the BTSX source when either Beast or Octane r
 - spread syntax must be `{...value}`, not `{value}`
 - `component Name` requires one PascalCase TypeScript identifier
 - an unclosed attribute list or interpolation cannot be repaired by indentation; close the delimiter or use `~` to continue the logical line
+- `return` in a `scope`'s `setup` (outside a function or loop body) → `BEAST1904_SCOPE_RETURN`
+- `break`/`continue` in a `scope`'s `setup` → Octane error (a `scope` is a nested template with no early exit); filter the iterable or branch with `if`
+- element children inside `textarea` → Octane error; textarea content must be text or `#{…}` interpolation
+- `"use strong"` in `setup` → `OCTANE_STRONG_DIRECTIVE_PLACEMENT`; put it at the top of a `module` block

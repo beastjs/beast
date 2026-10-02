@@ -65,7 +65,7 @@ async function runCompile(rawArgs: string[]): Promise<number> {
     try {
       validateTsrx(code, output);
     } catch (error) {
-      throw mapGeneratedError(error, compiled.map, inputSource, input);
+      throw mapGeneratedError(error, compiled.map, inputSource, input, code);
     }
   }
   await mkdir(dirname(output), { recursive: true });

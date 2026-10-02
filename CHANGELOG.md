@@ -9,6 +9,22 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-03
+
+### Changed
+
+- Align the supported toolchain and coordinated package version with Octane `0.7.1`, using Rspack/Rsbuild plugins `0.1.55` / `0.1.57`. See the [migration guide](docs/octane-0.7.md).
+
+### Fixed
+
+- Map Octane 0.7 template errors that carry their location only in the message, such as element children inside `textarea` and `break`/`continue` leaving a `scope` block, to the authored BTSX line in the Vite, Rspack, CLI, and project compilers. `mapGeneratedError` accepts the generated TSRX as an optional fifth argument to locate offset-only parser errors.
+
+### Added
+
+- `BEAST1904_SCOPE_RETURN`: report a `return` that would leave a `scope` block at its exact BTSX location. Octane rejects it with no location. Returns inside loop bodies and nested functions, which Octane accepts, are not reported.
+
+- Octane 0.7 regressions for `scope` exits, `textarea` text and element children, `"use strong"` placement in `setup`, and `Object.assign` compound components rendered through SSR.
+
 ## [0.6.0] - 2026-09-27
 
 ### Changed

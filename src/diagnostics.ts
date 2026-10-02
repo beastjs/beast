@@ -52,7 +52,8 @@ export function formatDiagnostic(
 
 /**
  * Re-anchor an error thrown by Octane while compiling generated TSRX onto the
- * authored `.btsx` source. Errors without a usable location pass through
+ * authored `.btsx` source. Pass the generated TSRX so offset-only parser
+ * errors can be located too. Errors without a usable location pass through
  * unchanged.
  */
 export function mapGeneratedError(
@@ -60,16 +61,25 @@ export function mapGeneratedError(
   map: BeastSourceMap,
   source: string,
   filename: string,
+  generated?: string,
 ): unknown {
   if (error instanceof BeastCompileError || !(error instanceof Error)) return error;
   type Location = { line?: unknown; column?: unknown };
   const octaneError = error as Error & {
     loc?: Location & { start?: Location };
+    pos?: unknown;
     diagnostic?: { start?: Location; code?: string; message?: string };
   };
   // Parser errors use loc.start; semantic diagnostics (including removed
-  // Context.Provider access) expose a flat loc and diagnostic.start.
-  const start = octaneError.diagnostic?.start ?? octaneError.loc?.start ?? octaneError.loc;
+  // Context.Provider access) expose a flat loc and diagnostic.start. Some
+  // template validation errors (Octane 0.7 textarea children) only carry a
+  // 1-based `(file:line:col)` suffix, and some parser errors only an offset.
+  const start =
+    octaneError.diagnostic?.start ??
+    octaneError.loc?.start ??
+    octaneError.loc ??
+    messageLocation(error.message) ??
+    offsetLocation(octaneError.pos, generated);
   if (typeof start?.line !== "number" || typeof start.column !== "number") return error;
 
   const trace = new TraceMap(map as never);
@@ -104,4 +114,22 @@ export function mapGeneratedError(
       end: { ...position, offset: offset + 1, column: position.column + 1 },
     },
   });
+}
+
+function messageLocation(message: string): { line: number; column: number } | undefined {
+  const match = /\((?:[^()\n]*:)?(\d+):(\d+)\)\s*$/u.exec(message);
+  if (match === null) return undefined;
+  return { line: Number(match[1]), column: Math.max(0, Number(match[2]) - 1) };
+}
+
+function offsetLocation(
+  pos: unknown,
+  generated: string | undefined,
+): { line: number; column: number } | undefined {
+  if (typeof pos !== "number" || generated === undefined || pos < 0 || pos > generated.length) {
+    return undefined;
+  }
+  const before = generated.slice(0, pos);
+  const lineStart = before.lastIndexOf("\n") + 1;
+  return { line: before.split("\n").length, column: pos - lineStart };
 }

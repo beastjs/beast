@@ -1,134 +1,34 @@
 import { useState } from 'octane'
 
 module
-  type PanelId = 'language' | 'integration' | 'skills'
   interface Props { docsUrl: string }
-  const panels = [
-    { id: 'language', label: 'Language', number: '01', title: 'Less syntax. More intent.', description: 'A little structure goes a long way. Write typed components with indentation, native control flow, and the full expression of TypeScript.', tags: ['BTSX', 'TypeScript', 'Native control flow'], path: '/docs/language', note: 'src/App.btsx', code: 'import { useState } from "octane"\n\nsetup const [count, setCount] = useState(0);\n\nbutton(onClick={() => setCount(count + 1)})\n  | Launch #{count}' },
-    { id: 'integration', label: 'Integration', number: '02', title: 'One seamless pipeline.', description: 'Beast turns your components into TSRX. Octane brings them to life. Choose Vite, Rspack, or Rsbuild and stay in your flow.', tags: ['Vite', 'Rspack', 'Rsbuild'], path: '/docs/vite', note: 'Your first edit', code: '01  Open src/App.btsx\n02  Make it yours\n03  Save. See it live.\n\nBTSX → TSRX → Octane\n\nReady for your next idea.' },
-    { id: 'skills', label: 'Skills', number: '03', title: 'Build with a co-pilot.', description: 'Give your coding agent a shared language. Scaffold, create, and refine with the Beast skill, or bring an existing React experience along.', tags: ['Scaffold', 'Create', 'Migrate'], path: '/docs/skills', note: 'Add the Beast skill', code: 'npx skills add https://github.com/phtn/beast-skill --skill beast' }
-  ] as const
 
 props { docsUrl }: Props
 setup
-  const [activeId, setActiveId] = useState<PanelId>('language');
-  const [launches, setLaunches] = useState(0);
-  const [copyStatus, setCopyStatus] = useState('Copy command');
-  const active = panels.find((panel) => panel.id === activeId) ?? panels[0];
-  const copyNote = async (note: string) => {
-    try {
-      await navigator.clipboard.writeText(note);
-      setCopyStatus('Copied');
-    } catch {
-      setCopyStatus('Select the command to copy');
-    }
-  };
-  const selectPanel = (id: PanelId) => { setActiveId(id); setCopyStatus('Copy command'); };
-  const onTabKey = (event: KeyboardEvent, index: number) => {
-    const next = event.key === 'ArrowRight' ? (index + 1) % panels.length : event.key === 'ArrowLeft' ? (index + panels.length - 1) % panels.length : event.key === 'Home' ? 0 : event.key === 'End' ? panels.length - 1 : -1;
-    if (next < 0) return;
-    event.preventDefault();
-    selectPanel(panels[next].id);
-    document.getElementById(`tab-${panels[next].id}`)?.focus();
-  };
+  const [count, setCount] = useState(0);
+  const links = [
+    { label: 'Documentation', href: docsUrl },
+    { label: 'Octane', href: 'https://octanejs.dev' },
+    { label: 'GitHub', href: 'https://github.com/beastjs/beast' },
+  ];
 
-a.skip-link(href="#main") Skip to content
-header.site-header
-  a.brand(href="#" aria-label="Beast home")
-    img(src="/beast.svg" alt="" width="30" height="30")
-    | beast
-    span.brand-mark /
-  nav.site-nav(aria-label="Main navigation")
-    a(href="#explore") Explore
-    a(href={docsUrl} target="_blank" rel="noopener noreferrer") Documentation ↗
-  span.release-label v0.6.0 / Octane
+main.page
+  img.mark(src="/beast.svg" alt="Beast" width="28" height="28")
 
-main#main
-  section.hero(aria-labelledby="hero-title")
-    div.hero-copy
-      p.eyebrow
-        span.status-dot(aria-hidden="true")
-        | YOUR NEXT IDEA STARTS HERE
-      h1#hero-title
-        | Simply
-        br
-        em extraordinary.
-      p.hero-description A small language for ambitious ideas. Build expressive interfaces with Beast. Brought to life by Octane.
-      div.hero-actions
-        a.primary-link(href="#explore")
-          | Make something
+  h1.title
+    span Build fast apps fast.
+    span.quiet Even faster with machines.
+
+  button.counter(type="button" onClick={() => setCount(count + 1)})
+    span Count
+    output(aria-live="polite") #{count}
+
+  footer.foot
+    p.hint
+      code src/App.btsx
+      span Edit and save to reload.
+    nav.links(aria-label="Resources")
+      each link in links key link.label
+        a(href={link.href} target="_blank" rel="noopener noreferrer")
+          | #{link.label}
           span(aria-hidden="true") ↗
-        span.hero-caption Less ceremony.
-          br
-          | More possibility.
-    div(aria-hidden="true" className={launches % 2 === 0 ? 'orbit-scene' : 'orbit-scene orbit-shift'})
-      div.orbit-grid
-      div.orbit-halo
-      div.orbit-ring.ring-one
-      div.orbit-ring.ring-two
-      div.orbit-ring.ring-three
-      div.orbit-core
-        img(src="/beast.svg" alt="" width="80" height="80")
-      span.orbit-point.point-one
-      span.orbit-point.point-two
-      span.orbit-coordinate.coordinate-top 01 / FORM
-      span.orbit-coordinate.coordinate-bottom 02 / POSSIBILITY
-    div.hero-bottom
-      span A NEW START. AN OPEN CANVAS.
-      button.launch-button(type="button" onClick={() => setLaunches(launches + 1)} aria-label="Launch the interactive demo")
-        span.status-dot(aria-hidden="true")
-        | #{launches === 0 ? 'System ready. Give it a spin' : `Signal received / ${String(launches).padStart(2, '0')}`}
-        span(aria-hidden="true") ↗
-      a.scroll-link(href="#explore" aria-label="Scroll to explore") ↓
-
-  section.explorer#explore(aria-labelledby="explore-title")
-    div.section-heading
-      p.eyebrow THE STARTING POINT
-      h2#explore-title Everything you need.
-        br
-        span Nothing in your way.
-      p.section-intro From the first line to the finished experience. Find your rhythm, then make it your own.
-    div.workspace
-      div.panel-tabs(role="tablist" aria-label="Product workflow")
-        each panel, index in panels key panel.id
-          button.panel-tab(
-            ~ type="button"
-            ~ id={`tab-${panel.id}`}
-            ~ role="tab"
-            ~ aria-controls="workflow-panel"
-            ~ aria-selected={activeId === panel.id}
-            ~ tabIndex={activeId === panel.id ? 0 : -1}
-            ~ onClick={() => selectPanel(panel.id)}
-            ~ onKeyDown={(event) => onTabKey(event, index)}
-            ~ )
-            span.tab-number #{panel.number}
-            | #{panel.label}
-            span.tab-arrow(aria-hidden="true") ↗
-      div#workflow-panel.panel-content(role="tabpanel" aria-labelledby={`tab-${activeId}`} tabIndex={0})
-        article.panel-story
-          p.eyebrow #{active.number} / #{active.label}
-          h3 #{active.title}
-          p.panel-description #{active.description}
-          ul.tags(aria-label="Features")
-            each tag in active.tags key tag
-              li #{tag}
-          a.text-link(href={`${docsUrl}${active.path}`} target="_blank" rel="noopener noreferrer") Read the guide ↗
-        div.code-window
-          div.code-heading
-            span #{active.note}
-            span.code-dots(aria-hidden="true") ● ● ●
-          pre
-            code #{active.code}
-          div.code-footer
-            if activeId === 'skills'
-              button.copy-button(type="button" onClick={() => copyNote(active.code)}) #{copyStatus}
-            else
-              span Made for humans. And their agents.
-            span.code-symbol(aria-hidden="true") ↗
-          if activeId === 'skills'
-            p.copy-feedback(role="status") #{copyStatus === 'Copied' ? 'Command copied to clipboard.' : ''}
-
-  footer.site-footer
-    a.brand.footer-brand(href="#" aria-label="Back to top") beast
-    p Your canvas. Your rules.
-    a(href="https://github.com/beastjs/beast" target="_blank" rel="noopener noreferrer") Find us on GitHub ↗

@@ -59,6 +59,7 @@ Quoted attributes and literal text decode HTML entities. If Octane rejects an em
 | `BEAST1701`–`BEAST1711` | malformed `try`, `pending`, or `catch` | use bare `try`, then non-empty `pending` and/or `catch`; pending precedes catch |
 | `BEAST1901_EMPTY_FRAGMENT` | explicit fragment has no nodes | add an indented template node or remove it |
 | `BEAST1902_EMPTY_STYLE` | style block has no CSS | add indented CSS or remove it |
+| `BEAST1904_SCOPE_RETURN` | `return` in a `scope`'s `setup` outside a function or loop body | render the content from an `if` branch, or return early from a component `setup` |
 
 Specific boundary rules:
 
