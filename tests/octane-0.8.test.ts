@@ -3,6 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { Window } from "happy-dom";
 import { compile } from "octane/compiler";
 import { renderToString } from "octane/server";
 import { BeastCompileError, compileBeastResult, mapGeneratedError } from "../src/index.js";
@@ -134,7 +135,14 @@ describe("Octane 0.8 BTSX compatibility", () => {
     const module = await serverModule(source, false, {
       'State.mjs': `import { createScope } from ${JSON.stringify(import.meta.resolve("octane/signals"))};\nexport const count$ = createScope({ scopeKey: "beast-08-binding" }).signal$("count", "2");`,
     });
-    expect(renderToString(module.default).html.replace(/<!--[\s\S]*?-->/gu, "")).toContain(">2</output>");
+    const browser = new Window();
+    try {
+      const container = browser.document.createElement("div");
+      container.innerHTML = renderToString(module.default).html;
+      expect(container.querySelector("output")?.textContent).toBe("2");
+    } finally {
+      browser.close();
+    }
   });
 
   test("Hydrate accepts pointer continuation and cancellation events", async () => {
