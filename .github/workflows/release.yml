@@ -1,0 +1,78 @@
+name: Checks and release
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run pack:check
+      - name: Check skill scripts
+        run: |
+          bunx tsc -p skills/beast/tsconfig.json --noEmit
+          node --check skills/beast/scripts/beast-doctor.cjs
+          node --check skills/react-to-beast/scripts/react-beast-audit.mjs
+          node --check skills/react-to-beast/scripts/react-beast-route-compare.mjs
+      - name: Prepare release artifacts
+        run: node scripts/release.mjs prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: .release/
+          include-hidden-files: true
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Release
+    needs: checks
+    if: github.repository == 'beastjs/beast' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      checks: read
+      statuses: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: .release/
+      - name: Wait for all commit checks, including CodeQL
+        id: gate
+        run: node scripts/wait-for-checks.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Publish packages and skills release
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/release.mjs publish
+        env:
+          GH_TOKEN: ${{ github.token }}

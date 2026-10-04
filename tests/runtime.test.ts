@@ -168,6 +168,40 @@ beforeEach(() => {
 afterAll(restoreDom);
 
 describe("Octane client lifecycle", () => {
+  test.each([false, true])("Octane 0.8 removes a longer server branch while preserving adopted roots (dev=%s)", async (dev) => {
+    const source = [
+      'props { longer }: { longer: boolean }',
+      'if longer',
+      '  fragment',
+      '    p#kept Shared',
+      '    aside#stale Server only',
+      'else',
+      '  p#kept Shared',
+    ].join("\n");
+    const Server = await loadCompiledComponent(source, "Branch08.btsx", "server", dev);
+    const Client = await loadCompiledComponent(source, "Branch08.btsx", "client", dev);
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    container.innerHTML = renderToString(Server, { longer: true }).html;
+    const adopted = requiredElement(container, "#kept");
+    const errors: unknown[] = [];
+    const { act, hydrateRoot } = await import("octane");
+    const root = hydrateRoot(container, Client, { longer: false }, {
+      onRecoverableError: error => errors.push(error),
+    });
+    try {
+      await act(() => {});
+      expect(requiredElement(container, "#kept")).toBe(adopted);
+      expect(container.querySelector("#stale")).toBeNull();
+      expect(errors).toHaveLength(1);
+      await act(() => root.render(Client, { longer: true }));
+      expect(container.querySelectorAll("#kept")).toHaveLength(1);
+      expect(container.querySelectorAll("#stale")).toHaveLength(1);
+    } finally {
+      root.unmount();
+    }
+  });
+
   test.each([false, true])("textarea hydration adopts restored values and retains the reset text node (dev=%s)", async (dev) => {
     const source = [
       'import type { SignalHandle } from "octane/signals";',

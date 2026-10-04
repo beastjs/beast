@@ -1,6 +1,6 @@
 {
   "name": "create-beast",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Create a Beast and Octane TSRX project.",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,6 +37,11 @@
     "vite"
   ],
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beastjs/beast.git",
+    "directory": "packages/create-beast"
+  },
   "publishConfig": {
     "access": "public"
   },

@@ -248,4 +248,5 @@ Generated TSRX stays readable. Fix the BTSX source when either Beast or Octane r
 - `return` in a `scope`'s `setup` (outside a function or loop body) → `BEAST1904_SCOPE_RETURN`
 - `break`/`continue` in a `scope`'s `setup` → Octane error (a `scope` is a nested template with no early exit); filter the iterable or branch with `if`
 - element children inside `textarea` → Octane error; textarea content must be text or `#{…}` interpolation
-- `"use strong"` in `setup` → `OCTANE_STRONG_DIRECTIVE_PLACEMENT`; put it at the top of a `module` block
+- `"use strong"` in `setup` → `OCTANE_STRONG_DIRECTIVE_PLACEMENT`; put it in a leading `module` block before imports
+- Octane 0.8 Strong mode rejects impure updaters, mutated snapshots, stale deferred updates, unstable store snapshots, leaking effects, and writes or queries into template-owned DOM; see [the migration guide](octane-0.8.md)

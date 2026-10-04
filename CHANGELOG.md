@@ -9,6 +9,34 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Automatically publish coordinated Beast releases from `main` after the full
+  test, build, packaging, skill, and CodeQL checks pass. Releases publish
+  `beast-tsrx` and `create-beast` to npm and attach a versioned skills archive
+  to GitHub, with retries that skip already-published artifacts.
+
+## [0.8.0] - 2026-10-04
+
+### Changed
+
+- Align Beast with Octane `0.8.0` and its Rspack `0.1.56` and Rsbuild `0.1.58`
+  plugins. Add a migration guide covering Strong-mode state/effect rules,
+  binding views, islands, and universal template-program opt-in.
+
+### Fixed
+
+- Remove generated TSRX locations from mapped Strong-mode errors so diagnostics
+  show the authored BTSX location and Octane diagnostic without a conflicting
+  generated filename.
+
+### Added
+
+- Verify the new Strong-mode diagnostics in client/server compilation,
+  zero-argument binding views with imported signals and boundary arms, pointer
+  hydration strategies, shell witnesses, and shorter-branch hydration recovery
+  in development and production.
+
 ## [0.7.1] - 2026-10-03
 
 ### Changed

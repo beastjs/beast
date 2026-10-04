@@ -6,7 +6,13 @@ license: ISC
 
 # React to Beast
 
-This revision targets `beast-tsrx@0.7.1`, `create-beast@0.7.1`, and `octane@0.7.1`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+This revision targets `beast-tsrx@0.8.0`, `create-beast@0.8.0`, and `octane@0.8.0`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+
+For Strong-mode ports, use pure state updaters, immutable snapshots, stable
+external-store snapshots, and effect cleanup that releases resources and
+cancels asynchronous state updates. Use refs for template-owned DOM. The
+[Octane 0.8 migration guide](references/octane-0.8.md) lists the
+diagnostics and binding/island changes.
 
 Port applications as verified vertical slices. Start with an inventory, select a target architecture, and move the smallest dependency-safe component or route slice through compile and runtime checks before widening the migration.
 

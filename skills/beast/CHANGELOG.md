@@ -5,7 +5,16 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+### Added
+
+- Ship the Beast and React-to-Beast skills together in a versioned
+  `beast-skills` GitHub release archive after all repository checks pass.
+
 ### Changed
+
+- Target Beast/Octane `0.8.0`, document Strong-mode state/effect and DOM
+  diagnostics, and add the Octane 0.8 migration guide. Update router reference
+  versions to bindings whose peers accept Octane `^0.8.0`.
 
 - Align the skill target with Beast/Octane `0.7.1`, add the Octane 0.7 migration reference, and list the new `scope`-exit, `textarea`, and `"use strong"` placement errors in the syntax cheatsheet.
 

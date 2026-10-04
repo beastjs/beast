@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.7.1` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.8.0` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -160,3 +160,16 @@ server-renders as one run without hydration markers, and an `Object.assign`
 compound component with `if`/`else` arms renders through SSR. The upstream
 early-exit, hydration-recovery, and universal `useOptimistic`/`useActionState`
 fixes have no BTSX-specific syntax and remain upstream coverage.
+
+## Octane 0.8.0 regression coverage
+
+`tests/octane-0.8.test.ts` verifies eleven new Strong-mode diagnostic families
+in client/server builds with authored BTSX locations, their compatibility-mode
+acceptance, and valid pure/immutable state updates with effect cleanup. It
+also covers zero-argument DOM-binding views with imported signal reads,
+boundary arms and mount-only hooks, pointermove/pointercancel strategy
+serialization, and development shell witnesses. `tests/runtime.test.ts`
+verifies shorter-branch hydration recovery in development and production,
+including shared-root adoption, one recoverable error, and later updates.
+Independent renderer-free island activation, native browser event replay,
+and universal-driver lifecycle behavior remain upstream coverage.
