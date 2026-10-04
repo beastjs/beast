@@ -102,9 +102,8 @@ export function mapGeneratedError(
   offset += original.column;
   const position = { offset, line: original.line, column: original.column + 1 };
   const message = octaneError.diagnostic?.message === undefined
-    ? error.message
-      .replace(/^[^\n]*?:\d+:\d+:\s*(?=\[OCTANE_)/u, "")
-      .replace(/\s*\((?:[^()\n]*:)?\d+:\d+\)\s*$/u, "")
+    ? stripMessageLocation(error.message
+      .replace(/^[^\n]*?:\d+:\d+:\s*(?=\[OCTANE_)/u, ""))
     : `${octaneError.diagnostic.code ?? "OCTANE"}: ${octaneError.diagnostic.message}`;
   return new BeastCompileError({
     code: "BEAST9001_OCTANE",
@@ -118,8 +117,19 @@ export function mapGeneratedError(
   });
 }
 
+function stripMessageLocation(message: string): string {
+  const trimmed = message.trimEnd();
+  const start = trimmed.lastIndexOf("(");
+  return start >= 0 && /^\((?:[^()\n]*:)?\d+:\d+\)$/u.test(trimmed.slice(start))
+    ? trimmed.slice(0, start).trimEnd()
+    : message;
+}
+
 function messageLocation(message: string): { line: number; column: number } | undefined {
-  const match = /\((?:[^()\n]*:)?(\d+):(\d+)\)\s*$/u.exec(message);
+  const trimmed = message.trimEnd();
+  const start = trimmed.lastIndexOf("(");
+  if (start < 0) return undefined;
+  const match = /^\((?:[^()\n]*:)?(\d+):(\d+)\)$/u.exec(trimmed.slice(start));
   if (match === null) return undefined;
   return { line: Number(match[1]), column: Math.max(0, Number(match[2]) - 1) };
 }

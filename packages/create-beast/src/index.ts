@@ -371,9 +371,10 @@ function normalizePackageName(name: string): string {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/gu, "-")
-    .replace(/^[._-]+|[._-]+$/gu, "")
-    .slice(0, 214);
-  return normalized || DEFAULT_DIRECTORY;
+    .replace(/^[._-]+/u, "");
+  let end = normalized.length;
+  while (end > 0 && "._-".includes(normalized[end - 1]!)) end -= 1;
+  return normalized.slice(0, Math.min(end, 214)) || DEFAULT_DIRECTORY;
 }
 
 function takeFlag(args: string[], name: string): boolean {
