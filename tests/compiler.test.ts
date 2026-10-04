@@ -1543,6 +1543,17 @@ describe('BTSX to TSRX', () => {
 })
 
 describe('error locations', () => {
+  test('mapping long diagnostic whitespace preserves text and strips only a location suffix', () => {
+    const source = 'p Ready\n'
+    const result = compileBeastResult(source, { filename: 'a.btsx' })
+    for (const suffix of [' (a.tsrx:1:1)   ', ' (1:1)\t', ' (not a location)']) {
+      const text = 'Invalid' + ' '.repeat(100_000) + 'value'
+      const error = Object.assign(new Error(text + suffix), { loc: { line: 1, column: 0 } })
+      const mapped = mapGeneratedError(error, result.map, source, 'a.btsx') as BeastCompileError
+      expect(mapped.diagnostic.message).toBe(text + (suffix.includes('not a location') ? suffix : ''))
+    }
+  })
+
   test('compile errors carry file:line:column in the message', () => {
     expect(() => compileBeast('div\n  <p>x</p>\n', { filename: 'a.btsx' })).toThrow(/a\.btsx:2:3 - BEAST1101/u)
   })
