@@ -16,6 +16,12 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `beast-tsrx` and `create-beast` to npm and attach a versioned skills archive
   to GitHub, with retries that skip already-published artifacts.
 
+### Fixed
+
+- Use Bun's hoisted linker and build workspace packages before type checking
+  and tests so the language server can resolve the root `beast-tsrx` package
+  and its declarations in fresh CI checkouts.
+
 ## [0.8.0] - 2026-10-04
 
 ### Changed

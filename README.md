@@ -1355,9 +1355,9 @@ bun run check
 | Script | Purpose |
 | --- | --- |
 | `bun run build` | Compile the compiler, creator, and language-server packages |
-| `bun run typecheck` | Type-check all three packages without emitting files |
+| `bun run typecheck` | Type-check all three packages without emitting files; run `bun run build` first in a fresh checkout |
 | `bun test` / `bun run test` | Run the full discovered test suite |
-| `bun run check` | Run type checking, tests, and builds in sequence |
+| `bun run check` | Build packages, then run type checking and tests |
 | `bun run pack:check` | Inspect all three npm package tarballs without publishing |
 
 Octane 0.8 conformance tests cover new Strong-mode diagnostics, imported signal

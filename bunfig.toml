@@ -1,0 +1,4 @@
+[install]
+# The language server depends on the root package through the link:. override.
+# Hoisting keeps that dependency linked to the root as its dist/ files are built.
+linker = "hoisted"

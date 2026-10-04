@@ -44,7 +44,7 @@ the matching artifact is ready to publish.
 
 `.github/workflows/release.yml` runs on pull requests, pushes to `main`, and
 manual dispatches. Its Checks job installs the frozen lockfile, runs the full
-typecheck/test/build suite and package dry runs, checks skill scripts, and
+build/typecheck/test suite and package dry runs, checks skill scripts, and
 prepares the release tarballs. The Release job runs only on this repository's
 `main` branch and publishes those exact npm tarballs after all commit checks
 and statuses succeed, including GitHub's existing CodeQL
@@ -58,6 +58,12 @@ npm versions and skills assets are skipped, so unchanged versions do not
 publish again, and rerunning a failed workflow completes a partial release.
 A run for an older `main` commit yields to the newer commit's workflow.
 The language server is checked and packed but is not automatically published.
+
+Builds run before type checking and tests because the language server consumes
+the compiler's public `dist/` JavaScript and declaration files. `bunfig.toml`
+selects the hoisted linker so the root `link:.` override stays a live package
+link instead of an isolated copy made before those files exist. Together these
+settings support a fresh checkout with no existing build output.
 
 `beast-skills-<version>.tgz` is a GitHub release asset containing both tracked
 skill directories under `skills/`. The private `skills/beast/package.json`
