@@ -266,4 +266,98 @@ describe("create-beast", () => {
     });
     expect(await readFile(resolve(target, "mine.txt"), "utf8")).toBe("keep me");
   });
+
+  for (const bundler of ["vite", "rspack", "rsbuild"] as const) {
+    test(`wires development tools for ${bundler} and defers initializers without installation`, async () => {
+      const cwd = await temporaryDirectory();
+      const result = await createProject({
+        cwd, directory: bundler, bundler, install: false, git: false,
+        devtools: true, pageBuilder: true, beastUi: true, icons: true,
+      }, { runCommand: async () => { throw new Error("Must not run commands without installation"); } });
+      const manifest = await Bun.file(resolve(result.directory, "package.json")).json();
+      expect(manifest.devDependencies["@beastjs/devtools"]).toBe("0.1.21");
+      expect(manifest.devDependencies["@beastjs/page-builder"]).toBe("0.1.0");
+      expect(manifest.devDependencies["@beastjs/cli"]).toBe("0.3.3");
+      expect(manifest.dependencies["@beastjs/cli"]).toBeUndefined();
+      expect(manifest.devDependencies.tailwindcss).toBe("^4.3.3");
+      const config = await readFile(resolve(result.directory, `${bundler}.config.ts`), "utf8");
+      expect(config).toContain(`from "@beastjs/devtools/${bundler}"`);
+      expect(config).toContain(`from "@beastjs/page-builder/${bundler}"`);
+      expect(config).toContain("beastDevtools(), beastPageBuilder()");
+      expect(config).toContain(bundler === "vite" ? 'profile: "auto"' : 'profile: process.env.NODE_ENV !== "production"');
+      expect(config).toContain(bundler === "rsbuild" ? "...beastOctane(" : "beastOctane(");
+      expect(result.pendingCommands).toEqual([
+        "bun run beast-ui init --package-manager bun",
+        "bun run beast-ui icons init --framework beast",
+      ]);
+      expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).toContain('@import "tailwindcss"');
+      const readme = await readFile(resolve(result.directory, "README.md"), "utf8");
+      expect(readme).toContain("TanStack router");
+      expect(readme).toContain("bun run beast-ui icons init");
+    });
+  }
+
+  test("initializes UI and icons only after a successful dependency install in the target", async () => {
+    const cwd = await temporaryDirectory();
+    const commands: string[] = [];
+    const target = resolve(cwd, "initialized");
+    const result = await createProject({ cwd, directory: "initialized", git: false, beastUi: true, icons: true }, {
+      quiet: true,
+      runCommand: async (command, args, directory, stdio) => {
+        expect(directory).toBe(target);
+        expect(stdio).toBe("pipe");
+        commands.push([command, ...args].join(" "));
+        return { code: 0, output: "" };
+      },
+    });
+    expect(commands).toEqual([
+      "bun install", "bun run beast-ui init --package-manager bun",
+      "bun run beast-ui icons init --framework beast",
+    ]);
+    expect(result.installed).toBe(true);
+    expect(result.pendingCommands).toEqual([]);
+  });
+
+  test("icons can initialize independently of Beast UI and Tailwind", async () => {
+    const cwd = await temporaryDirectory();
+    const commands: string[] = [];
+    const result = await createProject({ cwd, directory: "icons-only", git: false, icons: true }, {
+      runCommand: async (command, args) => {
+        commands.push([command, ...args].join(" "));
+        return { code: 0, output: "" };
+      },
+    });
+    expect(commands).toEqual(["bun install", "bun run beast-ui icons init --framework beast"]);
+    expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).not.toContain('@import "tailwindcss"');
+    expect(result.addons).toEqual(["icons"]);
+  });
+
+  test("failed installation preserves scaffold files and gives all remaining commands", async () => {
+    const cwd = await temporaryDirectory();
+    const commands: string[] = [];
+    let error: unknown;
+    try {
+      await createProject({ cwd, directory: "install-failure", git: false, beastUi: true, icons: true }, {
+        runCommand: async (command, args) => {
+          commands.push([command, ...args].join(" "));
+          return { code: 1, output: "registry unavailable" };
+        },
+      });
+    } catch (cause) { error = cause; }
+    expect(commands).toEqual(["bun install"]);
+    expect(String(error)).toContain("registry unavailable");
+    expect(String(error)).toContain("bun run beast-ui init --package-manager bun");
+    expect(String(error)).toContain("bun run beast-ui icons init --framework beast");
+    expect(await Bun.file(resolve(cwd, "install-failure/package.json")).exists()).toBe(true);
+  });
+
+  test("failed icon initialization only suggests the unfinished command", async () => {
+    const cwd = await temporaryDirectory();
+    await expect(createProject({ cwd, directory: "icon-failure", git: false, beastUi: true, icons: true }, {
+      runCommand: async (_command, args) => ({
+        code: args.includes("icons") ? 2 : 0,
+        output: args.includes("icons") ? "SVG conflict" : "",
+      }),
+    })).rejects.toThrow("Continue with:\n  cd " + resolve(cwd, "icon-failure") + "\n  bun run beast-ui icons init --framework beast");
+  });
 });

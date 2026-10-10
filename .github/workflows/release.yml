@@ -56,7 +56,6 @@ jobs:
       contents: write
       checks: read
       statuses: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -71,8 +70,8 @@ jobs:
         run: node scripts/wait-for-checks.mjs
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Publish packages and skills release
+      - name: Create GitHub release with package and skill archives
         if: steps.gate.outputs.ready == 'true'
-        run: node scripts/release.mjs publish
+        run: node scripts/release.mjs release
         env:
           GH_TOKEN: ${{ github.token }}

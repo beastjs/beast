@@ -217,7 +217,7 @@ describe("Octane bundler integrations", () => {
     const html = server.default.render();
     expect(html).toContain("Native TSRX");
     expect(html).toContain('data-octane-hydrate-when="interaction"');
-  });
+  }, 30_000);
 
   test("Rspack resolves aliased BTSX, TSRX, and TypeScript imports", async () => {
     const root = await temporaryProject("beast-rspack-alias-test-");
@@ -238,7 +238,7 @@ describe("Octane bundler integrations", () => {
     const scripts = await readScripts(outDir);
     expect(scripts).toContain("Aliased label");
     expect(scripts).toContain("Aliased TSRX");
-  });
+  }, 30_000);
 
   test("Rsbuild resolves aliased BTSX, TSRX, and TypeScript imports", async () => {
     const root = await temporaryProject("beast-rsbuild-alias-test-");
@@ -262,7 +262,7 @@ describe("Octane bundler integrations", () => {
     } finally {
       await result.close();
     }
-  });
+  }, 30_000);
 
   test("Rsbuild composes its Octane integration with mixed BTSX/TSRX", async () => {
     const root = await temporaryProject("beast-rsbuild-test-");
@@ -295,7 +295,7 @@ describe("Octane bundler integrations", () => {
     } finally {
       await result.close();
     }
-  });
+  }, 30_000);
 
   test("Rsbuild routes a BTSX entry through browser and Node environments", async () => {
     const root = await temporaryProject("beast-rsbuild-app-test-");
@@ -354,5 +354,5 @@ describe("Octane bundler integrations", () => {
     } finally {
       await result.close();
     }
-  });
+  }, 30_000);
 });

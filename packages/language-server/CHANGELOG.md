@@ -5,33 +5,18 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-10-10
+
 ### Changed
 
 - Use Octane `0.12.1` virtual code, depend on `beast-tsrx@^0.12.1`, and include
-  the explicit `@tsrx/oxc@0.20.0` compiler peer in language server `0.2.2`.
-
-- Use Octane `0.8.0` virtual code and depend on `beast-tsrx@^0.8.0`.
-
-- Use Octane `0.7.1` virtual code and depend on `beast-tsrx@^0.7.1`, which places `return`-in-`scope`, `textarea`-children, and `scope`-exit errors on their BTSX lines.
-
-- Use Octane `0.6.0` virtual code and depend on `beast-tsrx@^0.6.0`.
-
-- Use Octane `0.4.3` virtual code and depend on `beast-tsrx@^0.4.3`.
-
-### Changed
-
-- Use Octane `0.3.2` virtual code and depend on `beast-tsrx@^0.3.2`.
+  the explicit `@tsrx/oxc@0.20.0` compiler peer. Compiler diagnostics include
+  source-located `scope` exits, `textarea` children, and Strong-mode errors.
 
 ### Fixed
 
 - Hide generated helper names in auto-import completions as well as local
   completions after Octane added internal exports.
-
-### Changed
-
-- Depends on `octane@0.2.13` for TSX virtual code, and on `beast-tsrx@^0.2.61`
-  so the language server tracks the compiler's Octane peer range.
-
 
 ## [0.2.1] - 2026-09-14
 

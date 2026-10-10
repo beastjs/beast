@@ -5,12 +5,21 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-10
+
 ### Added
 
 - Ship the Beast and React-to-Beast skills together in a versioned
   `beast-skills` GitHub release archive after all repository checks pass.
 
 ### Changed
+
+- Document the creator’s optional development tools, Beast UI and icon initialization,
+  keyboard prompts, and automation/deferred-setup flags.
+
+- Update the README for the Beast/Octane `0.12.1` toolchain, explicit parser
+  installation, companion packages, scaffold options, migration behavior, and
+  current TypeScript language-server features.
 
 - Target Beast/Octane `0.12.1`, update both tracked skills and router peers,
   and add the Octane 0.12 migration reference for parser installation, literal
@@ -28,13 +37,9 @@ repository's [changelog policy](../../docs/changelogs.md).
   Octane 0.4 migration guide for companion package peers, TypeScript in
   `module` blocks, new `Hydrate` diagnostics, and `domBindingFixedProps`.
 
-### Changed
-
 - Align the skill version with the Beast/Octane `0.3.2` release and add the
   migration guide for contexts, signals, textarea restoration, and native
   attribute contracts.
-
-### Changed
 
 - Updated the coverage ledger and compatibility guidance for `octane@0.2.13`
   and the `0.1.50` Rspack/Rsbuild plugins.

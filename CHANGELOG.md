@@ -9,12 +9,13 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-10
+
 ### Added
 
-- Automatically publish coordinated Beast releases from `main` after the full
-  test, build, packaging, skill, and CodeQL checks pass. Releases publish
-  `beast-tsrx` and `create-beast` to npm and attach a versioned skills archive
-  to GitHub, with retries that skip already-published artifacts.
+- Create coordinated GitHub releases from `main` after test, build, packaging,
+  skill, and CodeQL checks pass. Attach compiler, builder, and skill archives
+  for manual npm publishing, with retries that attach only missing assets.
 
 - Cover Octane's new lazy-ref and layout-snapshot hooks, Strong callback-ref
   and measurement diagnostics, recursive binding views, TypeScript erasure,
@@ -31,6 +32,8 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Give production bundler integration tests a bounded 30-second timeout so
+  slower CI builds complete before fixture cleanup.
 - Use Bun's hoisted linker and build workspace packages before type checking
   and tests so the language server can resolve the root `beast-tsrx` package
   and its declarations in fresh CI checkouts.

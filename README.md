@@ -87,11 +87,24 @@ Creator options:
 | ---------------- | -------------------------------------------------------------------------------------- |
 | `--bundler NAME` | Select `vite`, `rspack`, or `rsbuild` without the interactive prompt                   |
 | `--ui NAME`      | Select `base-ui`, `radix`, or `shadcn` without the interactive prompt                  |
+| `--devtools`     | Add Beast Devtools and enable profiling during development                             |
+| `--page-builder` | Add the Beast Page Builder development widget                                          |
+| `--beast-ui`     | Enable Tailwind and initialize Beast UI through `@beastjs/cli`                          |
+| `--icons`        | Initialize the typed Beast SVG icon pipeline through `@beastjs/cli icons init`          |
+| `-y`, `--yes`    | Accept defaults for unanswered prompts                                                 |
+| `--no-addons`    | Skip the optional tools checklist                                                      |
 | `--no-install`   | Write the project without running `bun install`                                        |
 | `--no-git`       | Skip `git init`                                                                        |
 | `--force`        | Write known template files into a non-empty directory without deleting unrelated files |
 | `-h`, `--help`   | Print command help                                                                     |
 | `--tailwind`     | Add Tailwind CSS support; selecting shadcn enables it automatically                    |
+
+The interactive creator uses arrow-key choices and a tools checklist; Space
+toggles a tool and Enter continues. All tools are optional. `--no-install`
+also defers UI/icon initialization and prints the remaining commands. See the
+[creator guide](packages/create-beast/README.md) for setup and widget details.
+After installation and initialization, a final menu opens a shell in the
+project directory or opens it and runs the development server.
 
 ## LSP
 
@@ -1381,11 +1394,12 @@ release suites continue to cover signals, pointer strategies, and shell witnesse
 The test script selects `tests/` and `packages/` so independently maintained,
 git-ignored development repositories do not contribute a different toolchain.
 
-The [automated release workflow](.github/workflows/release.yml) publishes new
-`beast-tsrx` and `create-beast` versions from `main` after all checks, including
-CodeQL, pass. Both tracked skills ship as `beast-skills-<version>.tgz` on the
-matching GitHub release. Versions remain aligned with Octane, and existing
-versions are skipped. See [release setup and retry behavior](docs/changelogs.md#automated-releases).
+The [automated release workflow](.github/workflows/release.yml) creates GitHub
+releases from `main` after all checks, including CodeQL, pass. It attaches the
+checked `beast-tsrx` and `create-beast` npm tarballs for manual publishing and
+both tracked skills as `beast-skills-<version>.tgz`. Versions remain aligned
+with Octane; retries attach only missing assets. See
+[release and publishing instructions](docs/changelogs.md#automated-releases).
 
 When changing the language or generator:
 

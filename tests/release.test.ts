@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 // @ts-expect-error Release automation runs directly in Node without a compilation step.
-import { isPublished, packedArtifact, releaseVersion, validateArtifacts } from '../scripts/release.mjs';
+import { changelogEntry, createGitHubRelease, packedArtifact, releaseVersion, validateArtifacts } from '../scripts/release.mjs';
 // @ts-expect-error Release automation runs directly in Node without a compilation step.
 import { checkReadiness } from '../scripts/wait-for-checks.mjs';
 
@@ -57,11 +57,36 @@ describe('release safeguards', () => {
     expect(checkReadiness([...passing, own], [], '999').ready).toBe(false);
   });
 
-  test('skips existing npm versions but fails closed on registry errors', async () => {
-    expect(await isPublished('beast-tsrx', '0.7.1', async () => new Response('{}', { status: 200 }))).toBe(true);
-    expect(await isPublished('beast-tsrx', '0.7.2', async () => new Response('{}', { status: 404 }))).toBe(false);
-    for (const status of [401, 403, 429, 500]) {
-      await expect(isPublished('beast-tsrx', '0.7.2', async () => new Response('{}', { status }))).rejects.toThrow();
-    }
+  test('creates a GitHub release with both npm archives and skills, without publishing to npm', () => {
+    const artifacts = { version: '0.12.1', skills: 'beast-skills-0.12.1.tgz', packages: [
+      { name: 'beast-tsrx', file: 'beast-tsrx-0.12.1.tgz' },
+      { name: 'create-beast', file: 'create-beast-0.12.1.tgz' },
+    ] };
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const execute = (command: string, args: string[]) => {
+      calls.push({ command, args });
+      return '[]';
+    };
+    createGitHubRelease(artifacts, 'abc123', execute);
+    expect(calls).toEqual([
+      { command: 'gh', args: ['api', '--paginate', '--slurp', 'repos/beastjs/beast/releases?per_page=100'] },
+      { command: 'gh', args: ['release', 'create', '0.12.1', '.release/beast-tsrx-0.12.1.tgz',
+        '.release/create-beast-0.12.1.tgz', '.release/beast-skills-0.12.1.tgz',
+        '--target', 'abc123', '--title', 'Beast 0.12.1', '--notes-file', '.release/notes.md'] },
+    ]);
+
+    calls.length = 0;
+    createGitHubRelease(artifacts, 'abc123', (command: string, args: string[]) => {
+      calls.push({ command, args });
+      return JSON.stringify([[{ tag_name: '0.12.1', assets: [{ name: artifacts.skills }] }]]);
+    });
+    expect(calls[1]).toEqual({ command: 'gh', args: ['release', 'upload', '0.12.1',
+      '.release/beast-tsrx-0.12.1.tgz', '.release/create-beast-0.12.1.tgz'] });
+  });
+
+  test('release notes include only the requested dated changelog entry', () => {
+    const source = '# Changelog\n\n## [Unreleased]\n\n## [0.12.1] - 2026-10-10\n\n### Added\n\n- Builder.\n\n## [0.8.0] - 2026-10-04\n\n- Older.\n';
+    expect(changelogEntry(source, '0.12.1')).toBe('### Added\n\n- Builder.');
+    expect(() => changelogEntry(source, '0.12.0')).toThrow();
   });
 });

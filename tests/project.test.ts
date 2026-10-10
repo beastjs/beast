@@ -303,7 +303,7 @@ describe("project building", () => {
     expect(beastMap?.sources.some((source) => source.endsWith("/src/App.tsrx"))).toBe(false);
     expect(beastMap?.sourcesContent?.some((source) => source?.includes("h1 #{title}")))
       .toBe(true);
-  });
+  }, 30_000);
 
   test("Vite renders an SSR build and hydrates a compiler-split BTSX boundary", async () => {
     const root = await temporaryProject();
@@ -414,7 +414,7 @@ describe("project building", () => {
       delete state.__beastHydrated;
       restoreDom();
     }
-  });
+  }, 30_000);
 
   test("removes only stale manifest outputs and prunes their empty directories", async () => {
     const root = await temporaryProject();

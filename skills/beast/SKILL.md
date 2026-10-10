@@ -39,7 +39,9 @@ bun create beast@latest [directory]
 bun x create-beast@latest [directory]
 ```
 
-Options: `--tailwind` selects the dedicated Tailwind CSS template; `--no-install` skips `bun install`; `--no-git` skips `git init`; `--force` writes known template files into a non-empty directory without deleting unrelated files; `-h/--help` prints help. Inspect a non-empty target before using `--force`.
+The CLI uses arrow-key selections for the bundler and UI binding, then an optional tools checklist. Flags include `--bundler vite|rspack|rsbuild`, `--ui base-ui|radix|shadcn`, `--tailwind`, `--devtools`, `--page-builder`, `--beast-ui`, and `--icons`. Devtools and Page Builder add the selected bundler's plugin configuration. Beast UI runs its initializer and enables Tailwind; icons run `beast-ui icons init --framework beast`.
+
+`--yes` accepts defaults without prompts; `--no-addons` skips optional tools. `--no-install` prints pending setup commands, `--no-git` skips Git initialization, and `--force` writes known template files into a non-empty directory. Inspect such a target first. After installation, the final prompt opens a project shell or runs the dev server in that directory; automation skips it. Read `README.md` for exact scaffold options.
 
 The base and Tailwind templates include a typed `src/App.btsx`, `src/main.ts`, styles, `vite.config.ts` with `beastOctane()`, TSRX-aware `tsconfig.json`, and a project-owned `CHANGELOG.md`. The Tailwind template also configures `@tailwindcss/vite` and `@import "tailwindcss"`.
 
@@ -157,7 +159,7 @@ For repository diagnosis:
 - distinguish native compiler errors from doctor hints and downstream Octane errors
 - recommend the smallest first fix at a stable boundary: typed props, isolated TSRX output, or one build-tool adapter
 
-For editor tooling, verify the language-server command and workspace root, then distinguish Beast grammar/navigation features from TypeScript expression semantics, which remain outside the first LSP release.
+For editor tooling, verify the language-server command and workspace root. The current LSP includes TypeScript expression diagnostics, member completion, auto-imports, hover, and definitions through Octane virtual code; project typechecks and builds still verify application integration.
 
 Save a Markdown report only when the scan is substantial or the user requests an artifact.
 

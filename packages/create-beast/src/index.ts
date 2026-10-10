@@ -3,8 +3,8 @@ import { spawn } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, relative, resolve } from "node:path";
-import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
+import { askForNextStep, askForSetup, banner, finish, isInteractive, nextCommands, progress, reportError, SetupCancelled } from "./ui.js";
 
 const DEFAULT_DIRECTORY = "beast-app";
 const DEFAULT_COMPILER_SPEC = "0.12.1";
@@ -16,24 +16,42 @@ const TEMPLATE_TAILWIND_DIRECTORY = resolve(
   "../template-tailwind",
 );
 
-const HELP = `Create Beast — scaffold a Beast and Octane project
+const HELP = `
+  beast / create
 
-Usage:
   bun create beast@latest [directory] [options]
-  bun x create-beast@latest [directory] [options]
 
-Options:
-  --bundler <name>  Build with vite, rspack, or rsbuild.
-  --ui <name>       Add base-ui, radix, or shadcn.
-  --tailwind    Scaffold with Tailwind CSS.
-  --no-install  Create files without running bun install.
-  --no-git      Do not initialize a Git repository.
-  --force       Write template files into a non-empty directory.
-  -h, --help    Show this help.
+  Stack
+    --bundler <name>   vite · rspack · rsbuild
+    --ui <name>        base-ui · radix · shadcn
+    --tailwind         Tailwind CSS v4
+
+  Optional tools
+    --devtools         In-page inspection and profiling
+    --page-builder     Page Builder development widget
+    --beast-ui         Initialize Beast UI (enables Tailwind)
+    --icons            Initialize the typed Beast icon pipeline
+    --no-addons        Skip the optional tools prompt
+
+  Setup
+    -y, --yes          Accept defaults for unanswered prompts
+    --no-install       Write files; print remaining setup commands
+    --no-git           Skip Git initialization
+    --force            Allow a non-empty directory
+    -h, --help         Show help
 `;
 
 export type Bundler = "vite" | "rspack" | "rsbuild";
 export type UiLibrary = "base-ui" | "radix" | "shadcn";
+export type Addon = "devtools" | "page-builder" | "beast-ui" | "icons";
+export type ProjectAction = "open" | "run";
+
+const ADDON_PACKAGES = {
+  devtools: ["@beastjs/devtools", "0.1.21"],
+  "page-builder": ["@beastjs/page-builder", "0.1.0"],
+  "beast-ui": ["@beastjs/cli", "0.3.3"],
+  icons: ["@beastjs/cli", "0.3.3"],
+} as const;
 
 const BUNDLERS = ["vite", "rspack", "rsbuild"] as const;
 const UI_LIBRARIES = ["base-ui", "radix", "shadcn"] as const;
@@ -52,8 +70,31 @@ export interface CreateProjectOptions {
   tailwind?: boolean;
   bundler?: Bundler;
   ui?: UiLibrary;
+  devtools?: boolean;
+  pageBuilder?: boolean;
+  beastUi?: boolean;
+  icons?: boolean;
   /** Override used by local integration tests and prerelease channels. */
   compilerSpec?: string;
+}
+
+export interface CommandResult {
+  code: number | null;
+  output: string;
+}
+
+export interface CreateProjectHooks {
+  onProgress?: (message: string) => void;
+  quiet?: boolean;
+  /** Injectable process runner for integration tests and embedding. */
+  runCommand?: typeof runCommand;
+}
+
+export interface CliHooks extends CreateProjectHooks {
+  /** Local compiler tarball or prerelease version for CLI previews. */
+  compilerSpec?: string;
+  /** Injectable final selection for integration tests and embedding. */
+  selectNextStep?: () => Promise<ProjectAction | undefined>;
 }
 
 export interface CreateProjectResult {
@@ -63,10 +104,13 @@ export interface CreateProjectResult {
   gitInitialized: boolean;
   bundler: Bundler;
   ui: UiLibrary;
+  addons: Addon[];
+  pendingCommands: string[];
 }
 
 export async function createProject(
   options: CreateProjectOptions,
+  hooks: CreateProjectHooks = {},
 ): Promise<CreateProjectResult> {
   const requestedDirectory = options.directory.trim();
   if (requestedDirectory.length === 0) throw new Error("The project directory cannot be empty.");
@@ -74,9 +118,17 @@ export async function createProject(
   const cwd = resolve(options.cwd ?? process.cwd());
   const target = resolve(cwd, requestedDirectory);
   const packageName = normalizePackageName(basename(target));
-  const bundler = options.bundler ?? DEFAULT_BUNDLER;
-  const ui = options.ui ?? DEFAULT_UI;
-  const tailwind = options.tailwind === true || ui === "shadcn";
+  const bundler = parseChoice("bundler", options.bundler ?? DEFAULT_BUNDLER, BUNDLERS);
+  const ui = parseChoice("UI library", options.ui ?? DEFAULT_UI, UI_LIBRARIES);
+  const addons: Addon[] = [];
+  if (options.devtools) addons.push("devtools");
+  if (options.pageBuilder) addons.push("page-builder");
+  if (options.beastUi) addons.push("beast-ui");
+  if (options.icons) addons.push("icons");
+  const tailwind = options.tailwind === true || ui === "shadcn" || options.beastUi === true;
+  const run = hooks.runCommand ?? runCommand;
+  const stdio = hooks.quiet ? "pipe" : "inherit";
+  hooks.onProgress?.("Writing project files");
   await prepareTarget(target, options.force === true);
   const templateSource =
     tailwind ? TEMPLATE_TAILWIND_DIRECTORY : TEMPLATE_DIRECTORY;
@@ -84,100 +136,149 @@ export async function createProject(
     "__PROJECT_NAME__": packageName,
     "__BEAST_PACKAGE_SPEC__": options.compilerSpec ?? DEFAULT_COMPILER_SPEC,
   });
-  await configureProject(target, bundler, ui, tailwind);
+  await configureProject(target, bundler, ui, tailwind, addons);
 
   let gitInitialized = false;
-  if (options.git !== false && (await runCommand("git", ["--version"], cwd, "ignore")) === 0) {
-    gitInitialized = (await runCommand("git", ["init"], target, "inherit")) === 0;
+  if (options.git !== false && (await run("git", ["--version"], cwd, "ignore")).code === 0) {
+    hooks.onProgress?.("Initializing Git");
+    gitInitialized = (await run("git", ["init"], target, stdio)).code === 0;
   }
 
+  const initializers = initializationCommands(addons);
   let installed = false;
   if (options.install !== false) {
-    const installStatus = await runCommand("bun", ["install"], target, "inherit");
-    if (installStatus !== 0) {
-      throw new Error(
-        "The project was created, but bun install failed. Run it manually in the project directory.",
-      );
+    hooks.onProgress?.("Installing dependencies");
+    const installation = await run("bun", ["install"], target, stdio);
+    if (installation.code !== 0) {
+      throw new Error(commandFailure(target, ["bun install", ...initializers.map(displayCommand)], installation));
     }
     installed = true;
+    for (const [index, initializer] of initializers.entries()) {
+      hooks.onProgress?.(initializer[2] === "init" ? "Initializing Beast UI" : "Building the Beast icon pipeline");
+      const initialization = await run("bun", initializer, target, stdio);
+      if (initialization.code !== 0) {
+        throw new Error(commandFailure(target, initializers.slice(index).map(displayCommand), initialization));
+      }
+    }
   }
 
-  return { directory: target, packageName, installed, gitInitialized, bundler, ui };
+  return {
+    directory: target, packageName, installed, gitInitialized, bundler, ui, addons,
+    pendingCommands: installed ? [] : initializers.map(displayCommand),
+  };
 }
 
-export async function runCli(argv: string[]): Promise<number> {
+function initializationCommands(addons: readonly Addon[]): string[][] {
+  const commands: string[][] = [];
+  if (addons.includes("beast-ui")) commands.push(["run", "beast-ui", "init", "--package-manager", "bun"]);
+  if (addons.includes("icons")) commands.push(["run", "beast-ui", "icons", "init", "--framework", "beast"]);
+  return commands;
+}
+
+function displayCommand(args: readonly string[]): string {
+  return `bun ${args.join(" ")}`;
+}
+
+function commandFailure(target: string, commands: readonly string[], result: CommandResult): string {
+  return `Project files are ready in ${target}, but setup failed${result.code === null ? " (command unavailable)" : ` (exit ${result.code})`}.\n${result.output.trim() ? `\n${result.output.trim()}\n` : ""}\nContinue with:\n  cd ${shellDisplay(target)}\n  ${commands.join("\n  ")}`;
+}
+
+export async function runCli(argv: string[], hooks: CliHooks = {}): Promise<number> {
   if (argv.includes("--help") || argv.includes("-h")) {
     console.log(HELP);
     return 0;
   }
 
+  let activity: ReturnType<typeof progress> | undefined;
   try {
     const args = argv.filter((arg) => arg !== "--");
     const install = !takeFlag(args, "--no-install");
     const git = !takeFlag(args, "--no-git");
     const force = takeFlag(args, "--force");
+    const yes = takeFlag(args, "--yes") || takeFlag(args, "-y");
     const tailwind = takeFlag(args, "--tailwind");
+    const noAddons = takeFlag(args, "--no-addons");
+    const devtools = takeFlag(args, "--devtools");
+    const pageBuilder = takeFlag(args, "--page-builder");
+    const beastUi = takeFlag(args, "--beast-ui");
+    const icons = takeFlag(args, "--icons");
+    if (noAddons && (devtools || pageBuilder || beastUi || icons)) {
+      throw new Error("--no-addons cannot be combined with optional tool flags.");
+    }
     const bundlerOption = takeOption(args, "--bundler");
     const uiOption = takeOption(args, "--ui");
     const unknown = args.find((arg) => arg.startsWith("-"));
     if (unknown !== undefined) throw new Error(`Unknown option: ${unknown}`);
     if (args.length > 1) throw new Error("Create Beast accepts at most one project directory.");
+    const bundler = bundlerOption === undefined ? undefined : parseChoice("bundler", bundlerOption, BUNDLERS);
+    const ui = uiOption === undefined ? undefined : parseChoice("UI library", uiOption, UI_LIBRARIES);
 
-    const directory = args[0] ?? (await askForDirectory());
-    const bundler = bundlerOption === undefined
-      ? await askForChoice("Bundler", BUNDLERS, DEFAULT_BUNDLER)
-      : parseChoice("bundler", bundlerOption, BUNDLERS);
-    const ui = uiOption === undefined
-      ? await askForChoice("UI library", UI_LIBRARIES, DEFAULT_UI)
-      : parseChoice("UI library", uiOption, UI_LIBRARIES);
-    console.log(`\nCreating a Beast project in ${resolve(directory)}...\n`);
-    const result = await createProject({ directory, force, install, git, tailwind, bundler, ui });
+    banner();
+    const setup = await askForSetup({
+      ...(args[0] === undefined ? {} : { directory: args[0] }),
+      ...(bundler === undefined ? {} : { bundler }),
+      ...(ui === undefined ? {} : { ui }),
+      tailwind, devtools, pageBuilder, beastUi, icons,
+    }, { yes, noAddons });
+    activity = progress();
+    const result = await createProject({
+      ...setup, force, install, git,
+      ...(hooks.compilerSpec === undefined ? {} : { compilerSpec: hooks.compilerSpec }),
+    }, {
+      ...hooks,
+      quiet: true,
+      onProgress: (message) => {
+        activity!.update(message);
+        hooks.onProgress?.(message);
+      },
+    });
+    activity.stop(`Created ${result.packageName}`);
+    activity = undefined;
     const nextDirectory = relative(process.cwd(), result.directory) || ".";
-
-    console.log("\nBeast project created.");
-    console.log(`\n  cd ${shellDisplay(nextDirectory)}`);
-    if (!result.installed) console.log("  bun install");
-    console.log("  bun run dev\n");
+    const offerNextStep = result.installed && !yes &&
+      (hooks.selectNextStep !== undefined || isInteractive());
+    finish(result, shellDisplay(nextDirectory), !offerNextStep);
+    if (offerNextStep) {
+      const action = await (hooks.selectNextStep ?? askForNextStep)();
+      if (action !== undefined) return await launchProject(result.directory, action, hooks.runCommand ?? runCommand);
+      nextCommands(result, shellDisplay(nextDirectory));
+    }
     return 0;
   } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+    if (error instanceof SetupCancelled) return 130;
+    activity?.error();
+    reportError(error instanceof Error ? error.message : String(error));
     return 1;
   }
 }
 
-async function askForDirectory(): Promise<string> {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) return DEFAULT_DIRECTORY;
-  const prompt = createInterface({ input: process.stdin, output: process.stdout });
+async function launchProject(
+  directory: string,
+  action: ProjectAction,
+  run: typeof runCommand,
+): Promise<number> {
+  const windows = process.platform === "win32";
+  const shell = windows ? process.env.ComSpec || "cmd.exe" : process.env.SHELL || "/bin/sh";
+  const args = windows ? ["/K"] : ["-i"];
+  // Child processes cannot change the parent shell's directory. Keep an
+  // interactive shell in the project so both actions actually navigate there.
+  // Let the foreground command handle Ctrl+C while the launcher waits for it.
+  const keepLauncherAlive = (): void => {};
+  process.on("SIGINT", keepLauncherAlive);
   try {
-    const answer = (await prompt.question(`Project directory (${DEFAULT_DIRECTORY}): `)).trim();
-    return answer || DEFAULT_DIRECTORY;
-  } finally {
-    prompt.close();
-  }
-}
-
-async function askForChoice<T extends string>(
-  label: string,
-  choices: readonly T[],
-  fallback: T,
-): Promise<T> {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) return fallback;
-  const prompt = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    console.log(`\n${label}:`);
-    choices.forEach((choice, index) => {
-      console.log(`  ${index + 1}. ${choice}${choice === fallback ? " (default)" : ""}`);
-    });
-    const answer = (await prompt.question(`Choose ${label.toLowerCase()} [1-${choices.length}]: `))
-      .trim();
-    if (answer === "") return fallback;
-    const numeric = Number(answer);
-    if (Number.isInteger(numeric) && numeric >= 1 && numeric <= choices.length) {
-      return choices[numeric - 1]!;
+    if (action === "run") {
+      const server = await run("bun", ["run", "dev"], directory, "inherit");
+      if (server.code === null && server.output) {
+        throw new Error(`Could not start the development server: ${server.output}\nRun: cd ${shellDisplay(directory)} && bun run dev`);
+      }
     }
-    return parseChoice(label, answer, choices);
+    const result = await run(shell, args, directory, "inherit");
+    if (result.code === null && result.output) {
+      throw new Error(`Could not open the project shell: ${result.output}\nRun: cd ${shellDisplay(directory)}`);
+    }
+    return result.code ?? 130;
   } finally {
-    prompt.close();
+    process.removeListener("SIGINT", keepLauncherAlive);
   }
 }
 
@@ -242,6 +343,7 @@ async function configureProject(
   bundler: Bundler,
   ui: UiLibrary,
   tailwind: boolean,
+  addons: readonly Addon[],
 ): Promise<void> {
   const packageJsonPath = resolve(target, "package.json");
   const packageJsonText = await readFile(packageJsonPath, "utf8");
@@ -254,6 +356,10 @@ async function configureProject(
   packageJson.devDependencies ??= {};
   const [uiPackage, uiVersion] = UI_PACKAGES[ui];
   packageJson.dependencies[uiPackage] = uiVersion;
+  for (const addon of addons) {
+    const [name, version] = ADDON_PACKAGES[addon];
+    packageJson.devDependencies[name] = version;
+  }
 
   packageJson.scripts = {
     ...packageJson.scripts,
@@ -297,14 +403,14 @@ async function configureProject(
 
   const viteConfigPath = resolve(target, "vite.config.ts");
   if (bundler === "vite") {
-    await writeFile(viteConfigPath, viteConfig(tailwind), "utf8");
+    await writeFile(viteConfigPath, viteConfig(tailwind, addons), "utf8");
   } else {
     await rm(viteConfigPath);
     const htmlPath = resolve(target, "index.html");
     const html = await readFile(htmlPath, "utf8");
     await writeFile(htmlPath, html.replace(/^\s*<script type="module" src="\/src\/main\.ts"><\/script>\s*$/mu, ""), "utf8");
     if (bundler === "rspack") {
-      await writeFile(resolve(target, "rspack.config.ts"), rspackConfig(tailwind), "utf8");
+      await writeFile(resolve(target, "rspack.config.ts"), rspackConfig(tailwind, addons), "utf8");
       if (tailwind) {
         await writeFile(
           resolve(target, "postcss.config.mjs"),
@@ -313,7 +419,7 @@ async function configureProject(
         );
       }
     } else {
-      await writeFile(resolve(target, "rsbuild.config.ts"), rsbuildConfig(tailwind), "utf8");
+      await writeFile(resolve(target, "rsbuild.config.ts"), rsbuildConfig(tailwind, addons), "utf8");
     }
   }
 
@@ -339,6 +445,16 @@ async function configureProject(
     `${readme.trimEnd()}\n\n## Selected stack\n\n- Bundler: ${bundler}\n- UI: ${ui} (${uiPackage})${tailwind ? "\n- Styling: Tailwind CSS v4" : ""}\n\n\`\`\`ts\n${uiImport}\n\`\`\`\n`,
     "utf8",
   );
+  if (addons.length > 0) {
+    const details = ["\n## Optional tools\n"];
+    if (addons.includes("devtools")) details.push("- Beast Devtools: press **Alt+Shift+D** while the dev server runs. Octane profiling is enabled only in development.");
+    if (addons.includes("page-builder")) details.push("- Beast Page Builder: press **⌘B / Ctrl+B** while the dev server runs. Creating routes requires a TanStack router and an app shell with an Outlet; this starter does not create those automatically.");
+    if (addons.includes("beast-ui")) details.push("- Beast UI: `bun run beast-ui add button` copies editable components into `src/components/ui`. Tailwind CSS v4 and the `@/*` alias are already configured.");
+    if (addons.includes("icons")) details.push("- Beast icons: import `{ Icon }` from `@/lib/icons`. Add SVGs to `src/lib/icons/svg`, then run `bun run icons:build`. Check generated output with `bun run icons:check`.");
+    const commands = initializationCommands(addons).map(displayCommand);
+    if (commands.length > 0) details.push(`\nSetup commands (the builder runs these after installation; run them yourself with \`--no-install\`):\n\n\`\`\`sh\nbun install\n${commands.join("\n")}\n\`\`\``);
+    await writeFile(readmePath, (await readFile(readmePath, "utf8")) + details.join("\n") + "\n", "utf8");
+  }
 
   const stylePath = resolve(target, "src/style.css");
   if (ui === "shadcn") {
@@ -354,16 +470,30 @@ async function configureProject(
 /** Mirrors the tsconfig `@/*` path so bundlers resolve imports from `src`. */
 const SOURCE_ALIAS = `  resolve: {\n    alias: {\n      "@": fileURLToPath(new URL("./src", import.meta.url)),\n    },\n  },\n`;
 
-function viteConfig(tailwind: boolean): string {
-  return `import { fileURLToPath } from "node:url";\n${tailwind ? 'import tailwindcss from "@tailwindcss/vite";\n' : ""}import { beastOctane } from "beast-tsrx/vite";\nimport { defineConfig } from "vite";\n\nexport default defineConfig({\n${SOURCE_ALIAS}  plugins: [${tailwind ? "tailwindcss(), " : ""}beastOctane()],\n});\n`;
+function toolImports(bundler: Bundler, addons: readonly Addon[]): string {
+  return `${addons.includes("devtools") ? `import { beastDevtools } from "@beastjs/devtools/${bundler}";\n` : ""}${addons.includes("page-builder") ? `import { beastPageBuilder } from "@beastjs/page-builder/${bundler}";\n` : ""}`;
 }
 
-function rspackConfig(tailwind: boolean): string {
-  return `import { fileURLToPath } from "node:url";\nimport { HtmlRspackPlugin, type Configuration } from "@rspack/core";\nimport { beastOctane } from "beast-tsrx/rspack";\n\nconst config: Configuration = {\n  entry: "./src/main.ts",\n${SOURCE_ALIAS}  experiments: { css: true },\n  module: { rules: [${tailwind ? '{ test: /\\.css$/u, type: "css", use: ["postcss-loader"] }' : '{ test: /\\.css$/u, type: "css" }'}] },\n  plugins: [new HtmlRspackPlugin({ template: "./index.html" }), beastOctane()],\n  devServer: { historyApiFallback: true },\n};\n\nexport default config;\n`;
+function toolPlugins(addons: readonly Addon[]): string {
+  return `${addons.includes("devtools") ? ", beastDevtools()" : ""}${addons.includes("page-builder") ? ", beastPageBuilder()" : ""}`;
 }
 
-function rsbuildConfig(tailwind: boolean): string {
-  return `import { fileURLToPath } from "node:url";\nimport { defineConfig } from "@rsbuild/core";\n${tailwind ? 'import { pluginTailwindcss } from "@rsbuild/plugin-tailwindcss";\n' : ""}import { beastOctane } from "beast-tsrx/rsbuild";\n\nexport default defineConfig({\n  source: { entry: { index: "./src/main.ts" } },\n${SOURCE_ALIAS}  html: { template: "./index.html" },\n  plugins: [${tailwind ? "pluginTailwindcss(), " : ""}...beastOctane()],\n});\n`;
+function compilerPlugin(bundler: Bundler, addons: readonly Addon[]): string {
+  return addons.includes("devtools")
+    ? `beastOctane({ octane: { profile: ${bundler === "vite" ? '"auto"' : 'process.env.NODE_ENV !== "production"'} } })`
+    : "beastOctane()";
+}
+
+function viteConfig(tailwind: boolean, addons: readonly Addon[]): string {
+  return `import { fileURLToPath } from "node:url";\n${tailwind ? 'import tailwindcss from "@tailwindcss/vite";\n' : ""}import { beastOctane } from "beast-tsrx/vite";\n${toolImports("vite", addons)}import { defineConfig } from "vite";\n\nexport default defineConfig({\n${SOURCE_ALIAS}  plugins: [${tailwind ? "tailwindcss(), " : ""}${compilerPlugin("vite", addons)}${toolPlugins(addons)}],\n});\n`;
+}
+
+function rspackConfig(tailwind: boolean, addons: readonly Addon[]): string {
+  return `import { fileURLToPath } from "node:url";\nimport { HtmlRspackPlugin, type Configuration } from "@rspack/core";\nimport { beastOctane } from "beast-tsrx/rspack";\n${toolImports("rspack", addons)}\nconst config: Configuration = {\n  entry: "./src/main.ts",\n${SOURCE_ALIAS}  experiments: { css: true },\n  module: { rules: [${tailwind ? '{ test: /\\.css$/u, type: "css", use: ["postcss-loader"] }' : '{ test: /\\.css$/u, type: "css" }'}] },\n  plugins: [new HtmlRspackPlugin({ template: "./index.html" }), ${compilerPlugin("rspack", addons)}${toolPlugins(addons)}],\n  devServer: { historyApiFallback: true },\n};\n\nexport default config;\n`;
+}
+
+function rsbuildConfig(tailwind: boolean, addons: readonly Addon[]): string {
+  return `import { fileURLToPath } from "node:url";\nimport { defineConfig } from "@rsbuild/core";\n${tailwind ? 'import { pluginTailwindcss } from "@rsbuild/plugin-tailwindcss";\n' : ""}import { beastOctane } from "beast-tsrx/rsbuild";\n${toolImports("rsbuild", addons)}\nexport default defineConfig({\n  source: { entry: { index: "./src/main.ts" } },\n${SOURCE_ALIAS}  html: { template: "./index.html" },\n  plugins: [${tailwind ? "pluginTailwindcss(), " : ""}...${compilerPlugin("rsbuild", addons)}${toolPlugins(addons)}],\n});\n`;
 }
 
 function normalizePackageName(name: string): string {
@@ -399,12 +529,16 @@ function runCommand(
   command: string,
   args: readonly string[],
   cwd: string,
-  stdio: "ignore" | "inherit",
-): Promise<number | null> {
+  stdio: "ignore" | "inherit" | "pipe",
+): Promise<CommandResult> {
   return new Promise((done) => {
-    const child = spawn(command, args, { cwd, stdio });
-    child.once("error", () => done(null));
-    child.once("exit", (code) => done(code));
+    let output = "";
+    const child = spawn(command, args, { cwd, stdio: stdio === "pipe" ? ["ignore", "pipe", "pipe"] : stdio });
+    const collect = (chunk: Buffer): void => { output = (output + chunk.toString()).slice(-65_536); };
+    child.stdout?.on("data", collect);
+    child.stderr?.on("data", collect);
+    child.once("error", (error) => done({ code: null, output: error.message }));
+    child.once("close", (code) => done({ code, output }));
   });
 }
 
@@ -413,13 +547,18 @@ function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
 }
 
 function shellDisplay(path: string): string {
-  return /\s/u.test(path) ? JSON.stringify(path) : path;
+  return /^[a-zA-Z0-9_./-]+$/u.test(path) ? path : "'" + path.replaceAll("'", "'\\''") + "'";
 }
 
-const entry = process.argv[1];
-if (
-  entry !== undefined &&
-  realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url))
-) {
+function isCliEntry(entry: string | undefined): boolean {
+  if (entry === undefined || entry === "-") return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isCliEntry(process.argv[1])) {
   process.exitCode = await runCli(process.argv.slice(2));
 }

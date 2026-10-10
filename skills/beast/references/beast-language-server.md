@@ -29,10 +29,10 @@ This is a stdio protocol server. A direct terminal launch normally waits in
 silence for LSP messages; silence is not a useful health check. Verify it
 through an editor client or an LSP test harness instead.
 
-The published package requires Node.js 22.22.2 or newer and pins a compatible
-`beast-tsrx` compiler.
+Language server `0.2.2` requires Node.js 22.22.2 or newer, uses
+`beast-tsrx@^0.12.1` and `octane@0.12.1`, and includes `@tsrx/oxc@0.20.0`.
 
-## First-release capabilities
+## Current capabilities
 
 The server provides:
 
@@ -46,6 +46,11 @@ The server provides:
 - component hover details, including declared props and source path
 - component references across workspace folders
 - incremental document synchronization
+- TypeScript diagnostics in embedded expressions, including unresolved names
+  and props passed to imported Beast components
+- TypeScript member completion, auto-import edits for workspace TypeScript
+  exports, expression hover, and go to definition through Octane virtual code
+- suppression of generated helper identifiers in completion suggestions
 
 Workspace indexing depends on the editor sending the correct workspace folder.
 The server supports workspace-folder changes, refreshes its index on save, and
@@ -58,10 +63,10 @@ line and column in compiler diagnostics and source maps.
 
 ## Boundary with TypeScript and Octane
 
-The initial language-server release is Beast-aware, but it does not provide
-TypeScript expression semantics inside BTSX. Do not promise TypeScript member
-completion, expression hover, rename, or generated-TSRX navigation from this
-release.
+The server lowers BTSX through Octane's virtual TypeScript code and maps
+expression diagnostics and navigation back to authored BTSX. Rename is not
+part of the current feature set. Diagnose mapped Beast/TypeScript feedback
+separately from runtime Octane failures.
 
 Keep the normal project checks alongside editor feedback:
 

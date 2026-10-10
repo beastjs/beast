@@ -5,13 +5,27 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-10
+
 ### Added
 
-- Automatically publish new `create-beast` versions after all coordinated
-  release checks pass, following `beast-tsrx` publication.
+- A local demo that packs the current CLI and compiler and runs full setup
+  before publication, preserving projects and earlier compiler snapshots.
+- A final selection after installation and add-on initialization: open a shell
+  in the project, or open it and run the development server. Automation and
+  deferred installation print next commands instead.
+- Optional Devtools and Page Builder with Vite, Rspack, and Rsbuild integration,
+  Beast UI initialization with Tailwind, and the typed Beast icon pipeline.
+- `--yes` / `-y`, `--no-addons`, `--devtools`, `--page-builder`, `--beast-ui`,
+  and `--icons` flags. Deferred and failed setup prints remaining commands.
+- Attach the checked `create-beast` npm archive to coordinated GitHub releases
+  for manual publication.
 
 ### Changed
 
+- Replace numbered readline menus with compact arrow-key choices, an optional
+  tools checklist, a small wordmark, and quiet progress. Respect `NO_COLOR`
+  and noninteractive/CI defaults; prompt cancellation exits before writing files.
 - Pin Beast and Octane to `0.12.1`, Rspack/Rsbuild plugins to `0.2.2`/`0.1.63`,
   Base UI and Radix to `0.1.65`, and shadcn to `0.0.54`. The companion peers
   accept Octane `^0.12.0`.

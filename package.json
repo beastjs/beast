@@ -42,6 +42,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p packages/create-beast/tsconfig.json --noEmit && tsc -p packages/language-server/tsconfig.json --noEmit",
     "test": "bun test ./tests ./packages",
     "check": "bun run build && bun run typecheck && bun run test",
+    "demo:create": "node scripts/create-beast-demo.mjs",
+    "demo:prepare": "node scripts/create-beast-demo.mjs --prepare",
     "prepack": "bun run build",
     "pack:check": "npm pack --dry-run && npm pack --dry-run --workspace create-beast && npm pack --dry-run --workspace beast-language-server",
     "publish:builder": "npm publish --workspace create-beast",
