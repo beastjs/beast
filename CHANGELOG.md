@@ -16,11 +16,29 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `beast-tsrx` and `create-beast` to npm and attach a versioned skills archive
   to GitHub, with retries that skip already-published artifacts.
 
+- Cover Octane's new lazy-ref and layout-snapshot hooks, Strong callback-ref
+  and measurement diagnostics, recursive binding views, TypeScript erasure,
+  memoized keyed rows, and suspended production row updates.
+
+### Changed
+
+- Align the coordinated Beast toolchain with Octane `0.12.1`, Rspack plugin
+  `0.2.2`, and Rsbuild plugin `0.1.63`. Declare the explicit `@tsrx/oxc@0.20.0`
+  Node parser peer and document the upgrade from Octane 0.8 through 0.12.
+- Update hydration and transition conformance to boundary rebuilding on
+  mismatches and task-based completion. Accept state getters and value refs in
+  Strong effect setup, and forward Vite's `opaqueSignalHandles` option to BTSX.
+
 ### Fixed
 
 - Use Bun's hoisted linker and build workspace packages before type checking
   and tests so the language server can resolve the root `beast-tsrx` package
   and its declarations in fresh CI checkouts.
+
+- Preserve literal `//` text and already-decoded entities in generated TSRX
+  under Octane's new parser rules.
+- Scope the test command to repository and workspace suites so independently
+  maintained, ignored development repositories do not introduce older bindings.
 
 ## [0.8.0] - 2026-10-04
 

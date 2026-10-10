@@ -12,6 +12,10 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Target Beast/Octane `0.12.1`, update both tracked skills and router peers,
+  and add the Octane 0.12 migration reference for parser installation, literal
+  text, new hooks, Strong effects/refs, signal holes, hydration, and scheduling.
+
 - Target Beast/Octane `0.8.0`, document Strong-mode state/effect and DOM
   diagnostics, and add the Octane 0.8 migration guide. Update router reference
   versions to bindings whose peers accept Octane `^0.8.0`.

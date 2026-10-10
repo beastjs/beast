@@ -10,6 +10,14 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 - Automatically publish new `create-beast` versions after all coordinated
   release checks pass, following `beast-tsrx` publication.
 
+### Changed
+
+- Pin Beast and Octane to `0.12.1`, Rspack/Rsbuild plugins to `0.2.2`/`0.1.63`,
+  Base UI and Radix to `0.1.65`, and shadcn to `0.0.54`. The companion peers
+  accept Octane `^0.12.0`.
+- Install the required Node compiler peer `@tsrx/oxc@0.20.0` explicitly in both
+  starters and update `@tsrx/typescript-plugin` to `0.6.3`.
+
 ## [0.8.0] - 2026-10-04
 
 ### Changed

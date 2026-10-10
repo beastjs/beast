@@ -7,6 +7,9 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ### Changed
 
+- Use Octane `0.12.1` virtual code, depend on `beast-tsrx@^0.12.1`, and include
+  the explicit `@tsrx/oxc@0.20.0` compiler peer in language server `0.2.2`.
+
 - Use Octane `0.8.0` virtual code and depend on `beast-tsrx@^0.8.0`.
 
 - Use Octane `0.7.1` virtual code and depend on `beast-tsrx@^0.7.1`, which places `return`-in-`scope`, `textarea`-children, and `scope`-exit errors on their BTSX lines.

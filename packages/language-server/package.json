@@ -1,6 +1,6 @@
 {
   "name": "beast-language-server",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Language Server Protocol support for Beast BTSX components.",
   "type": "module",
   "main": "./dist/server.js",
@@ -42,8 +42,9 @@
   },
   "dependencies": {
     "@jridgewell/trace-mapping": "^0.3.31",
-    "beast-tsrx": "^0.8.0",
-    "octane": "0.8.0",
+    "@tsrx/oxc": "0.20.0",
+    "beast-tsrx": "^0.12.1",
+    "octane": "0.12.1",
     "typescript": "^5.9.3",
     "vscode-languageserver": "^10.1.0",
     "vscode-languageserver-textdocument": "^1.0.12"

@@ -92,6 +92,20 @@ describe("Octane compiler option forwarding", () => {
       .not.toContain("enableNativeReadCollection");
   });
 
+  test("Vite opts untyped signal props into opaque bindings without enabling native reads", () => {
+    const source = "props { value }\np #{value as string}";
+    const plain = transformWithVite(source, "OpaquePlain.btsx");
+    const bound = transformWithVite(source, "OpaqueBound.btsx", {
+      octane: { opaqueSignalHandles: true },
+    });
+    expect(plain).not.toContain("bindSignalText");
+    expect(bound).toContain("bindSignalText");
+    expect(bound).not.toContain("enableNativeReadCollection");
+    expect(transformWithVite(source, "OpaqueDisabled.btsx", {
+      octane: { opaqueSignalHandles: false },
+    })).not.toContain("bindSignalText");
+  });
+
   test("Vite mirrors Octane's HMR, profile, SSR, and renderer controls", () => {
     const transform = (
       octane: Parameters<typeof beastVite>[0]["octane"],

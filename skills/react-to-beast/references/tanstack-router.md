@@ -4,11 +4,11 @@ TanStack Router code-based and file-based trees share runtime capabilities but h
 
 ## Version gate
 
-The Octane 0.8.0 target set is:
+The Octane 0.12.1 target set is:
 
-- `beast-tsrx@0.8.0`;
-- `octane@0.8.0`;
-- `@octanejs/tanstack-router@0.2.0`, whose peer is Octane `^0.8.0` and whose vendored core is `@tanstack/router-core` 1.171.34.
+- `beast-tsrx@0.12.1`;
+- `octane@0.12.1`;
+- `@octanejs/tanstack-router@0.2.6`, whose peer is Octane `^0.12.0` and whose vendored core is `@tanstack/router-core` 1.171.34.
 
 The binding reuses TanStack's framework-neutral core and implements the Octane component/hook layer. Resolve peer versions together and verify the binding's pinned upstream router/core versions before porting generated types.
 

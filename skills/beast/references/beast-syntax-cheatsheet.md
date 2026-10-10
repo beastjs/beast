@@ -250,3 +250,8 @@ Generated TSRX stays readable. Fix the BTSX source when either Beast or Octane r
 - element children inside `textarea` → Octane error; textarea content must be text or `#{…}` interpolation
 - `"use strong"` in `setup` → `OCTANE_STRONG_DIRECTIVE_PLACEMENT`; put it in a leading `module` block before imports
 - Octane 0.8 Strong mode rejects impure updaters, mutated snapshots, stale deferred updates, unstable store snapshots, leaking effects, and writes or queries into template-owned DOM; see [the migration guide](octane-0.8.md)
+
+Octane 0.12 adds `useLazyRef` and `useLayoutSnapshot`. Strong callback-ref state
+updates report `OCTANE_STRONG_REF_STATE_UPDATE`, and asynchronous measurements
+report `OCTANE_STRONG_LAYOUT_SNAPSHOT_ASYNC`. Effect setup may read state getters
+and value refs. See [the current migration guide](octane-0.12.md).

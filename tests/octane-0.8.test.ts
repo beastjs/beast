@@ -42,9 +42,9 @@ const INVALID_STRONG = [
     'useEffect(() => { setInterval(() => console.log("tick"), 1000); }, []);',
   ], "p Clock")],
   ["OCTANE_STRONG_EFFECT_HIDDEN_DEPENDENCY", strong([
-    "const [count, , getCount] = useState(0);",
-    "useEffect(() => { console.log(getCount()); }, []);",
-  ], "p #{count}")],
+    "useEffect(() => { console.log(latest); }, []);",
+    "const update = () => { latest += 1; };",
+  ], "button(onClick={update}) Update").replace('  "use strong";', '  "use strong";\n  let latest = 0;')],
   ["OCTANE_STRONG_MANAGED_DOM_WRITE", strong([
     "const node = useRef<HTMLParagraphElement | null>(null);",
     'const update = () => { if (node.current) node.current.textContent = "changed"; };',

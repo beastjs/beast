@@ -485,8 +485,9 @@ function generateAttribute(attr: NamedAttr): string {
       // JSX string literals in TSRX cannot contain escaped double-quotes (\"), which
       // would be produced by JSON.stringify for values containing ". After entity
       // decoding, &quot; becomes a raw double-quote. Emit as an expression to keep
-      // the TSRX valid and let Octane escape it to &quot; on the server.
-      if (attr.value.value.includes('"')) return `${name}={${serialized}}`;
+      // the TSRX valid and let Octane escape it to &quot; on the server. Beast
+      // already decoded entities, so an ampersand must not be decoded again.
+      if (attr.value.value.includes('"') || attr.value.value.includes("&")) return `${name}={${serialized}}`;
       return `${name}=${serialized}`;
     }
     case "expr":
@@ -501,7 +502,12 @@ function generateText(spans: TextSpan[]): string {
 }
 
 function escapeTemplateText(value: string): string {
-  if (value.includes("<") || value.includes(">") || value.includes("{") || value.includes("}")) {
+  if (
+    value.includes("<") || value.includes(">") || value.includes("{") || value.includes("}") ||
+    value.includes("&") || /(?:^|\s)\/\//u.test(value)
+  ) {
+    // Octane 0.11 treats whitespace-delimited // as a template comment. BTSX
+    // literal text has already been decoded and must remain literal in TSRX.
     const escaped = value.replaceAll("\\", "\\\\").replaceAll("'", "\\'").replaceAll("\n", "\\n");
     return "{'" + escaped + "'}";
   }

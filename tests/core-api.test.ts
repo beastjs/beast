@@ -55,6 +55,8 @@ const PUBLIC_CORE_API = [
       "useImperativeHandle",
       "useInsertionEffect",
       "useLayoutEffect",
+      "useLayoutSnapshot",
+      "useLazyRef",
       "useLinkedState",
       "useMemo",
       "useOptimistic",

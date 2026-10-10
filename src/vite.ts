@@ -48,6 +48,9 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         ...(options.octane?.domBindingFixedProps === undefined
           ? {}
           : { domBindingFixedProps: options.octane.domBindingFixedProps }),
+        ...(options.octane?.opaqueSignalHandles === undefined
+          ? {}
+          : { opaqueSignalHandles: options.octane.opaqueSignalHandles }),
         ...(options.octane?.exclude === undefined ? {} : { exclude: options.octane.exclude }),
         ...(options.octane?.renderers === undefined
           ? {}

@@ -31,6 +31,7 @@ declare module "octane/compiler/bundler" {
     strong?: boolean;
     knownAttributeSpreads?: CompileOptions["knownAttributeSpreads"];
     domBindingFixedProps?: CompileOptions["domBindingFixedProps"];
+    opaqueSignalHandles?: CompileOptions["opaqueSignalHandles"];
     universalRuntime?: CompileOptions["universalRuntime"];
     exclude?: string[];
     renderers?: import("octane/compiler/vite").OctaneRendererConfigOptions;

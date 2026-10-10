@@ -168,7 +168,112 @@ beforeEach(() => {
 afterAll(restoreDom);
 
 describe("Octane client lifecycle", () => {
-  test.each([false, true])("Octane 0.8 removes a longer server branch while preserving adopted roots (dev=%s)", async (dev) => {
+  test.each([false, true])("memoized BTSX rows reuse one-element boundaries during keyed reorders (dev=%s)", async dev => {
+    const source = [
+      'import { memo } from "octane";',
+      'module',
+      '  function RowImpl({ id }) @{ <p>{String(id)}</p> }',
+      '  const Row = memo(RowImpl);',
+      'props { rows }: { rows: number[] }',
+      'main',
+      '  each id in rows key id',
+      '    Row(id={id})',
+    ].join("\n");
+    const App = await loadCompiledComponent(source, "Memo12.btsx", "client", dev);
+    const { act, createRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+    const labels = () => [...container.querySelectorAll("p")].map(node => node.textContent);
+    try {
+      await act(() => root.render(App, { rows: [1, 2, 3] }));
+      const nodes = [...container.querySelectorAll("p")];
+      // No per-row component or keyed-item comment pairs are needed.
+      expect([...requiredElement(container, "main").childNodes].filter(node => node.nodeType === 8)).toHaveLength(2);
+      await act(() => root.render(App, { rows: [3, 1, 2] }));
+      expect(labels()).toEqual(["3", "1", "2"]);
+      expect(container.querySelectorAll("p")[0] === nodes[2]).toBe(true);
+      await act(() => root.render(App, { rows: [2] }));
+      expect(labels()).toEqual(["2"]);
+      expect(container.querySelector("p") === nodes[1]).toBe(true);
+      await act(() => root.render(App, { rows: [] }));
+      expect(labels()).toEqual([]);
+    } finally {
+      root.unmount();
+    }
+  });
+
+  test("keyed BTSX survivors receive new props after a suspended production root retries", async () => {
+    const source = [
+      'import { use } from "octane";',
+      'module',
+      '  function Item(props) @{ <li>{props.value + ":" + props.label}</li> }',
+      '  function Reader(props) @{ const value = use(props.promise); <output>{value as string}</output> }',
+      'props { items, label, promise }',
+      'main',
+      '  ul',
+      '    each item in items key item',
+      '      Item(value={item} label={label})',
+      '  Reader(promise={promise})',
+    ].join("\n");
+    const App = await loadCompiledComponent(source, "Retry12.btsx", "client", false);
+    const { act, createRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+    const first = Promise.resolve("first");
+    const next = deferred<string>();
+    const labels = () => [...container.querySelectorAll("li")].map(node => node.textContent);
+    try {
+      await act(() => root.render(App, { label: "previous", items: ["remove", "keep"], promise: first }));
+      const kept = container.querySelectorAll("li")[1];
+      await act(() => root.render(App, { label: "next", items: ["add", "keep"], promise: next.promise }));
+      expect(labels()).toEqual(["remove:previous", "keep:previous"]);
+      await act(() => next.resolve("second"));
+      expect(requiredElement(container, "output").textContent).toBe("second");
+      expect(labels()).toEqual(["add:next", "keep:next"]);
+      expect(container.querySelectorAll("li")[1] === kept).toBe(true);
+    } finally {
+      root.unmount();
+    }
+  });
+
+  test("useLazyRef runs once and useLayoutSnapshot measures committed BTSX before updates settle", async () => {
+    const source = [
+      'module "use strong";',
+      'import { useEffect, useLazyRef, useLayoutSnapshot, useRef } from "octane";',
+      'props { label, make, observe }',
+      'setup',
+      '  const element = useRef<HTMLElement | null>(null);',
+      '  const value = useLazyRef(make);',
+      '  const snapshot = useLayoutSnapshot(() => element.current?.getAttribute("data-value") ?? "missing", { initial: "server" });',
+      '  useEffect(() => { observe(value.current); });',
+      'section(ref={element} data-value={label})',
+      '  output #{snapshot}',
+    ].join("\n");
+    const App = await loadCompiledComponent(source, "Hooks12.btsx", "client");
+    const { act, createRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+    const value = {};
+    let factories = 0;
+    const seen: unknown[] = [];
+    const props = { make: () => { factories++; return value; }, observe: (current: unknown) => { seen.push(current); } };
+    try {
+      await act(() => root.render(App, { ...props, label: "first" }));
+      expect(requiredElement(container, "output").textContent).toBe("first");
+      await act(() => root.render(App, { ...props, label: "next" }));
+      expect(requiredElement(container, "output").textContent).toBe("next");
+      expect(factories).toBe(1);
+      expect(seen.length).toBeGreaterThan(0);
+      expect(seen.every(current => current === value)).toBe(true);
+    } finally {
+      root.unmount();
+    }
+  });
+
+  test.each([false, true])("hydration rebuilds a mismatched root once and keeps later updates working (dev=%s)", async (dev) => {
     const source = [
       'props { longer }: { longer: boolean }',
       'if longer',
@@ -191,7 +296,8 @@ describe("Octane client lifecycle", () => {
     });
     try {
       await act(() => {});
-      expect(requiredElement(container, "#kept")).toBe(adopted);
+      expect(requiredElement(container, "#kept") === adopted).toBe(false);
+      expect(adopted.isConnected).toBe(false);
       expect(container.querySelector("#stale")).toBeNull();
       expect(errors).toHaveLength(1);
       await act(() => root.render(Client, { longer: true }));
@@ -640,7 +746,7 @@ describe("Octane client lifecycle", () => {
     expect(requiredElement(container, "#pending").textContent).toBe("pending");
 
     gate.resolve();
-    await microtasks(16);
+    await act(() => {});
     expect(requiredElement(container, "#saved").textContent).toBe("finished");
     expect(requiredElement(container, "#pending").textContent).toBe("idle");
     root.unmount();

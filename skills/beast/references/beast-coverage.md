@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.8.0` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.12.1` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -75,6 +75,7 @@ and the `octane/signals` API are outside this stable Core API scope.
 | Context | `createContext`, `use(context)`, `useContext` | Covered | `provider` golden |
 | Async data | `use(Promise)` | Covered | `async` fulfilled and Suspense-pending SSR assertions plus the client ErrorBoundary recovery of a rejected read the server defers behind a fresh-native marker |
 | External state | `useSyncExternalStore` | Covered | `network` golden and SSR assertion |
+| Refs/effects | `useLazyRef`, `useLayoutSnapshot` | Covered | Server factory/initial-value behavior, client ref identity and committed DOM measurements in the 0.12/runtime suites |
 | Refs/effects | `useRef`, `useEffect` | Covered | `refs`, `shortcut`, and `counter` goldens |
 | Refs/effects | `useLayoutEffect`, `useInsertionEffect`, `useEffectEvent` | Covered | `hooks` client lowering and server no-effect assertion |
 | Refs/effects | `useId`, `useImperativeHandle` | Covered | `hooks` linked SSR ID and server-inert handle assertion |
@@ -170,6 +171,28 @@ also covers zero-argument DOM-binding views with imported signal reads,
 boundary arms and mount-only hooks, pointermove/pointercancel strategy
 serialization, and development shell witnesses. `tests/runtime.test.ts`
 verifies shorter-branch hydration recovery in development and production,
-including shared-root adoption, one recoverable error, and later updates.
+including one recoverable error and later updates. Since Octane 0.10 the
+regression expects the mismatched root to rebuild instead of retaining the
+server node. The hidden-dependency case now uses a reassigned module binding;
+state getters and value refs in effect setup are accepted again.
 Independent renderer-free island activation, native browser event replay,
 and universal-driver lifecycle behavior remain upstream coverage.
+
+
+## Octane 0.12.1 regression coverage
+
+`tests/octane-0.12.test.ts` covers literal `//` text and decoded entities through
+TSRX, TypeScript type erasure and constructor properties in `.ts`/`.mts`/`.cts`,
+generic superclasses and type-only re-exports in BTSX module blocks, lazy-ref
+factory execution and layout snapshot server initial values, new Strong
+ref/measurement diagnostics at authored locations, effect getter/ref acceptance,
+and finite recursive DOM-binding views compiled for both modes and SSR-rendered.
+`tests/runtime.test.ts` verifies lazy-ref identity and committed measurements,
+comment-free memo row boundaries with keyed identity across reorder/removal,
+production keyed-row props after a suspended root rollback/retry, root hydration
+fallback, and task-aware transition completion. The Core API inventory includes
+both new hooks. Vite tests verify `opaqueSignalHandles` forwarding for typed
+text holes without enabling native signal reads. Mixed Vite/Rspack/Rsbuild builds
+continue to execute against the new toolchain. Imported component shadows,
+browser restoration/island pacing, bundle-size measurements, and custom writer
+ABI lifecycles remain upstream coverage.
