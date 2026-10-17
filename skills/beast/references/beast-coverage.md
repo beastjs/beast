@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.12.1` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.13.8` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -73,6 +73,7 @@ and the `octane/signals` API are outside this stable Core API scope.
 | State | `useReducer` | Covered | `hooks` initialized reducer, latest-state getter lowering, and SSR assertion |
 | State | `useLinkedState` | Covered | `editor` golden |
 | Context | `createContext`, `use(context)`, `useContext` | Covered | `provider` golden |
+| Compiled boundaries | `createCompiledContext`, `CompiledContext`, `CompiledOutlet` | Covered | Compiled outlet hydration, context updates and component switching; Provider empty-child cleanup in the runtime suite |
 | Async data | `use(Promise)` | Covered | `async` fulfilled and Suspense-pending SSR assertions plus the client ErrorBoundary recovery of a rejected read the server defers behind a fresh-native marker |
 | External state | `useSyncExternalStore` | Covered | `network` golden and SSR assertion |
 | Refs/effects | `useLazyRef`, `useLayoutSnapshot` | Covered | Server factory/initial-value behavior, client ref identity and committed DOM measurements in the 0.12/runtime suites |
@@ -196,3 +197,20 @@ text holes without enabling native signal reads. Mixed Vite/Rspack/Rsbuild build
 continue to execute against the new toolchain. Imported component shadows,
 browser restoration/island pacing, bundle-size measurements, and custom writer
 ABI lifecycles remain upstream coverage.
+
+
+## Octane 0.13.8 regression coverage
+
+`tests/octane-0.13.test.ts` checks Strong keyed fragments/component spreads,
+inline template props, acceptance of Strong memo hooks, source-mapped descriptor
+and single-item-loop diagnostics, and pending/failed query snapshot SSR after
+loading signal modules. `tests/runtime.test.ts` verifies empty Provider children
+dispose effects and reset state, keys preserve or remount state correctly,
+compiled outlets adopt server DOM and update context, and component-element SSR
+roots hydrate with either client entry form. Vite tests verify typed compiler
+intermediates emit JavaScript with authored BTSX maps in both modes and through
+a real mixed-source production build.
+
+See the [0.13 migration guide](octane-0.13.md) for companion package versions,
+Strong migration recipes, profiling schema 2, Devtools compatibility,
+and integration areas that remain upstream coverage.

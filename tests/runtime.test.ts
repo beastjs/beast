@@ -168,6 +168,186 @@ beforeEach(() => {
 afterAll(restoreDom);
 
 describe("Octane client lifecycle", () => {
+  test("compiled outlets hydrate, receive context updates, and switch compiled components", async () => {
+    const source = [
+      'module "use strong";',
+      'import { CompiledContext, CompiledOutlet, createCompiledContext, useContext } from "octane";',
+      'module',
+      '  const Tone = createCompiledContext("outside");',
+      '  function First(props) @{ <p>{props.label + ":" + useContext(Tone)}</p> }',
+      '  function Second(props) @{ <aside>{props.label + ":" + useContext(Tone)}</aside> }',
+      'props { alternate, label, tone }',
+      'CompiledContext(context={Tone} value={tone})',
+      '  CompiledOutlet(component={alternate ? Second : First} props={{ label }})',
+    ].join("\n");
+    const Client = await loadCompiledComponent(source, "Outlet13.btsx", "client", false);
+    const Server = await loadCompiledComponent(source, "Outlet13.btsx", "server", false);
+    const { act, hydrateRoot } = await import("octane");
+    const props = { alternate: false, label: "first", tone: "provided" };
+    const container = browser.document.createElement("div");
+    container.innerHTML = renderToString(Server, props).html;
+    browser.document.body.append(container);
+    const paragraph = container.querySelector("p");
+    const errors: unknown[] = [];
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      await act(() => {
+        root = hydrateRoot(container, Client, props, { onRecoverableError: error => errors.push(error) });
+      });
+      expect(container.querySelector("p")).toBe(paragraph);
+      expect(container.textContent).toBe("first:provided");
+      expect(errors).toEqual([]);
+      await act(() => root!.render(Client, { ...props, tone: "updated" }));
+      expect(container.querySelector("p")).toBe(paragraph);
+      expect(container.textContent).toBe("first:updated");
+      await act(() => root!.render(Client, { ...props, alternate: true, label: "next" }));
+      expect(container.querySelector("p")).toBeNull();
+      expect(container.querySelector("aside")?.textContent).toBe("next:provided");
+    } finally {
+      await act(() => root?.unmount());
+    }
+  });
+
+  test.each([false, true])("component-element SSR roots hydrate with either client entry form (serverElement=%s)", async serverElement => {
+    const source = [
+      'import { useState } from "octane";',
+      'props { label }: { label: string }',
+      'setup const [count, setCount] = useState(0);',
+      'button(onClick={() => setCount(count + 1)}) #{label}:#{count}',
+    ].join("\n");
+    const Server = await loadCompiledComponent(source, "Entry13.btsx", "server", false);
+    const Client = await loadCompiledComponent(source, "Entry13.btsx", "client", false);
+    const { act, createElement, hydrateRoot } = await import("octane");
+    const server = await import("octane/server");
+    const props = { label: "adopted" };
+    const html = serverElement
+      ? renderToString(server.createElement(Server, props)).html
+      : renderToString(Server, props).html;
+    for (const clientElement of [false, true]) {
+      const container = browser.document.createElement("div");
+      container.innerHTML = html;
+      browser.document.body.append(container);
+      const button = requiredElement<HTMLButtonElement>(container, "button");
+      const errors: unknown[] = [];
+      const options = { onRecoverableError: (error: unknown) => errors.push(error) };
+      let root: ReturnType<typeof hydrateRoot> | undefined;
+      try {
+        await act(() => {
+          root = clientElement
+            ? hydrateRoot(container, createElement(Client, props), options)
+            : hydrateRoot(container, Client, props, options);
+        });
+        expect(container.querySelector("button")).toBe(button);
+        expect(errors).toEqual([]);
+        await act(() => click(button));
+        expect(button.textContent).toBe("adopted:1");
+      } finally {
+        root?.unmount();
+        container.remove();
+      }
+    }
+  });
+
+  for (const compiled of [false, true]) {
+    test.each([null, undefined])(`provider empties dispose effects and reset child state (compiled=${compiled}, empty=%s)`, async empty => {
+      const source = [
+        'import { CompiledContext, createContext, createElement, useContext, useEffect, useState } from "octane";',
+        'module',
+        '  const Channel = createContext("outside");',
+        '  function Leaf(props) @{',
+        '    const channel = useContext(Channel);',
+        '    const [count, setCount] = useState(0);',
+        '    useEffect(() => props.subscribe(), []);',
+        '    <button onClick={() => setCount(count + 1)}>{channel + ":" + count}</button>',
+        '  }',
+        compiled
+          ? '  function Provider(props) @{ <CompiledContext context={Channel} value="provided" children={props.show ? props.children : props.empty} /> }'
+          : '  function Provider(props) { return createElement(Channel, { value: "provided" }, props.show ? props.children : props.empty); }',
+        'props { show, empty, subscribe }',
+        'Provider(show={show} empty={empty})',
+        '  Leaf(subscribe={subscribe})',
+      ].join("\n");
+      const App = await loadCompiledComponent(source, "Provider13.btsx", "client", false);
+      const { act, createRoot } = await import("octane");
+      const events: string[] = [];
+      const subscribe = () => {
+        events.push("mount");
+        return () => { events.push("cleanup"); };
+      };
+      const container = browser.document.createElement("div");
+      browser.document.body.append(container);
+      const root = createRoot(container);
+      try {
+        await act(() => root.render(App, { show: true, empty, subscribe }));
+        await act(() => click(requiredElement(container, "button")));
+        expect(container.textContent).toBe("provided:1");
+        await act(() => root.render(App, { show: false, empty, subscribe }));
+        expect(container.querySelector("button")).toBeNull();
+        expect(events).toEqual(["mount", "cleanup"]);
+        await act(() => root.render(App, { show: true, empty, subscribe }));
+        expect(container.textContent).toBe("provided:0");
+        expect(events).toEqual(["mount", "cleanup", "mount"]);
+      } finally {
+        await act(() => root.unmount());
+      }
+      expect(events).toEqual(["mount", "cleanup", "mount", "cleanup"]);
+    });
+  }
+
+  test.each([false, true])("Strong keyed fragments and spreads preserve state until the key changes (hydrate=%s)", async hydrate => {
+    const source = [
+      'module "use strong";',
+      'import { Fragment, useEffect, useState } from "octane";',
+      'module',
+      '  function Child(props) @{',
+      '    const [count, setCount] = useState(0);',
+      '    useEffect(() => props.subscribe());',
+      '    <button onClick={() => setCount(count + 1)}>{props.label + ":" + count}</button>',
+      '  }',
+      'props { id, bag }',
+      'Fragment(key={id})',
+      '  Child({...bag} key={id})',
+    ].join("\n");
+    const Client = await loadCompiledComponent(source, "Keyed13.btsx", "client", false);
+    const Server = await loadCompiledComponent(source, "Keyed13.btsx", "server", false);
+    const { act, createRoot, hydrateRoot } = await import("octane");
+    const events: string[] = [];
+    const subscribe = () => {
+      events.push("mount");
+      return () => { events.push("cleanup"); };
+    };
+    const props = { id: "a", bag: { label: "first", subscribe } };
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const errors: unknown[] = [];
+    if (hydrate) container.innerHTML = renderToString(Server, props).html;
+    const adopted = container.querySelector("button");
+    let root!: ReturnType<typeof createRoot>;
+    try {
+      await act(() => {
+        root = hydrate
+          ? hydrateRoot(container, Client, props, { onRecoverableError: error => errors.push(error) })
+          : createRoot(container);
+        if (!hydrate) root.render(Client, props);
+      });
+      const first = requiredElement<HTMLButtonElement>(container, "button");
+      if (hydrate) expect(first).toBe(adopted);
+      expect(errors).toEqual([]);
+      await act(() => click(first));
+      await act(() => root.render(Client, { ...props, bag: { label: "next", subscribe } }));
+      expect(container.querySelector("button")).toBe(first);
+      expect(first.textContent).toBe("next:1");
+      expect(events).toEqual(["mount"]);
+      await act(() => root.render(Client, { ...props, id: "b" }));
+      expect(container.querySelector("button")).not.toBe(first);
+      expect(container.textContent).toBe("first:0");
+      expect(events).toEqual(["mount", "cleanup", "mount"]);
+    } finally {
+      await act(() => root?.unmount());
+    }
+    expect(events).toEqual(["mount", "cleanup", "mount", "cleanup"]);
+  });
+
   test.each([false, true])("memoized BTSX rows reuse one-element boundaries during keyed reorders (dev=%s)", async dev => {
     const source = [
       'import { memo } from "octane";',

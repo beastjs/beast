@@ -5,6 +5,13 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-17
+
+### Changed
+
+- Use Octane `0.13.8` virtual code and Beast `^0.13.8`, including the updated
+  Strong diagnostics and inline-template expression parsing.
+
 ## [0.2.2] - 2026-10-10
 
 ### Changed

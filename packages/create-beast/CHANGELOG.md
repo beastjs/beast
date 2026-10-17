@@ -5,6 +5,15 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.13.8] - 2026-10-17
+
+### Changed
+
+- Pin generated projects to Beast/Octane `0.13.8`, Rspack/Rsbuild plugins
+  `0.2.4`/`0.1.65`, Base UI/Radix `0.1.66`, and shadcn `0.0.55`.
+- Retain the required `@tsrx/oxc@0.20.0` parser and TypeScript plugin `0.6.3`.
+  Pin optional Devtools `0.1.23` with matching Beast/Octane `^0.13.8` peers.
+
 ## [0.12.1] - 2026-10-10
 
 ### Added

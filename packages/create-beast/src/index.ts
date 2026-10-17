@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { askForNextStep, askForSetup, banner, finish, isInteractive, nextCommands, progress, reportError, SetupCancelled } from "./ui.js";
 
 const DEFAULT_DIRECTORY = "beast-app";
-const DEFAULT_COMPILER_SPEC = "0.12.1";
+const DEFAULT_COMPILER_SPEC = "0.13.8";
 const DEFAULT_BUNDLER: Bundler = "vite";
 const DEFAULT_UI: UiLibrary = "base-ui";
 const TEMPLATE_DIRECTORY = resolve(dirname(fileURLToPath(import.meta.url)), "../template");
@@ -47,7 +47,7 @@ export type Addon = "devtools" | "page-builder" | "beast-ui" | "icons";
 export type ProjectAction = "open" | "run";
 
 const ADDON_PACKAGES = {
-  devtools: ["@beastjs/devtools", "0.1.21"],
+  devtools: ["@beastjs/devtools", "0.1.23"],
   "page-builder": ["@beastjs/page-builder", "0.1.0"],
   "beast-ui": ["@beastjs/cli", "0.3.3"],
   icons: ["@beastjs/cli", "0.3.3"],
@@ -56,9 +56,9 @@ const ADDON_PACKAGES = {
 const BUNDLERS = ["vite", "rspack", "rsbuild"] as const;
 const UI_LIBRARIES = ["base-ui", "radix", "shadcn"] as const;
 const UI_PACKAGES: Readonly<Record<UiLibrary, readonly [string, string]>> = {
-  "base-ui": ["@octanejs/base-ui", "0.1.65"],
-  radix: ["@octanejs/radix", "0.1.65"],
-  shadcn: ["@octanejs/shadcn", "0.0.54"],
+  "base-ui": ["@octanejs/base-ui", "0.1.66"],
+  radix: ["@octanejs/radix", "0.1.66"],
+  shadcn: ["@octanejs/shadcn", "0.0.55"],
 };
 
 export interface CreateProjectOptions {
@@ -381,11 +381,11 @@ async function configureProject(
     packageJson.devDependencies["@rspack/core"] = "^2.2.2";
     packageJson.devDependencies["@rspack/cli"] = "^2.2.2";
     packageJson.devDependencies["@rspack/dev-server"] = "^2.2.1";
-    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.2.2";
+    packageJson.devDependencies["@octanejs/rspack-plugin"] = "0.2.4";
   }
   if (bundler === "rsbuild") {
     packageJson.devDependencies["@rsbuild/core"] = "^2.2.2";
-    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.63";
+    packageJson.devDependencies["@octanejs/rsbuild-plugin"] = "0.1.65";
   }
 
   if (tailwind) {

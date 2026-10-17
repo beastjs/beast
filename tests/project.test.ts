@@ -249,7 +249,7 @@ describe("project building", () => {
     expect(await new Response(child.stderr).text()).toBe("");
   });
 
-  test("Vite builds mixed BTSX and native TSRX through Octane", async () => {
+  test.each(["js", "ts"] as const)("Vite builds mixed BTSX and native TSRX through Octane (output=%s)", async output => {
     const root = await temporaryProject();
     await symlink(resolve("node_modules"), resolve(root, "node_modules"), "dir");
     await mkdir(resolve(root, "src"), { recursive: true });
@@ -283,7 +283,7 @@ describe("project building", () => {
     await viteBuild({
       root,
       logLevel: "silent",
-      plugins: [beastOctane()],
+      plugins: [beastOctane({ octane: { output } })],
       build: { sourcemap: true },
     });
 

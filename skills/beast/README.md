@@ -5,9 +5,9 @@
 > Agent skill for authoring, diagnosing, and shipping Beast BTSX → TSRX → Octane apps across supported build tools.
 
 [![skills.sh](https://img.shields.io/badge/skills.sh-Beast-111827?style=flat-square)](https://skills.sh/phtn/beast-skill/beast)
-[![Version](https://img.shields.io/badge/version-0.12.1-6f42c1?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.13.8-6f42c1?style=flat-square)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.12.1-111827?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.13.8-111827?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Scaffold in seconds. Author with indentation. Compile to native TSRX. Let Octane own rendering.**
@@ -68,19 +68,20 @@ Use $beast to scaffold a Beast project without git, then add a keyed list with e
 
 ## Compatibility
 
-The current toolchain target is `beast-tsrx@0.12.1`, `create-beast@0.12.1`, and
-`octane@0.12.1`. Keep compiler and runtime versions together, rebuild client
+The current toolchain target is `beast-tsrx@0.13.8`, `create-beast@0.13.8`, and
+`octane@0.13.8`. Keep compiler and runtime versions together, rebuild client
 and server output when upgrading, and use companion bindings whose peers
-accept Octane `^0.12.0`.
+accept Octane `^0.13.0`.
 
-| Package | Tested version |
+| Package | Target version |
 | --- | --- |
-| Beast compiler, project creator, and Octane | `0.12.1` |
+| Beast compiler, project creator, and Octane | `0.13.8` |
 | Node compiler parser (`@tsrx/oxc`) | `0.20.0` |
 | TSRX TypeScript plugin | `0.6.3` |
-| Octane Rspack / Rsbuild plugins | `0.2.2` / `0.1.63` |
-| Octane Base UI / Radix bindings | `0.1.65` |
-| Octane shadcn binding | `0.0.54` |
+| Octane Rspack / Rsbuild plugins | `0.2.4` / `0.1.65` |
+| Octane Base UI / Radix bindings | `0.1.66` |
+| Octane shadcn binding | `0.0.55` |
+| Optional Beast Devtools | `0.1.23` |
 
 Node compiler projects must explicitly install `@tsrx/oxc@0.20.0`; generated
 starters include it. Existing projects can install the parser with:
@@ -89,7 +90,15 @@ starters include it. Existing projects can install the parser with:
 bun add --dev @tsrx/oxc@0.20.0
 ```
 
-The upgrade to Octane 0.12 brings `useLazyRef` and `useLayoutSnapshot`, finite recursive
+Octane 0.13 adds Strong keyed templates and inline render props, checked compiled
+outlets/contexts, and opt-in typed output through Vite. Strong modules reject
+descriptor APIs and one-item remount loops. Provider children now clean up when
+empty, and component-element server roots hydrate through either entry form.
+The optional Devtools add-on pins `@beastjs/devtools@0.1.23` with matching
+Beast/Octane `^0.13.8` peers; see the
+[0.13 migration guide](references/octane-0.13.md).
+
+The earlier upgrade to Octane 0.12 brings `useLazyRef` and `useLayoutSnapshot`, finite recursive
 DOM-binding views, and fixes for TypeScript erasure and keyed-row updates after
 suspended renders. Vite forwards `opaqueSignalHandles` for untyped signal
 props. Beast preserves literal `//` text and decoded entities through TSRX.
@@ -100,7 +109,8 @@ should await `act()` instead of only draining microtasks. Strong effect setup
 may read state getters and value refs; synchronous state updates in host
 callback refs and asynchronous layout measurements remain errors.
 
-See the [Octane 0.12 migration guide](references/octane-0.12.md) for the upgrade from 0.8,
+See the [Octane 0.13 migration guide](references/octane-0.13.md) for this upgrade
+and the [Octane 0.12 migration guide](references/octane-0.12.md) for the upgrade from 0.8,
 new hook examples, companion versions, and verification coverage.
 
 ## How it works
@@ -289,7 +299,8 @@ beast-skill/
 │   ├── beast-build-tools.md          # CLI, watch, source maps, and bundler adapters
 │   ├── beast-language-server.md      # LSP setup, capabilities, and boundaries
 │   ├── beast-coverage.md             # Octane parity map
-│   ├── octane-0.12.md                # Current toolchain and migration guidance
+│   ├── octane-0.13.md                # Current toolchain and migration guidance
+│   ├── octane-0.12.md                # Earlier migration guidance
 │   └── ui-components.md              # Compelling project UI component contracts
 ├── scripts/
 │   ├── beast-doctor.cjs              # Portable bounded checker

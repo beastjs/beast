@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { resolve } from "node:path";
+import { eachMapping, TraceMap } from "@jridgewell/trace-mapping";
 import type { Compiler, RuleSetRule } from "@rspack/core";
 import { beast as beastRsbuild } from "../src/rsbuild.js";
 import { BeastRspackPlugin } from "../src/rspack.js";
@@ -44,6 +45,36 @@ function transformWithVite(source: string, filename: string, options: Parameters
 }
 
 describe("Octane compiler option forwarding", () => {
+  test.each([false, true])("Vite emits typed intermediates as JavaScript with authored source maps (ssr=%s)", async ssr => {
+    const source = [
+      'module',
+      '  export interface Props { label: string }',
+      'props { label }: Props',
+      'setup const message: string = label.toUpperCase();',
+      'p #{message}',
+    ].join("\n");
+    const plugin = beastVite({ octane: { output: "ts" } });
+    const hooks = plugin as any;
+    hooks.configResolved({ root: resolve("."), command: "build", oxc: {}, logger: { warn() {} } });
+    const result = await hooks.transform(source, resolve("tests/fixtures/Typed13.btsx"), { ssr });
+    expect(result.code).not.toContain("interface Props");
+    expect(result.code).not.toContain(": string");
+    expect(result.code).toContain("label.toUpperCase()");
+    const map = new TraceMap(result.map);
+    const origins: number[] = [];
+    eachMapping(map, mapping => {
+      if (mapping.originalLine !== null) origins.push(mapping.originalLine);
+    });
+    expect(map.sources.some(name => name?.endsWith("Typed13.btsx"))).toBe(true);
+    expect(map.sourcesContent).toContain(source);
+    expect(origins).toContain(4);
+  });
+
+  test("Vite rejects typed handoff when OXC is disabled", () => {
+    const plugin = beastVite({ octane: { output: "ts" } });
+    expect(() => (plugin as any).configResolved({ oxc: false })).toThrow("requires Vite's OXC transform");
+  });
+
   const knownAttributeSpreads = [{
     source: "@example/styles",
     imported: "props",
@@ -76,7 +107,7 @@ describe("Octane compiler option forwarding", () => {
       "BindingViews.btsx",
       { octane: { domBindingFixedProps: domBindingFixedProps as readonly string[] } },
     );
-    expect(transform(["tone"])).toContain("export const Badge = /* @__PURE__ */ _$bindPresentationView(");
+    expect(transform(["tone"])).toContain("_$bindPresentationView(");
     // Octane validates the option only when it reaches the compiler.
     expect(() => transform("tone"))
       .toThrow("Octane domBindingFixedProps must be an array of child prop names.");

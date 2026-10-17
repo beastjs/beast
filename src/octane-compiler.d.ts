@@ -17,6 +17,7 @@ declare module "octane/compiler/bundler" {
         dev?: boolean;
         profile?: boolean;
         strong?: boolean;
+        output?: CompileOptions["output"];
       },
     ): OctaneBundlerTransformResult | null;
     invalidate(path?: string): void;
@@ -29,6 +30,7 @@ declare module "octane/compiler/bundler" {
     dev?: boolean;
     profile?: boolean;
     strong?: boolean;
+    output?: CompileOptions["output"];
     knownAttributeSpreads?: CompileOptions["knownAttributeSpreads"];
     domBindingFixedProps?: CompileOptions["domBindingFixedProps"];
     opaqueSignalHandles?: CompileOptions["opaqueSignalHandles"];

@@ -31,6 +31,9 @@ export function beast(options: BeastViteOptions = {}): Plugin {
     enforce: "pre",
     configResolved(resolved) {
       config = resolved;
+      if (options.octane?.output === "ts" && resolved.oxc === false) {
+        throw new Error("Beast octane output: 'ts' requires Vite's OXC transform to be enabled.");
+      }
       hmrEnabled = resolved.command === "serve" && options.octane?.hmr !== false;
       profileEnabled = options.octane?.ssr !== true &&
         (options.octane?.profile === true ||
@@ -42,6 +45,7 @@ export function beast(options: BeastViteOptions = {}): Plugin {
         dev: resolved.command === "serve",
         profile: profileEnabled,
         strong: options.octane?.strong === true,
+        ...(options.octane?.output === undefined ? {} : { output: options.octane.output }),
         ...(options.octane?.knownAttributeSpreads === undefined
           ? {}
           : { knownAttributeSpreads: options.octane.knownAttributeSpreads }),
@@ -105,6 +109,24 @@ export function beast(options: BeastViteOptions = {}): Plugin {
       }
       if (result === null) {
         throw new Error(`Octane declined to compile generated TSRX for ${projectName}.`);
+      }
+      if (result.lang === "ts") {
+        const oxc = this.environment?.config.oxc ?? config.oxc ?? {};
+        if (oxc === false) {
+          throw new Error("Beast octane output: 'ts' requires Vite's OXC transform to be enabled.");
+        }
+        const { include, exclude, jsxInject, jsxRefreshInclude, jsxRefreshExclude, ...transformOptions } = oxc;
+        const typed = result;
+        return import("vite").then(async ({ transformWithOxc }) => {
+          const emitted = await transformWithOxc(
+            typed.code,
+            filename,
+            { ...transformOptions, lang: "ts", sourcemap: true },
+            typed.map as Parameters<typeof transformWithOxc>[3],
+            config,
+          );
+          return { code: emitted.code, map: composeSourceMaps(emitted.map, tsrx.map) as never };
+        });
       }
       return { code: result.code, map: composeSourceMaps(result.map, tsrx.map) as never };
     },

@@ -29,8 +29,8 @@ This is a stdio protocol server. A direct terminal launch normally waits in
 silence for LSP messages; silence is not a useful health check. Verify it
 through an editor client or an LSP test harness instead.
 
-Language server `0.2.2` requires Node.js 22.22.2 or newer, uses
-`beast-tsrx@^0.12.1` and `octane@0.12.1`, and includes `@tsrx/oxc@0.20.0`.
+Language server `0.2.3` requires Node.js 22.22.2 or newer, uses
+`beast-tsrx@^0.13.8` and `octane@0.13.8`, and includes `@tsrx/oxc@0.20.0`.
 
 ## Current capabilities
 

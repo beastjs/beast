@@ -12,6 +12,8 @@ const PUBLIC_CORE_API = [
     names: [
       "Activity",
       "Children",
+      "CompiledContext",
+      "CompiledOutlet",
       "ErrorBoundary",
       "Fragment",
       "Hydrate",
@@ -24,6 +26,7 @@ const PUBLIC_CORE_API = [
       "captureFormSubmissions",
       "cloneElement",
       "createContext",
+      "createCompiledContext",
       "createElement",
       "createPortal",
       "createRoot",

@@ -1466,6 +1466,14 @@ function scanJavaScriptRegion(
       canStartRegex = false;
       continue;
     }
+    if (char === "<" && canStartRegex && /[A-Za-z_$>]/u.test(next)) {
+      const end = skipJsxElement(input, index);
+      if (end !== -1) {
+        index = end;
+        canStartRegex = false;
+        continue;
+      }
+    }
     if (char === "/" && canStartRegex) {
       index = skipRegex(input, index);
       if (index === -1) return { closingIndex: -1, foundIndex: -1 };
@@ -1507,6 +1515,49 @@ function scanJavaScriptRegion(
     index += 1;
   }
   return { closingIndex: closing === null ? input.length : -1, foundIndex: -1 };
+}
+
+/** Skip JSX as markup so closing tags, text quotes, and text slashes are not JS tokens. */
+function skipJsxElement(input: string, opening: number): number {
+  const name = input.slice(opening + 1).match(/^(?:[A-Za-z_$][\w$.-]*|(?=>))/u)?.[0];
+  if (name === undefined) return -1;
+  let index = opening + 1 + name.length;
+  for (; index < input.length; index += 1) {
+    const char = input[index];
+    if (char === '"' || char === "'") {
+      index = skipQuoted(input, index, char) - 1;
+      if (index < 0) return -1;
+    } else if (char === "{") {
+      index = scanJavaScriptRegion(input, index + 1, "}").closingIndex;
+      if (index === -1) return -1;
+    } else if (char === "/" && input[index + 1] === ">") {
+      return index + 2;
+    } else if (char === ">") {
+      index += 1;
+      break;
+    }
+  }
+  while (index < input.length) {
+    if (input.startsWith("</", index)) {
+      const closing = input.slice(index + 2).match(/^([\w$.-]*)\s*>/u);
+      return closing?.[1] === name ? index + 2 + closing[0].length : -1;
+    }
+    if (input[index] === "<") {
+      const end = skipJsxElement(input, index);
+      if (end !== -1) {
+        index = end;
+        continue;
+      }
+    }
+    if (input[index] === "{") {
+      const end = scanJavaScriptRegion(input, index + 1, "}").closingIndex;
+      if (end === -1) return -1;
+      index = end + 1;
+    } else {
+      index += 1;
+    }
+  }
+  return -1;
 }
 
 const REGEX_PREFIX_KEYWORDS = new Set([

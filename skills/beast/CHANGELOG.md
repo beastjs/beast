@@ -5,6 +5,17 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.13.8] - 2026-10-17
+
+### Changed
+
+- Target Beast/Octane `0.13.8` in both bundled skills, update companion and
+  router versions, and document the language server `0.2.3` dependency update.
+- Add the 0.13 migration reference for Strong templates/diagnostics, compiled
+  boundaries, Provider cleanup, query snapshots, typed Vite output, profiling
+  schema 2, and the compatible optional Devtools `0.1.23` add-on.
+- Update the coverage ledger with compiled boundary and 0.13 regressions.
+
 ## [0.12.1] - 2026-10-10
 
 ### Added

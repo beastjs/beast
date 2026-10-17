@@ -9,6 +9,29 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.8] - 2026-10-17
+
+### Changed
+
+- Align Beast with Octane `0.13.8`, Rspack plugin `0.2.4`, and Rsbuild plugin
+  `0.1.65`; update the lockfile and document the 0.13 migration.
+- Support Vite's `octane.output: "ts"` intermediate for BTSX, emitting JavaScript
+  through Vite OXC with source maps composed back to authored files.
+
+### Fixed
+
+- Recognize embedded JSX while matching BTSX expression delimiters so inline
+  TSRX render props preserve closing tags, fragments, and nested expressions.
+
+### Added
+
+- Verify Strong keyed templates, memo hooks, inline render props, mapped
+  descriptor/single-item-loop diagnostics, and pending/failed snapshot SSR.
+- Cover empty Provider cleanup, keyed state/effect lifetimes, compiled
+  outlet/context updates, and component-element SSR/hydration root adoption.
+- Track the public compiled boundary APIs and verify typed mixed-source Vite
+  builds alongside existing bundler, language-server, and starter checks.
+
 ## [0.12.1] - 2026-10-10
 
 ### Added
