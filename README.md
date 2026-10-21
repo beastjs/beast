@@ -5,6 +5,8 @@
 > An indentation-first component language that compiles BTSX into native TSRX
 > for Octane.
 
+![Mural](public/beast-ss.png)
+
 [![Status: Alpha](https://img.shields.io/badge/status-beta-9dcbff?style=flat-square)](#project-status)
 [![Version](https://img.shields.io/badge/version-0.13.8-0E0E0E?style=flat-square)](package.json)
 [![Docs](https://img.shields.io/badge/docs-0.13.8-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
@@ -89,8 +91,8 @@ Creator options:
 | `--ui NAME`      | Select `base-ui`, `radix`, or `shadcn` without the interactive prompt                  |
 | `--devtools`     | Add Beast Devtools and enable profiling during development                             |
 | `--page-builder` | Add the Beast Page Builder development widget                                          |
-| `--beast-ui`     | Enable Tailwind and initialize Beast UI through `@beastjs/cli`                          |
-| `--icons`        | Initialize the typed Beast SVG icon pipeline through `@beastjs/cli icons init`          |
+| `--beast-ui`     | Enable Tailwind and initialize Beast UI through `@beastjs/cli`                         |
+| `--icons`        | Initialize the typed Beast SVG icon pipeline through `@beastjs/cli icons init`         |
 | `-y`, `--yes`    | Accept defaults for unanswered prompts                                                 |
 | `--no-addons`    | Skip the optional tools checklist                                                      |
 | `--no-install`   | Write the project without running `bun install`                                        |
@@ -1253,17 +1255,17 @@ editors.
 
 ## Compatibility
 
-| Tool                          | Supported version   | Role                                                            |
-| ----------------------------- | ------------------- | --------------------------------------------------------------- |
-| Node.js                       | `>=22.22.2`         | Required by the supported Octane toolchain                      |
-| Bun                           | Current stable      | Workspace, tests, project creation, and dependency installation |
-| TypeScript                    | `^5.9.3`            | Package declarations and generated-project checking             |
-| TSRX TypeScript plugin        | `0.6.3`             | `.tsrx` and `.btsx` project type checking                       |
-| TSRX native parser            | `0.20.0`            | Explicit `@tsrx/oxc` peer for Node compiler integrations         |
-| Octane                        | `0.13.8`             | TSRX validation, lowering, and runtime                          |
-| Vite                          | `^8.0.16`           | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.2.4` / `0.1.65` | Bundler integration compatible with Octane `0.13.8`              |
-| Rspack / Rsbuild              | `^2.0.0`            | Low-level and application-level production builds               |
+| Tool                          | Supported version  | Role                                                            |
+| ----------------------------- | ------------------ | --------------------------------------------------------------- |
+| Node.js                       | `>=22.22.2`        | Required by the supported Octane toolchain                      |
+| Bun                           | Current stable     | Workspace, tests, project creation, and dependency installation |
+| TypeScript                    | `^5.9.3`           | Package declarations and generated-project checking             |
+| TSRX TypeScript plugin        | `0.6.3`            | `.tsrx` and `.btsx` project type checking                       |
+| TSRX native parser            | `0.20.0`           | Explicit `@tsrx/oxc` peer for Node compiler integrations        |
+| Octane                        | `0.13.8`           | TSRX validation, lowering, and runtime                          |
+| Vite                          | `^8.0.16`          | Development server and production bundling                      |
+| Octane Rspack/Rsbuild plugins | `0.2.4` / `0.1.65` | Bundler integration compatible with Octane `0.13.8`             |
+| Rspack / Rsbuild              | `^2.0.0`           | Low-level and application-level production builds               |
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
 number: `0.13.8`. Starters pin both compiler and runtime to this version.
@@ -1387,13 +1389,13 @@ bun install --frozen-lockfile
 bun run check
 ```
 
-| Script | Purpose |
-| --- | --- |
-| `bun run build` | Compile the compiler, creator, and language-server packages |
-| `bun run typecheck` | Type-check all three packages without emitting files; run `bun run build` first in a fresh checkout |
-| `bun run test` | Run repository and workspace tests |
-| `bun run check` | Build packages, then run type checking and tests |
-| `bun run pack:check` | Inspect all three npm package tarballs without publishing |
+| Script               | Purpose                                                                                             |
+| -------------------- | --------------------------------------------------------------------------------------------------- |
+| `bun run build`      | Compile the compiler, creator, and language-server packages                                         |
+| `bun run typecheck`  | Type-check all three packages without emitting files; run `bun run build` first in a fresh checkout |
+| `bun run test`       | Run repository and workspace tests                                                                  |
+| `bun run check`      | Build packages, then run type checking and tests                                                    |
+| `bun run pack:check` | Inspect all three npm package tarballs without publishing                                           |
 
 Octane 0.12 conformance tests cover TypeScript erasure, literal text/entities,
 lazy refs, layout snapshots, Strong diagnostics, recursive binding views,
