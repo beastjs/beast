@@ -12,11 +12,11 @@ The current Octane binding deliberately exposes throwing stubs for React Router 
 
 ## Version gate
 
-The Octane 0.13.8 target set is:
+The Octane 0.16.0 target set is:
 
-- `beast-tsrx@0.13.8`;
-- `octane@0.13.8`;
-- `@octanejs/remix-router@0.1.61`, which peers on Octane `^0.13.0` and ports React Router 8.2.0.
+- `beast-tsrx@0.16.0`;
+- `octane@0.16.0`;
+- `@octanejs/remix-router@0.1.64`, which peers on Octane `^0.16.0` and ports React Router 8.2.0.
 
 Resolve the installed Beast, Octane, and binding peer versions together. Do not install the latest router binding with an older Beast peer by suppressing package-manager checks. Also review source-version changes: React Router 8 consolidates browser APIs into `react-router`, makes middleware unconditional, and removes older future flags.
 

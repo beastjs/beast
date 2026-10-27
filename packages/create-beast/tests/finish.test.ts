@@ -31,7 +31,7 @@ test("CLI previews can use a local compiler tarball before publication", async (
   expect(status).toBe(0);
   const manifest = await Bun.file(resolve(directory, "package.json")).json();
   expect(manifest.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx-demo.tgz");
-  expect(manifest.dependencies.octane).toBe("0.13.8");
+  expect(manifest.dependencies.octane).toBe("0.16.0");
 });
 
 for (const action of ["open", "run"] as const satisfies readonly ProjectAction[]) {

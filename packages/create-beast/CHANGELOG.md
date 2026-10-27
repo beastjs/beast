@@ -5,6 +5,17 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-27
+
+### Changed
+
+- Pin generated projects to Beast/Octane `0.16.0`, Rspack/Rsbuild plugins
+  `0.2.8`/`0.1.69`, Base UI/Radix `0.1.69`, and shadcn `0.0.58`.
+- Retain the required `@tsrx/oxc@0.20.0` parser and TypeScript plugin `0.6.3`.
+  Optional Devtools remains pinned to `0.1.23`, whose peers predate Octane 0.16.
+- Pin the optional Page Builder add-on to `@beastjs/page-builder@0.3.0`. Beast
+  UI and icons stay on `@beastjs/cli@0.3.3`, which is already the latest.
+
 ## [0.13.8] - 2026-10-17
 
 ### Changed

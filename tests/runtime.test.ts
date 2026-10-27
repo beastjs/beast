@@ -418,6 +418,77 @@ describe("Octane client lifecycle", () => {
     }
   });
 
+  test.each([
+    ["if", ["if show", "  | Hello #{tone}", "elseif tone === \"x\"", "  | #{tone}", "else", "  | Off"], [
+      [{ show: true, tone: "info" }, "Hello info"],
+      [{ show: false, tone: "x" }, "x"],
+      [{ show: false, tone: "y" }, "Off"],
+    ]],
+    ["each", ["each item in items", "  | #{item};", "empty", "  | None"], [
+      [{ items: ["a", "b"] }, "a;b;"],
+      [{ items: [] }, "None"],
+    ]],
+    ["switch", ["switch tone", "  case \"info\"", "    | Info #{tone}", "  default", "    | #{tone}"], [
+      [{ tone: "info" }, "Info info"],
+      [{ tone: "warn" }, "warn"],
+    ]],
+    ["try", ["try", "  | Body #{tone}", "  if tone === \"bad\"", "    Boom", "catch error", "  | Failed #{String((error as Error).message)}"], [
+      [{ tone: "info" }, "Body info"],
+    ]],
+  ] as const)("text lines alone in %s arms render on client and server", async (_kind, body, cases) => {
+    const source = [
+      "module",
+      "  function Boom(): never { throw new Error(\"boom\"); }",
+      "props { show, tone, items }: { show?: boolean; tone?: string; items?: string[] }",
+      "section",
+      ...body.map(line => `  ${line}`),
+    ].join("\n");
+    const Client = await loadCompiledComponent(source, "ArmText.btsx", "client");
+    const Server = await loadCompiledComponent(source, "ArmText.btsx", "server");
+    const { act, createRoot } = await import("octane");
+    for (const [props, text] of cases) {
+      const serverContainer = browser.document.createElement("div");
+      serverContainer.innerHTML = renderToString(Server, props).html;
+      expect(requiredElement(serverContainer, "section").textContent).toBe(text);
+
+      const container = browser.document.createElement("div");
+      browser.document.body.append(container);
+      const root = createRoot(container);
+      try {
+        await act(() => root.render(Client, props));
+        expect(requiredElement(container, "section").textContent).toBe(text);
+      } finally {
+        root.unmount();
+        container.remove();
+      }
+    }
+  });
+
+  test("a stored element with a composed className re-renders inside an if arm", async () => {
+    const source = [
+      'props { show, tone }: { show: boolean; tone: string }',
+      'setup const badge = <span className={["badge", tone]}>{tone}</span>;',
+      'section',
+      '  if show',
+      '    p.slot',
+      '      | #{badge}',
+    ].join("\n");
+    const App = await loadCompiledComponent(source, "Stored16.btsx", "client");
+    const { act, createRoot } = await import("octane");
+    const container = browser.document.createElement("div");
+    browser.document.body.append(container);
+    const root = createRoot(container);
+    try {
+      await act(() => root.render(App, { show: true, tone: "info" }));
+      expect(requiredElement(container, "span").className).toBe("badge info");
+      await act(() => root.render(App, { show: true, tone: "warn" }));
+      expect(requiredElement(container, "span").className).toBe("badge warn");
+      expect(requiredElement(container, "span").textContent).toBe("warn");
+    } finally {
+      root.unmount();
+    }
+  });
+
   test("useLazyRef runs once and useLayoutSnapshot measures committed BTSX before updates settle", async () => {
     const source = [
       'module "use strong";',
@@ -662,7 +733,7 @@ describe("Octane client lifecycle", () => {
     expect(container.childNodes).toHaveLength(0);
   });
 
-  test("recovers a server-deferred rejected read inside the client ErrorBoundary", async () => {
+  test("hydrates a server-rejected read into the client ErrorBoundary fallback", async () => {
     const ServerAsync = await loadFixture("async", "server");
     const ClientAsync = await loadFixture("async", "client");
     const { act, hydrateRoot } = await import("octane");
@@ -672,9 +743,9 @@ describe("Octane client lifecycle", () => {
     container.innerHTML = server.html;
     browser.document.body.append(container);
 
-    expect(server.html).toContain("<!--oct-native-fresh:");
-    expect(container.textContent).toContain("Loading profile…");
-    expect(container.textContent).not.toContain("Profile failed.");
+    expect(server.html).toContain("<!--[$!");
+    expect(container.textContent).toContain("Profile failed.");
+    expect(container.textContent).not.toContain("Loading profile…");
 
     let root: ReturnType<typeof hydrateRoot> | undefined;
     await act(() => {

@@ -5,6 +5,16 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-27
+
+### Changed
+
+- Target Beast/Octane `0.16.0` in both bundled skills, update companion and
+  router versions, and document the language server `0.2.4` dependency update.
+- Add the 0.16 migration reference for hydration protocol 3, server error
+  fallbacks, commit-phase writes, parallel transitions, and Trusted Types.
+- Update the coverage ledger with 0.16 regressions.
+
 ## [0.13.8] - 2026-10-17
 
 ### Changed

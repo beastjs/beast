@@ -555,10 +555,43 @@ describe('BTSX to TSRX', () => {
     const rejected = await renderCompiledServerResult(server.code, {
       profile: { status: 'rejected', reason: new Error('Unavailable'), then() {} }
     })
-    expect(rejected.html).toContain('<!--oct-native-fresh:')
-    expect(rejected.html).toContain('Loading profile…')
-    expect(rejected.html).not.toContain('Profile failed.')
+    expect(rejected.html).toContain('<!--[$!')
+    expect(rejected.html).toContain('Profile failed.')
+    expect(rejected.html).not.toContain('Loading profile…')
     expect(rejected.html).not.toContain('<article class="profile">')
+  })
+
+  test('wraps text lines in control-flow arms and multi-child try blocks in fragments', () => {
+    const source = [
+      'props { show, tone, items, data }',
+      'section',
+      '  if show',
+      '    | Hello #{tone}',
+      '  else',
+      '    | Off',
+      '  each item in items',
+      '    | #{item}',
+      '  empty',
+      '    | None',
+      '  switch tone',
+      '    case "info"',
+      '      | Info',
+      '  try',
+      '    | Body',
+      '    p #{data}',
+      '  pending',
+      '    | Wait',
+      '  catch error',
+      '    | Failed #{String(error)}',
+    ].join('\n')
+    const result = compileBeastResult(source, { filename: 'Arms.btsx' })
+    for (const line of ['<>Hello {tone}</>', '<>Off</>', '<>{item}</>', '<>None</>', '<>Info</>', '<>Wait</>', '<>Failed {String(error)}</>']) {
+      expect(result.code).toContain(line)
+    }
+    expect(result.code).toMatch(/@try \{\n\t+<>\n\t+Body\n\t+<p>\{data\}<\/p>\n\t+<\/>\n/u)
+    for (const mode of ['client', 'server'] as const) {
+      expect(compile(result.code, 'Arms.tsrx', { mode, hmr: false, dev: false }).diagnostics).toEqual([])
+    }
   })
 
   test('covers every hydration strategy and the complete Hydrate prop surface', async () => {
@@ -588,7 +621,7 @@ describe('BTSX to TSRX', () => {
       dev: true
     })
     expect(client.diagnostics).toHaveLength(0)
-    expect(client.code).toContain('Hydrate.__octanePermanentStatic')
+    expect(client.code).toContain('__PermanentStaticHydrate as __OctanePermanentStaticHydrate')
     expect(client.code).toContain('?octane-hydrate=8"')
     expect(client.code).toContain("'prefetch': prefetchPanel")
 

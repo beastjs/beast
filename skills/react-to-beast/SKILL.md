@@ -6,12 +6,14 @@ license: ISC
 
 # React to Beast
 
-This revision targets `beast-tsrx@0.13.8`, `create-beast@0.13.8`, and `octane@0.13.8`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+This revision targets `beast-tsrx@0.16.0`, `create-beast@0.16.0`, and `octane@0.16.0`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
 
 For Strong-mode ports, use pure state updaters, immutable snapshots, stable
 external-store snapshots, and effect cleanup that releases resources and
 cancels asynchronous state updates. Use refs for template-owned DOM. The
-[Octane 0.13 migration guide](references/octane-0.13.md) covers descriptor API
+[Octane 0.16 migration guide](references/octane-0.16.md) covers the new
+hydration protocol, server error fallbacks, commit-phase writes, and Trusted
+Types. The [0.13 guide](references/octane-0.13.md) covers descriptor API
 and single-item-loop restrictions, keyed remounts, inline template props, and
 compiled boundaries. Read the [0.12 guide](references/octane-0.12.md) for earlier
 diagnostics and binding/island changes.

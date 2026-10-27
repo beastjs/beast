@@ -73,7 +73,8 @@ describe("Octane 0.7 BTSX compatibility", () => {
     expect(lower(source, "client").diagnostics).toEqual([]);
     const html = await renderServer(source, { name: "Ada" });
     expect(html).toContain(">Hello Ada</textarea>");
-    expect(html).not.toContain("<!--");
+    expect(html.startsWith("<!--3-->")).toBe(true);
+    expect(html.slice("<!--3-->".length)).not.toContain("<!--");
   });
 
   test.each(MODES)("use strong inside setup reports a placement error (%s)", (mode) => {

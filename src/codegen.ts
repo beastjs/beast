@@ -326,10 +326,38 @@ function generateIf(node: IfNode, depth: number, document: BeastDocument): Gener
     } else {
       appendMapped(lines.at(-1), ` @else if (${branch.test}) {`, branch.span.start);
     }
-    for (const child of branch.children) lines.push(...generateNode(child, depth + 1, document));
+    lines.push(...generateArmChildren(branch.children, depth + 1, document));
     lines.push(mappedLine(`${indent(depth)}}`, branch.span.start));
   }
   return lines;
+}
+
+/** Control-flow arm bodies are statement context in TSRX, so text needs a fragment. */
+function generateArmChildren(
+  children: readonly BeastNode[],
+  depth: number,
+  document: BeastDocument,
+): GeneratedLine[] {
+  return children.flatMap((child) =>
+    child.kind === "text"
+      ? [mappedLine(`${indent(depth)}<>${generateText(child.spans)}</>`, child.span.start)]
+      : generateNode(child, depth, document),
+  );
+}
+
+/** `@try` blocks render a single node, so several children share one fragment. */
+function generateSingleNodeBlock(
+  children: readonly BeastNode[],
+  depth: number,
+  document: BeastDocument,
+  source: SourcePosition,
+): GeneratedLine[] {
+  if (children.length <= 1) return generateArmChildren(children, depth, document);
+  return [
+    mappedLine(`${indent(depth)}<>`, source),
+    ...children.flatMap((child) => generateNode(child, depth + 1, document)),
+    mappedLine(`${indent(depth)}</>`, source),
+  ];
 }
 
 function generateEach(node: EachNode, depth: number, document: BeastDocument): GeneratedLine[] {
@@ -343,13 +371,11 @@ function generateEach(node: EachNode, depth: number, document: BeastDocument): G
       node.span.start,
     ),
   ];
-  for (const child of node.children) lines.push(...generateNode(child, depth + 1, document));
+  lines.push(...generateArmChildren(node.children, depth + 1, document));
   lines.push(mappedLine(`${indent(depth)}}`, node.span.start));
   if (node.emptyChildren !== null) {
     appendMapped(lines.at(-1), " @empty {", node.span.start);
-    for (const child of node.emptyChildren) {
-      lines.push(...generateNode(child, depth + 1, document));
-    }
+    lines.push(...generateArmChildren(node.emptyChildren, depth + 1, document));
     lines.push(mappedLine(`${indent(depth)}}`, node.span.start));
   }
   return lines;
@@ -366,9 +392,7 @@ function generateSwitch(node: SwitchNode, depth: number, document: BeastDocument
         branch.span.start,
       ),
     );
-    for (const child of branch.children) {
-      lines.push(...generateNode(child, depth + 2, document));
-    }
+    lines.push(...generateArmChildren(branch.children, depth + 2, document));
     lines.push(mappedLine(`${indent(depth + 1)}}`, branch.span.start));
   }
   lines.push(mappedLine(`${indent(depth)}}`, node.span.start));
@@ -377,16 +401,12 @@ function generateSwitch(node: SwitchNode, depth: number, document: BeastDocument
 
 function generateTry(node: TryNode, depth: number, document: BeastDocument): GeneratedLine[] {
   const lines = [mappedLine(`${indent(depth)}@try {`, node.span.start)];
-  for (const child of node.children) {
-    lines.push(...generateNode(child, depth + 1, document));
-  }
+  lines.push(...generateSingleNodeBlock(node.children, depth + 1, document, node.span.start));
   lines.push(mappedLine(`${indent(depth)}}`, node.span.start));
 
   if (node.pendingBranch !== null) {
     appendMapped(lines.at(-1), " @pending {", node.pendingBranch.span.start);
-    for (const child of node.pendingBranch.children) {
-      lines.push(...generateNode(child, depth + 1, document));
-    }
+    lines.push(...generateSingleNodeBlock(node.pendingBranch.children, depth + 1, document, node.pendingBranch.span.start));
     lines.push(mappedLine(`${indent(depth)}}`, node.pendingBranch.span.start));
   }
 
@@ -394,9 +414,7 @@ function generateTry(node: TryNode, depth: number, document: BeastDocument): Gen
     const bindings =
       node.catchBranch.bindings === null ? "" : ` (${node.catchBranch.bindings})`;
     appendMapped(lines.at(-1), ` @catch${bindings} {`, node.catchBranch.span.start);
-    for (const child of node.catchBranch.children) {
-      lines.push(...generateNode(child, depth + 1, document));
-    }
+    lines.push(...generateSingleNodeBlock(node.catchBranch.children, depth + 1, document, node.catchBranch.span.start));
     lines.push(mappedLine(`${indent(depth)}}`, node.catchBranch.span.start));
   }
 

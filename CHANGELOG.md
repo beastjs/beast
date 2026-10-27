@@ -9,6 +9,31 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-27
+
+### Changed
+
+- Align Beast with Octane `0.16.0`, Rspack plugin `0.2.8`, and Rsbuild plugin
+  `0.1.69`; update the lockfile and document the 0.14–0.16 migration, including
+  hydration protocol 3, server error fallbacks, and Trusted Types.
+
+### Fixed
+
+- Wrap text lines that sit directly in `if`, `each`/`empty`, `switch`, and
+  `try`/`pending`/`catch` arms in fragments. They previously rendered nothing
+  or failed to parse, because TSRX treats arm bodies as statements.
+- Wrap `try`, `pending`, and `catch` blocks with several children in one
+  fragment, since Octane requires a `@try` block to render a single node.
+
+### Added
+
+- Verify leading module directives, the protocol-3 root comment, client-render
+  Suspense ranges for server errors, and stored elements with an array
+  `className` re-rendering inside an `if` arm.
+- Update server, compiler, and runtime assertions for the new Suspense ranges,
+  the server-shipped ErrorBoundary fallback, and the renamed permanent-static
+  Hydrate import.
+
 ## [0.13.8] - 2026-10-17
 
 ### Changed

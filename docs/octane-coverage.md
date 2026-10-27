@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.13.8` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.16.0` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -214,3 +214,18 @@ a real mixed-source production build.
 See the [0.13 migration guide](octane-0.13.md) for companion package versions,
 Strong migration recipes, profiling schema 2, Devtools compatibility,
 and integration areas that remain upstream coverage.
+
+## Octane 0.16.0 regression coverage
+
+`tests/octane-0.16.test.ts` checks that module directives stay ahead of
+generated imports in both modes, that hydratable roots open with the protocol-3
+comment while static markup stays unmarked, and that a server error inside
+Suspense ships a client-render range without error details.
+`tests/runtime.test.ts` hydrates a server-rejected read into the client
+ErrorBoundary fallback and re-renders a stored element with an array
+`className` inside an `if` arm. The server, compiler, and 0.7 suites assert the
+new Suspense ranges and protocol comment.
+
+See the [0.16 migration guide](octane-0.16.md) for companion package versions,
+the hydration protocol, server error fallbacks, Trusted Types, and integration
+areas that remain upstream coverage.
