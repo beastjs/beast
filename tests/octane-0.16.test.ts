@@ -29,10 +29,11 @@ async function loadServer(source: string) {
 
 describe("Octane 0.16 BTSX compatibility", () => {
   test.each(MODES)("module directives stay ahead of generated imports (%s)", mode => {
-    const source = ['module "use strong";', "props { label }: { label: string }", "p #{label}"].join("\n");
+    // Octane 0.17 strips the compile-time-only "use strong"; other directives keep their place.
+    const source = ['module "use client";', "props { label }: { label: string }", "p #{label}"].join("\n");
     const result = compile(compileBeastResult(source).code, "Directive16.tsrx", { mode, hmr: false, dev: false });
     expect(result.diagnostics).toEqual([]);
-    expect(result.code.trimStart().startsWith('"use strong";')).toBe(true);
+    expect(result.code.trimStart().startsWith('"use client";')).toBe(true);
   });
 
   test("hydratable roots open with protocol version 3 and static markup stays unmarked", async () => {

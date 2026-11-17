@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "beast-tsrx": "__BEAST_PACKAGE_SPEC__",
-    "octane": "0.16.0"
+    "octane": "0.19.3"
   },
   "devDependencies": {
-    "@tsrx/oxc": "0.20.0",
+    "@tsrx/oxc": "0.23.0",
     "@tsrx/typescript-plugin": "0.6.3",
     "@types/node": "^26.2.0",
     "typescript": "^5.9.3",

@@ -119,7 +119,7 @@ Every bundler resolves `@/*` imports from `src`, matching the generated
 `tsconfig.json` paths, so `.btsx`, `.tsrx`, and TypeScript modules can use
 `import Card from "@/components/Card.btsx"` in Vite, Rspack, and Rsbuild projects.
 
-Release `0.16.0` mirrors Octane. Both templates pin `beast-tsrx@0.16.0` and `octane@0.16.0`, include TSRX-aware type checking,
+Release `0.19.3` mirrors Octane. Both templates pin `beast-tsrx@0.19.3` and `octane@0.19.3`, include TSRX-aware type checking,
 a production-build check, a project-owned `CHANGELOG.md`, and a deliberately small
 `App.btsx`: one headline, a stateful counter, and a loop over resource links, so
 the first edit replaces it rather than untangles it. Both variants share the same
@@ -131,10 +131,10 @@ Octane signals need no build option. Import `octane/signals` in a `.btsx` or
 
 Package changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
-Node compiler builds require `@tsrx/oxc@0.20.0`, included explicitly in the
+Node compiler builds require `@tsrx/oxc@0.23.0`, included explicitly in the
 starter. The TSRX type-checking plugin is pinned to `0.6.3`.
 
 The optional `--devtools` add-on pins `@beastjs/devtools@0.1.23`, whose Beast
 and Octane peers are `^0.13.8` and predate this release. Publish Beast and a
-Devtools release with `^0.16.0` peers before create-beast so generated projects
-can install both. See the [0.16 migration guide](../../docs/octane-0.16.md).
+Devtools release with `^0.19.0` peers before create-beast so generated projects
+can install both. See the [0.19 migration guide](../../docs/octane-0.19.md).

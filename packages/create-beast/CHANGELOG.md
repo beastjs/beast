@@ -5,6 +5,16 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.19.3] - 2026-11-17
+
+### Changed
+
+- Pin generated projects to Beast/Octane `0.19.3`, Rspack/Rsbuild plugins
+  `0.2.11`/`0.2.2`, Base UI `0.1.73`, Radix `0.1.72`, and shadcn `0.0.62`.
+- Move the required parser to `@tsrx/oxc@0.23.0`, Octane's new exact peer, and
+  retain TypeScript plugin `0.6.3`. Optional Devtools remains pinned to
+  `0.1.23`, whose peers predate Octane 0.19.
+
 ## [0.16.0] - 2026-10-27
 
 ### Changed

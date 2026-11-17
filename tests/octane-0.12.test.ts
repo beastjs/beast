@@ -117,10 +117,10 @@ describe("Octane 0.12 BTSX compatibility", () => {
       'module "use strong";',
       'import { useEffect, useRef, useState } from "octane";',
       'setup',
-      '  const [count, , getCount] = useState(0);',
+      '  const [count, setCount, getCount] = useState(0);',
       '  const value = useRef(0);',
       '  useEffect(() => { value.current = getCount(); });',
-      'p #{count}',
+      'button(onClick={() => setCount(count + 1)}) #{count}',
     ].join("\n");
     expect(compile(compileBeastResult(source).code, "Effects12.tsrx", { mode, hmr: false }).diagnostics).toEqual([]);
   });

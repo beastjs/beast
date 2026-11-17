@@ -5,6 +5,17 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.19.3] - 2026-11-17
+
+### Changed
+
+- Target Beast/Octane `0.19.3` in both bundled skills, update companion and
+  router versions and the `@tsrx/oxc@0.23.0` parser peer, and document the
+  language server `0.2.5` dependency update.
+- Add the 0.19 migration reference for lone arm expressions, stable error codes,
+  new Strong diagnostics, `useInitialValue`, and the stripped Strong directive.
+- Update the coverage ledger with 0.19 regressions.
+
 ## [0.16.0] - 2026-10-27
 
 ### Changed

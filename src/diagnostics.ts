@@ -101,9 +101,16 @@ export function mapGeneratedError(
   }
   offset += original.column;
   const position = { offset, line: original.line, column: original.column + 1 };
+  // Octane 0.16.4+ gives authoring errors a stable `code` (OCTANE_* or a
+  // TSRX core code); keep it visible when the message does not carry it.
+  const stableCode = (error as { code?: unknown }).code;
+  const authoredMessage = stripMessageLocation(error.message
+    .replace(/^[^\n]*?:\d+:\d+:\s*(?=\[OCTANE_)/u, ""));
   const message = octaneError.diagnostic?.message === undefined
-    ? stripMessageLocation(error.message
-      .replace(/^[^\n]*?:\d+:\d+:\s*(?=\[OCTANE_)/u, ""))
+    ? typeof stableCode === "string" && /^(?:OCTANE_|TSRX)\w+$/u.test(stableCode) &&
+      !authoredMessage.includes(stableCode)
+      ? `${stableCode}: ${authoredMessage}`
+      : authoredMessage
     : `${octaneError.diagnostic.code ?? "OCTANE"}: ${octaneError.diagnostic.message}`;
   return new BeastCompileError({
     code: "BEAST9001_OCTANE",
