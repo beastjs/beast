@@ -9,6 +9,30 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.19.3] - 2026-11-17
+
+### Changed
+
+- Align Beast with Octane `0.19.3`, Rspack plugin `0.2.11`, Rsbuild plugin
+  `0.2.2`, and the `@tsrx/oxc@0.23.0` parser peer that Octane now requires;
+  update the lockfile and document the 0.16.1–0.19.3 migration, including stable
+  error codes, new Strong diagnostics, and the stripped `"use strong"` directive.
+
+### Fixed
+
+- Keep Octane's stable error code (`OCTANE_*` or a TSRX core code) at the front
+  of `BEAST9001_OCTANE` messages when Octane's own message omits it, so tools
+  can match the code in mapped BTSX diagnostics.
+
+### Added
+
+- Verify lone interpolations in every directive arm against Octane 0.16.4's
+  lone-expression rule, the stripped Strong directive, stable codes on the
+  authored line, `OCTANE_STRONG_READ_ONLY_STATE` beside `useInitialValue`, and
+  dropped type-only imports.
+- Update the 0.12 and 0.16 suites for the read-only-state rule and the
+  Strong directive that compiled output no longer carries.
+
 ## [0.16.0] - 2026-10-27
 
 ### Changed

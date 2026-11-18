@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.16.0` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.19.3` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -229,3 +229,18 @@ new Suspense ranges and protocol comment.
 See the [0.16 migration guide](octane-0.16.md) for companion package versions,
 the hydration protocol, server error fallbacks, Trusted Types, and integration
 areas that remain upstream coverage.
+
+## Octane 0.19.3 regression coverage
+
+`tests/octane-0.19.test.ts` checks that compiled modules drop `"use strong"`
+while other directives stay ahead of generated imports, that lone
+interpolations in `if`, `each`, `empty`, `switch`, `try`, and `catch` arms
+compile in both modes and render on the server, that stable `OCTANE_*` codes
+reach mapped BTSX diagnostics on the authored line, that
+`OCTANE_STRONG_READ_ONLY_STATE` is rejected while `useInitialValue` compiles,
+and that imports used only as types are dropped. The 0.12 and 0.16 suites
+assert the read-only-state rule and the stripped Strong directive.
+
+See the [0.19 migration guide](octane-0.19.md) for companion package versions,
+the `@tsrx/oxc` 0.23.0 peer, stable error codes, new Strong diagnostics, and
+integration areas that remain upstream coverage.

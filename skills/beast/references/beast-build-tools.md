@@ -2,7 +2,7 @@
 
 Read this reference for Beast CLI, watch mode, source maps, or Vite/Rspack/Rsbuild integration. Prefer the project's installed versions and package manager; Beast and Octane are still alpha and pin compatible peers in `beast-tsrx`.
 
-For the coordinated `0.16.0` release and migration changes, read [Octane 0.16](octane-0.16.md), then [Octane 0.13](octane-0.13.md), [Octane 0.12](octane-0.12.md), [Octane 0.8](octane-0.8.md) and [Octane 0.7](octane-0.7.md) for earlier changes and [Octane 0.6](octane-0.6.md) when coming from 0.5 or earlier; for upgrades from 0.2, also read [Octane 0.3](octane-0.3.md).
+For the coordinated `0.19.3` release and migration changes, read [Octane 0.19](octane-0.19.md), then [Octane 0.16](octane-0.16.md), [Octane 0.13](octane-0.13.md), [Octane 0.12](octane-0.12.md), [Octane 0.8](octane-0.8.md) and [Octane 0.7](octane-0.7.md) for earlier changes and [Octane 0.6](octane-0.6.md) when coming from 0.5 or earlier; for upgrades from 0.2, also read [Octane 0.3](octane-0.3.md).
 
 ## Choose one integration boundary
 
@@ -72,7 +72,7 @@ export default defineConfig({
 
 Import `.btsx` and native `.tsrx` normally. Beast generates TSRX in memory before Octane. The complete adapter forwards HMR, selects server lowering during SSR transforms, and routes compiler-split `Hydrate` child queries back through the originating `.btsx` module.
 
-Install `@tsrx/oxc@0.20.0` explicitly in Node compiler projects. The starters
+Install `@tsrx/oxc@0.23.0` explicitly in Node compiler projects. The starters
 include this optional Octane parser peer. Vite forwards `opaqueSignalHandles`
 for untyped signal props; a type-only `octane/signals` import is also sufficient
 to retain opaque bindings without enabling native reads.

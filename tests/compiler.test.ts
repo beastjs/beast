@@ -1615,7 +1615,7 @@ describe('error locations', () => {
     }
     expect(caught).toBeInstanceOf(BeastCompileError)
     const { message } = caught as BeastCompileError
-    expect(message).toStartWith('a.btsx:3:3 - BEAST9001_OCTANE: `import x = require(…)` cannot be compiled')
+    expect(message).toStartWith('a.btsx:3:3 - BEAST9001_OCTANE: OCTANE_TS_IMPORT_REQUIRE_UNSUPPORTED: `import x = require(…)` cannot be compiled')
     expect(message).not.toContain('a.tsrx')
   })
 })
