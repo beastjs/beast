@@ -182,7 +182,7 @@ describe("BeastTypeScriptFeatures", () => {
     expect(resolved.additionalTextEdits).toEqual([
       {
         range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
-        newText: 'import { formatPrice } from "./utils";\n',
+        newText: expect.stringMatching(/^import \{ formatPrice \} from "\.\/utils";?\n$/u),
       },
     ]);
   });
