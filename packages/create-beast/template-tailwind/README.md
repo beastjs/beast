@@ -17,7 +17,7 @@ Edit `src/App.btsx` to get started. Declare typed props at the top of the BTSX
 file; the Beast bundler adapter compiles it into native TSRX and then lets Octane
 produce the browser module.
 
-The starter pins the tested `octane@0.19.3` toolchain. Run the complete local
+The starter pins the tested `octane@0.23.2` toolchain. Run the complete local
 verification before shipping:
 
 ```bash
@@ -42,5 +42,5 @@ import { createScope } from "octane/signals"
 
 Record application changes in [CHANGELOG.md](CHANGELOG.md).
 
-Node compiler builds require `@tsrx/oxc@0.23.0`, included explicitly in the
-starter. The TSRX type-checking plugin is pinned to `0.6.3`.
+Node compiler builds require `@tsrx/oxc@0.24.0`, included explicitly in the
+starter. The TSRX type-checking plugin is pinned to `0.7.15`.

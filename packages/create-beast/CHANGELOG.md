@@ -5,6 +5,18 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.23.2] - 2026-11-24
+
+### Changed
+
+- Pin generated projects to Beast and Octane `0.23.2`, parser `0.24.0`,
+  TypeScript plugin `0.7.15`, and the matching Octane bundler and UI bindings.
+
+### Fixed
+
+- Point the starter's TypeScript plugin to `octane/compiler/volar` so
+  `tsrx-tsc` checks native `.tsrx` files in mixed projects.
+
 ## [0.19.3] - 2026-11-17
 
 ### Changed

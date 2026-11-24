@@ -5,6 +5,12 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-11-24
+
+### Changed
+
+- Use Octane `0.23.2` virtual code, Beast `^0.23.2`, and `@tsrx/oxc@0.24.0`.
+
 ## [0.2.5] - 2026-11-17
 
 ### Changed

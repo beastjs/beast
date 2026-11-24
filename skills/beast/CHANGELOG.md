@@ -5,6 +5,13 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.23.2] - 2026-11-24
+
+### Changed
+
+- Target Beast and Octane `0.23.2` in both skills. Update parser, bundler, UI,
+  router, and language-server guidance and add the 0.23 migration reference.
+
 ## [0.19.3] - 2026-11-17
 
 ### Changed

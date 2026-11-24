@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.19.3` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.23.2` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -244,3 +244,14 @@ assert the read-only-state rule and the stripped Strong directive.
 See the [0.19 migration guide](octane-0.19.md) for companion package versions,
 the `@tsrx/oxc` 0.23.0 peer, stable error codes, new Strong diagnostics, and
 integration areas that remain upstream coverage.
+
+## Octane 0.23.2 regression coverage
+
+The project build suite verifies that Octane reports `TSRX2030` on the
+authored BTSX line for a nested `var` and that switching to a block-scoped
+declaration restores the build. The existing Vite, Rspack, and Rsbuild
+integration suites exercise client and server output with the new runtime
+entries.
+
+See the [0.23 migration guide](octane-0.23.md) for the parser and companion
+versions and for recompiling older output.

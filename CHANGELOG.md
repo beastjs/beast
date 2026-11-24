@@ -9,6 +9,16 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.23.2] - 2026-11-24
+
+### Changed
+
+- Align with Octane `0.23.2`, the `@tsrx/oxc@0.24.0` parser peer, Rspack
+  plugin `0.2.15`, and Rsbuild plugin `0.2.6`.
+- Use Octane's published bundler compiler types and verify that the new
+  nested `var` diagnostic maps to the authored BTSX location. See the
+  [0.23 migration guide](docs/octane-0.23.md) for recompiling older output.
+
 ## [0.19.3] - 2026-11-17
 
 ### Changed

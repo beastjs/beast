@@ -5,9 +5,9 @@
 > Agent skill for authoring, diagnosing, and shipping Beast BTSX → TSRX → Octane apps across supported build tools.
 
 [![skills.sh](https://img.shields.io/badge/skills.sh-Beast-111827?style=flat-square)](https://skills.sh/phtn/beast-skill/beast)
-[![Version](https://img.shields.io/badge/version-0.19.3-6f42c1?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.23.2-6f42c1?style=flat-square)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.19.3-111827?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.23.2-111827?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Scaffold in seconds. Author with indentation. Compile to native TSRX. Let Octane own rendering.**
@@ -68,32 +68,32 @@ Use $beast to scaffold a Beast project without git, then add a keyed list with e
 
 ## Compatibility
 
-The current toolchain target is `beast-tsrx@0.19.3`, `create-beast@0.19.3`, and
-`octane@0.19.3`. Keep compiler and runtime versions together, rebuild client
+The current toolchain target is `beast-tsrx@0.23.2`, `create-beast@0.23.2`, and
+`octane@0.23.2`. Keep compiler and runtime versions together, rebuild client
 and server output when upgrading, and use companion bindings whose peers
-accept Octane `^0.19.0`.
+accept Octane `^0.23.0`.
 
 | Package | Target version |
 | --- | --- |
-| Beast compiler, project creator, and Octane | `0.19.3` |
-| Node compiler parser (`@tsrx/oxc`) | `0.23.0` |
-| TSRX TypeScript plugin | `0.6.3` |
-| Octane Rspack / Rsbuild plugins | `0.2.11` / `0.2.2` |
-| Octane Base UI / Radix bindings | `0.1.73` / `0.1.72` |
-| Octane shadcn binding | `0.0.62` |
+| Beast compiler, project creator, and Octane | `0.23.2` |
+| Node compiler parser (`@tsrx/oxc`) | `0.24.0` |
+| TSRX TypeScript plugin | `0.7.15` |
+| Octane Rspack / Rsbuild plugins | `0.2.15` / `0.2.6` |
+| Octane Base UI / Radix bindings | `0.1.77` / `0.1.77` |
+| Octane shadcn binding | `0.0.67` |
 | Optional Beast Devtools | `0.1.23` |
 
-Node compiler projects must explicitly install `@tsrx/oxc@0.23.0`; generated
+Node compiler projects must explicitly install `@tsrx/oxc@0.24.0`; generated
 starters include it. Existing projects can install the parser with:
 
 ```bash
-bun add --dev @tsrx/oxc@0.23.0
+bun add --dev @tsrx/oxc@0.24.0
 ```
 
-Octane 0.16.4 moves the parser peer to `@tsrx/oxc@0.23.0` and gives compile
-errors stable `OCTANE_*` codes, which Beast keeps in its diagnostics. Octane
-0.17 adds new Strong diagnostics, such as `OCTANE_STRONG_READ_ONLY_STATE`, and
-strips `"use strong"` from compiled output; see the
+Octane 0.22 moves compiler helpers to internal entry points and reports
+`TSRX2030` for `var` in nested template scopes or directive arms. See the
+[0.23 migration guide](references/octane-0.23.md). For earlier Strong
+diagnostics and the Strong directive, see the
 [0.19 migration guide](references/octane-0.19.md).
 
 Octane 0.14–0.16 change the server HTML hydration reads (protocol version 3),
@@ -101,8 +101,8 @@ so rebuild and deploy server and client together. Server errors inside Suspense
 now ship the fallback for the client to render, template bindings write at
 commit, unrelated transitions commit independently, and Trusted Types values
 reach the DOM unchanged. The optional Devtools add-on still pins
-`@beastjs/devtools@0.1.23`, whose `^0.13.8` peers predate this release; see the
-[0.16 migration guide](references/octane-0.16.md).
+`@beastjs/devtools@0.1.23`, whose `^0.13.8` peers predate this release. See the
+[0.23 migration guide](references/octane-0.23.md) for add-on compatibility.
 
 The earlier upgrade to Octane 0.13 added Strong keyed templates and inline
 render props, checked compiled outlets/contexts, and opt-in typed output through

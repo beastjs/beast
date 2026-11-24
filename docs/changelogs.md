@@ -1,7 +1,7 @@
 # Changelog policy
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
-number (currently `0.19.3`). The language server retains its own version. Record a user-visible change
+number (currently `0.23.2`). The language server retains its own version. Record a user-visible change
 in every affected component's changelog:
 
 | Deliverable | Changelog |
@@ -76,11 +76,10 @@ Download the checked npm tarballs from the GitHub release and publish them in
 this order from the download directory:
 
 ```bash
-npm publish ./beast-tsrx-0.19.3.tgz --access public
-# Publish a @beastjs/devtools release with ^0.19.0 peers from its own checked artifact next.
-npm publish ./create-beast-0.19.3.tgz --access public
+npm publish ./beast-tsrx-0.23.2.tgz --access public
+npm publish ./create-beast-0.23.2.tgz --access public
 # When releasing the separately versioned language server:
-npm publish ./beast-language-server-0.2.5.tgz --access public
+npm publish ./beast-language-server-0.2.6.tgz --access public
 ```
 
 Use an npm account with publishing access. The release workflow uses only the

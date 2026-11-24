@@ -12,11 +12,19 @@ const SOURCE_ALIAS = '"@": fileURLToPath(new URL("./src", import.meta.url))';
 async function readTsconfig(directory: string): Promise<{
   types?: string[];
   paths?: Record<string, string[]>;
+  compiler?: string;
 }> {
-  const { compilerOptions } = JSON.parse(
+  const { compilerOptions, tsrx } = JSON.parse(
     await readFile(resolve(directory, "tsconfig.json"), "utf8"),
-  ) as { compilerOptions: { types?: string[]; paths?: Record<string, string[]> } };
-  return { types: compilerOptions.types, paths: compilerOptions.paths };
+  ) as {
+    compilerOptions: { types?: string[]; paths?: Record<string, string[]> };
+    tsrx?: { compiler?: string };
+  };
+  return {
+    types: compilerOptions.types,
+    paths: compilerOptions.paths,
+    compiler: tsrx?.compiler,
+  };
 }
 
 afterEach(async () => {
@@ -58,10 +66,10 @@ describe("create-beast", () => {
     ) as { name: string; dependencies: Record<string, string>; devDependencies: Record<string, string> };
     expect(packageJson.name).toBe("my-beast-app");
     expect(packageJson.dependencies["beast-tsrx"]).toBe("file:/local/beast-tsrx.tgz");
-    expect(packageJson.dependencies.octane).toBe("0.19.3");
-    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.23.0");
-    expect(packageJson.devDependencies["@tsrx/typescript-plugin"]).toBe("0.6.3");
-    expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.73");
+    expect(packageJson.dependencies.octane).toBe("0.23.2");
+    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.24.0");
+    expect(packageJson.devDependencies["@tsrx/typescript-plugin"]).toBe("0.7.15");
+    expect(packageJson.dependencies["@octanejs/base-ui"]).toBe("0.1.77");
     const app = await readFile(resolve(result.directory, "src", "App.btsx"), "utf8");
     expect(app).toContain("props { docsUrl }: Props");
     expect(app).toContain("interface Props");
@@ -83,6 +91,7 @@ describe("create-beast", () => {
     expect(await readTsconfig(result.directory)).toEqual({
       types: ["vite/client", "node"],
       paths: { "@/*": ["./src/*"] },
+      compiler: "octane/compiler/volar",
     });
     expect(await readFile(resolve(result.directory, "src/style.css"), "utf8")).not.toContain(
       "@import \"tailwindcss\"",
@@ -128,9 +137,9 @@ describe("create-beast", () => {
       dependencies: Record<string, string>;
       devDependencies: Record<string, string>;
     };
-    expect(packageJson.dependencies.octane).toBe("0.19.3");
-    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.23.0");
-    expect(packageJson.devDependencies["@tsrx/typescript-plugin"]).toBe("0.6.3");
+    expect(packageJson.dependencies.octane).toBe("0.23.2");
+    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.24.0");
+    expect(packageJson.devDependencies["@tsrx/typescript-plugin"]).toBe("0.7.15");
     expect(packageJson.devDependencies["tailwindcss"]).toBe("^4.3.3");
     expect(packageJson.devDependencies["@tailwindcss/vite"]).toBe("^4.3.3");
     const viteConfig = await readFile(resolve(result.directory, "vite.config.ts"), "utf8");
@@ -192,13 +201,13 @@ describe("create-beast", () => {
       devDependencies: Record<string, string>;
     };
 
-    expect(packageJson.dependencies["beast-tsrx"]).toBe("0.19.3");
-    expect(packageJson.dependencies.octane).toBe("0.19.3");
+    expect(packageJson.dependencies["beast-tsrx"]).toBe("0.23.2");
+    expect(packageJson.dependencies.octane).toBe("0.23.2");
     expect(result.bundler).toBe("rspack");
     expect(result.ui).toBe("radix");
-    expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.72");
-    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.2.11");
-    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.23.0");
+    expect(packageJson.dependencies["@octanejs/radix"]).toBe("0.1.77");
+    expect(packageJson.devDependencies["@octanejs/rspack-plugin"]).toBe("0.2.15");
+    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.24.0");
     expect(packageJson.devDependencies.vite).toBeUndefined();
     expect(packageJson.scripts.build).toBe("rspack build --mode production");
     const config = await readFile(resolve(result.directory, "rspack.config.ts"), "utf8");
@@ -209,6 +218,7 @@ describe("create-beast", () => {
     expect(await readTsconfig(result.directory)).toEqual({
       types: ["node"],
       paths: { "@/*": ["./src/*"] },
+      compiler: "octane/compiler/volar",
     });
     expect(await readFile(resolve(result.directory, "index.html"), "utf8"))
       .not.toContain('/src/main.ts');
@@ -231,9 +241,9 @@ describe("create-beast", () => {
       devDependencies: Record<string, string>;
     };
 
-    expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.62");
-    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.2.2");
-    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.23.0");
+    expect(packageJson.dependencies["@octanejs/shadcn"]).toBe("0.0.67");
+    expect(packageJson.devDependencies["@octanejs/rsbuild-plugin"]).toBe("0.2.6");
+    expect(packageJson.devDependencies["@tsrx/oxc"]).toBe("0.24.0");
     expect(packageJson.devDependencies["@rsbuild/plugin-tailwindcss"]).toBe("^2.0.3");
     const config = await readFile(resolve(result.directory, "rsbuild.config.ts"), "utf8");
     expect(config).toContain('from "beast-tsrx/rsbuild"');
@@ -243,6 +253,7 @@ describe("create-beast", () => {
     expect(await readTsconfig(result.directory)).toEqual({
       types: ["node"],
       paths: { "@/*": ["./src/*"] },
+      compiler: "octane/compiler/volar",
     });
     expect(await readFile(resolve(result.directory, "src/style.css"), "utf8"))
       .toContain('@source "../node_modules/@octanejs/shadcn"');

@@ -137,6 +137,24 @@ describe("project building", () => {
     expect(result.generated).toHaveLength(1);
   });
 
+  test("maps Octane's nested var diagnostic to the original BTSX scope", async () => {
+    const root = await temporaryProject();
+    const filename = resolve(root, "Nested.btsx");
+    const source = [
+      "scope",
+      '  setup var label = "Local";',
+      "  p #{label}",
+    ].join("\n");
+    await Bun.write(filename, source);
+    await expect(buildBeastProject({ root })).rejects.toThrow(
+      /Nested\.btsx:2:9 - BEAST9001_OCTANE: TSRX2030:/u,
+    );
+
+    await Bun.write(filename, source.replace("setup var", "setup const"));
+    const result = await buildBeastProject({ root });
+    expect(result.generated).toHaveLength(1);
+  });
+
   test("builds a mirrored TSRX source tree and validates native TSRX", async () => {
     const root = await temporaryProject();
     await mkdir(resolve(root, "components"), { recursive: true });
