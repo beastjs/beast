@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Position, type CompletionItem } from "vscode-languageserver/node";
@@ -109,6 +109,28 @@ describe("BeastTypeScriptFeatures", () => {
       start: positionOf(document, "dvi", false),
       end: positionOf(document, "dvi"),
     });
+  });
+
+  test("rechecks unchanged Beast files when the project JSX import source changes", async () => {
+    const root = await createProject();
+    const features = new BeastTypeScriptFeatures(root);
+    const document = open(root, "App.btsx", 'button(tone="quiet") Save\n');
+    expect(features.diagnostics(document).map((diagnostic) => diagnostic.code)).toContain(2322);
+
+    await writeFile(join(root, "custom-jsx.d.ts"), [
+      'declare module "custom-jsx/jsx-runtime" {',
+      '  export namespace JSX {',
+      '    interface IntrinsicElements { button: { tone: string; children?: unknown } }',
+      '  }',
+      '}',
+    ].join("\n"));
+    const configPath = join(root, "tsconfig.json");
+    const config = JSON.parse(await readFile(configPath, "utf8"));
+    config.compilerOptions.jsxImportSource = "custom-jsx";
+    await writeFile(configPath, JSON.stringify(config));
+    features.host.filesChanged([configPath]);
+
+    expect(features.diagnostics(document).filter((diagnostic) => diagnostic.severity === 1)).toEqual([]);
   });
 
   test("fades an unused import over exactly its Beast line", async () => {

@@ -11,25 +11,25 @@
         "entities": "^7.0.1",
       },
       "devDependencies": {
-        "@octanejs/rsbuild-plugin": "0.2.6",
-        "@octanejs/rspack-plugin": "0.2.15",
+        "@octanejs/rsbuild-plugin": "0.2.8",
+        "@octanejs/rspack-plugin": "0.3.0",
         "@rsbuild/core": "2.1.13",
         "@rspack/core": "2.1.10",
         "@tsrx/oxc": "0.24.0",
         "@types/bun": "^1.3.14",
         "@types/node": "^26.2.0",
         "happy-dom": "^20.11.0",
-        "octane": "0.23.2",
+        "octane": "0.25.0",
         "typescript": "^5.9.3",
         "vite": "^8.0.16",
       },
       "peerDependencies": {
-        "@octanejs/rsbuild-plugin": "^0.2.6",
-        "@octanejs/rspack-plugin": "^0.2.15",
+        "@octanejs/rsbuild-plugin": "^0.2.8",
+        "@octanejs/rspack-plugin": "^0.3.0",
         "@rsbuild/core": "^2.0.0",
         "@rspack/core": "^2.0.0",
         "@tsrx/oxc": "0.24.0",
-        "octane": "^0.23.2",
+        "octane": "^0.25.0",
         "vite": "^8.0.16",
       },
       "optionalPeers": [
@@ -44,7 +44,7 @@
     },
     "packages/create-beast": {
       "name": "create-beast",
-      "version": "0.23.2",
+      "version": "0.25.0",
       "bin": {
         "create-beast": "dist/index.js",
       },
@@ -59,15 +59,15 @@
     },
     "packages/language-server": {
       "name": "beast-language-server",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "bin": {
         "beast-language-server": "dist/server.js",
       },
       "dependencies": {
         "@jridgewell/trace-mapping": "^0.3.31",
         "@tsrx/oxc": "0.24.0",
-        "beast-tsrx": "^0.23.2",
-        "octane": "0.23.2",
+        "beast-tsrx": "^0.25.0",
+        "octane": "0.25.0",
         "typescript": "^5.9.3",
         "vscode-languageserver": "^10.1.0",
         "vscode-languageserver-textdocument": "^1.0.12",
@@ -158,11 +158,11 @@
 
     "@noble/hashes": ["@noble/hashes@2.3.0", "", {}, "sha512-oN+QwyX7VSHotibwubG3kpzbwKrfnyR6OOO+3Nk/53ADL7FmgHHz4TgrbaYKvvOw09u6QTx0oiH1cNCIOuN0CQ=="],
 
-    "@octanejs/app-core": ["@octanejs/app-core@0.3.6", "", { "dependencies": { "@ripple-ts/adapter": "^0.4.0", "esbuild": "^0.28.1" }, "peerDependencies": { "octane": "^0.23.0" } }, "sha512-WtYm3XmuFHcjq3ujzDjpgKyZLgJ1PjD/7LLoXELXxLDJNTiXi/tMuR03CxMRob5Pfif/yoCCyKlJwxZZxY49cw=="],
+    "@octanejs/app-core": ["@octanejs/app-core@0.3.8", "", { "dependencies": { "@ripple-ts/adapter": "^0.4.0", "esbuild": "^0.28.1" }, "peerDependencies": { "octane": "^0.25.0" } }, "sha512-kXdF+J0SK5UW0KF6qaHLh22WjjiCuYepAiMQzlzlsc2Fokz2oRv8BfRUGq9aXm8xPXSHSlXRvc2cAxt4dXA+MA=="],
 
-    "@octanejs/rsbuild-plugin": ["@octanejs/rsbuild-plugin@0.2.6", "", { "dependencies": { "@octanejs/app-core": "0.3.6", "@octanejs/rspack-plugin": "0.2.15" }, "peerDependencies": { "@rsbuild/core": "^2.0.0", "octane": "^0.23.0" }, "bin": { "octane-rsbuild-preview": "src/bin/preview.js" } }, "sha512-I3TmWCoC72WzjIN4sxG6XdGj1l3dd7lUn3hQkYk+8fdAUPENpDlVLMk45q0t8wMuzaN7JSZPI8IF2kL2Tb5o+w=="],
+    "@octanejs/rsbuild-plugin": ["@octanejs/rsbuild-plugin@0.2.8", "", { "dependencies": { "@octanejs/app-core": "0.3.8", "@octanejs/rspack-plugin": "0.3.0" }, "peerDependencies": { "@rsbuild/core": "^2.0.0", "octane": "^0.25.0" }, "bin": { "octane-rsbuild-preview": "src/bin/preview.js" } }, "sha512-8Mq4CNiu8MIigdbDjfDqGVnIEHgVC+srXf5+/aLvldhBozRXEkyaCun2rUeygO4utH+WSUlkAYw6Pc7+6/WvBA=="],
 
-    "@octanejs/rspack-plugin": ["@octanejs/rspack-plugin@0.2.15", "", { "dependencies": { "@jridgewell/remapping": "^2.3.5" }, "peerDependencies": { "@rspack/core": "^2.0.0", "octane": "^0.23.0" } }, "sha512-HPzhNRiHXIlFq4p9cGx7N/qkEcWinhZNL3lmIoNZ/I9IPk22Q6KKTwIuv0cJH2524c8VSH5aii0jb8SXtLI6sg=="],
+    "@octanejs/rspack-plugin": ["@octanejs/rspack-plugin@0.3.0", "", { "dependencies": { "@jridgewell/remapping": "^2.3.5" }, "peerDependencies": { "@rspack/core": "^2.0.0", "octane": "^0.25.0" } }, "sha512-+bS6NNDgwCza/B+RWtm0KfLsoD5pHUfu15caXXtdfOzdcZpfeqvFGi7H9QWKXKav1KeHx9GNRZQfjiWLRuRLag=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.150.0", "", {}, "sha512-rDS5/31E9HfPl/CIzGrn0DOlvBbXFseQ5URJ9sYMfstbKLD/c6Gm9vmRzRGDdAXyOIL4zmO37lc9RIwYqVruZw=="],
 
@@ -356,7 +356,9 @@
 
     "@types/node": ["@types/node@26.2.0", "", { "dependencies": { "undici-types": "~8.3.0" } }, "sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg=="],
 
-    "@types/react": ["@types/react@19.2.18", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w=="],
+    "@types/react": ["@types/react@19.3.2", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-0QJbb58RxWJL3VAa5tvk7QhJamz0S+MpFL2xDuF/+THRR+kldyhPjRZ1iwvK45AEHZ1BVGS3otPsl7QlNVRizQ=="],
+
+    "@types/react-dom": ["@types/react-dom@19.3.0", "", { "peerDependencies": { "@types/react": "^19.3.0" } }, "sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q=="],
 
     "@types/whatwg-mimetype": ["@types/whatwg-mimetype@3.0.2", "", {}, "sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA=="],
 
@@ -436,7 +438,7 @@
 
     "nanoid": ["nanoid@3.3.18", "", { "bin": { "nanoid": "bin/nanoid.cjs" } }, "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w=="],
 
-    "octane": ["octane@0.23.2", "", { "dependencies": { "@tsrx/core": "^0.6.3", "@types/react": "^19.2.17", "@volar/language-core": "2.4.28", "@volar/typescript": "2.4.28", "csstype": "3.2.3", "devalue": "^6.0.3", "es-module-lexer": "^1.7.0", "esrap": "^2.4.2" }, "peerDependencies": { "@tsrx/oxc": "0.24.0", "react": "^19.0.0", "react-dom": "^19.0.0", "typescript": "^5.9.3 || ^6.0.0 || >=7.1.0-0", "vite": "^8.0.16" }, "optionalPeers": ["@tsrx/oxc", "react", "react-dom", "typescript", "vite"] }, "sha512-mA8MA8fSg5vZ7STH97G501AgVp7Ae/zBeGZCgIaupX3yvPSbfXYp2i5yzdGKvecFh0ywBy6wSz/sEd7Px0k1pw=="],
+    "octane": ["octane@0.25.0", "", { "dependencies": { "@tsrx/core": "^0.6.3", "@types/react": "^19.2.17", "@types/react-dom": "^19.2.3", "@volar/language-core": "2.4.28", "@volar/typescript": "2.4.28", "csstype": "3.2.3", "devalue": "^6.0.3", "es-module-lexer": "^1.7.0", "esrap": "^2.4.2" }, "peerDependencies": { "@tsrx/oxc": "0.24.0", "react": "^19.0.0", "react-dom": "^19.0.0", "typescript": "^5.9.3 || ^6.0.0 || >=7.1.0-0", "vite": "^8.0.16" }, "optionalPeers": ["@tsrx/oxc", "react", "react-dom", "typescript", "vite"] }, "sha512-0OJQI8eem3DUYLHvBazsTodLKY7xS38P5CKAUcG2lsfAmCaNISDSYCd+FdHnlBeh5kWvcl7JuBtS3B0/u6K7KQ=="],
 
     "oxfmt-current": ["oxfmt@0.68.0", "", { "dependencies": { "tinypool": "2.1.2" }, "optionalDependencies": { "@oxfmt/binding-android-arm-eabi": "0.68.0", "@oxfmt/binding-android-arm64": "0.68.0", "@oxfmt/binding-darwin-arm64": "0.68.0", "@oxfmt/binding-darwin-x64": "0.68.0", "@oxfmt/binding-freebsd-x64": "0.68.0", "@oxfmt/binding-linux-arm-gnueabihf": "0.68.0", "@oxfmt/binding-linux-arm-musleabihf": "0.68.0", "@oxfmt/binding-linux-arm64-gnu": "0.68.0", "@oxfmt/binding-linux-arm64-musl": "0.68.0", "@oxfmt/binding-linux-ppc64-gnu": "0.68.0", "@oxfmt/binding-linux-riscv64-gnu": "0.68.0", "@oxfmt/binding-linux-riscv64-musl": "0.68.0", "@oxfmt/binding-linux-s390x-gnu": "0.68.0", "@oxfmt/binding-linux-x64-gnu": "0.68.0", "@oxfmt/binding-linux-x64-musl": "0.68.0", "@oxfmt/binding-openharmony-arm64": "0.68.0", "@oxfmt/binding-win32-arm64-msvc": "0.68.0", "@oxfmt/binding-win32-ia32-msvc": "0.68.0", "@oxfmt/binding-win32-x64-msvc": "0.68.0" }, "peerDependencies": { "svelte": "^5.0.0", "vite-plus": "*" }, "optionalPeers": ["svelte", "vite-plus"], "bin": { "oxfmt": "bin/oxfmt" } }, "sha512-Z0XMofcXCGUXbcpBHnWyUiX93BGiw1B+lcHNbQDWEtOhX06ewoFfu4zXkyiLhRrNnMq0twqXRHUcJetf+GsiQQ=="],
 

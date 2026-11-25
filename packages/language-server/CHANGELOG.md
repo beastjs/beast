@@ -5,6 +5,14 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-11-25
+
+### Changed
+
+- Use Octane `0.25.0` virtual code and Beast `^0.25.0`.
+- Apply the project's JSX import source to Beast virtual code and recheck
+  open Beast files when that setting changes.
+
 ## [0.2.6] - 2026-11-24
 
 ### Changed

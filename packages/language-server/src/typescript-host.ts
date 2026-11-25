@@ -73,6 +73,7 @@ export class BeastTypeScriptHost implements ts.LanguageServiceHost {
       }
     }
 
+    const previousJsxImportSource = this.compilerOptions.jsxImportSource;
     this.compilerOptions = {
       ...defaults,
       ...options,
@@ -81,6 +82,9 @@ export class BeastTypeScriptHost implements ts.LanguageServiceHost {
       allowImportingTsExtensions: true,
       allowArbitraryExtensions: true,
     };
+    if (this.compilerOptions.jsxImportSource !== previousJsxImportSource) {
+      this.virtualCodes.clear();
+    }
     this.projectFileNames = fileNames;
     this.projectVersion += 1;
   }
@@ -114,7 +118,7 @@ export class BeastTypeScriptHost implements ts.LanguageServiceHost {
     if (source === undefined) return null;
     const cached = this.virtualCodes.get(btsxPath);
     if (cached?.source === source) return cached.code;
-    const code = createBeastVirtualCode(source, btsxPath);
+    const code = createBeastVirtualCode(source, btsxPath, this.compilerOptions.jsxImportSource);
     this.virtualCodes.set(btsxPath, { source, code });
     return code;
   }
@@ -142,10 +146,13 @@ export class BeastTypeScriptHost implements ts.LanguageServiceHost {
   }
 
   getScriptVersion(fileName: string): string {
-    const path = isVirtualPath(fileName) ? toBtsxPath(fileName) : fileName;
+    const virtual = isVirtualPath(fileName);
+    const path = virtual ? toBtsxPath(fileName) : fileName;
     const open = this.openDocuments.get(path);
-    if (open !== undefined) return `open:${open.version}`;
-    return String(ts.sys.getModifiedTime?.(path)?.getTime() ?? 0);
+    const version = open === undefined
+      ? String(ts.sys.getModifiedTime?.(path)?.getTime() ?? 0)
+      : `open:${open.version}`;
+    return virtual ? `${version}:${this.compilerOptions.jsxImportSource ?? ""}` : version;
   }
 
   getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {

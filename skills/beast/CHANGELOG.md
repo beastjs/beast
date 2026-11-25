@@ -5,6 +5,13 @@ repository's [changelog policy](../../docs/changelogs.md).
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-25
+
+### Changed
+
+- Update both skills for Beast and Octane `0.25.0`, matching companion
+  packages, and the new data client and JSX import source options.
+
 ## [0.23.2] - 2026-11-24
 
 ### Changed

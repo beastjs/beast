@@ -5,9 +5,9 @@
 > Agent skill for authoring, diagnosing, and shipping Beast BTSX → TSRX → Octane apps across supported build tools.
 
 [![skills.sh](https://img.shields.io/badge/skills.sh-Beast-111827?style=flat-square)](https://skills.sh/phtn/beast-skill/beast)
-[![Version](https://img.shields.io/badge/version-0.23.2-6f42c1?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.25.0-6f42c1?style=flat-square)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.23.2-111827?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.25.0-111827?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Scaffold in seconds. Author with indentation. Compile to native TSRX. Let Octane own rendering.**
@@ -68,19 +68,21 @@ Use $beast to scaffold a Beast project without git, then add a keyed list with e
 
 ## Compatibility
 
-The current toolchain target is `beast-tsrx@0.23.2`, `create-beast@0.23.2`, and
-`octane@0.23.2`. Keep compiler and runtime versions together, rebuild client
+See the [Octane 0.25 migration guide](references/octane-0.25.md) for the current upgrade.
+
+The current toolchain target is `beast-tsrx@0.25.0`, `create-beast@0.25.0`, and
+`octane@0.25.0`. Keep compiler and runtime versions together, rebuild client
 and server output when upgrading, and use companion bindings whose peers
-accept Octane `^0.23.0`.
+accept Octane `^0.25.0`.
 
 | Package | Target version |
 | --- | --- |
-| Beast compiler, project creator, and Octane | `0.23.2` |
+| Beast compiler, project creator, and Octane | `0.25.0` |
 | Node compiler parser (`@tsrx/oxc`) | `0.24.0` |
 | TSRX TypeScript plugin | `0.7.15` |
-| Octane Rspack / Rsbuild plugins | `0.2.15` / `0.2.6` |
-| Octane Base UI / Radix bindings | `0.1.77` / `0.1.77` |
-| Octane shadcn binding | `0.0.67` |
+| Octane Rspack / Rsbuild plugins | `0.3.0` / `0.2.8` |
+| Octane Base UI / Radix bindings | `0.1.79` / `0.1.79` |
+| Octane shadcn binding | `0.0.69` |
 | Optional Beast Devtools | `0.1.23` |
 
 Node compiler projects must explicitly install `@tsrx/oxc@0.24.0`; generated

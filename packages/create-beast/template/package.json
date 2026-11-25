@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "beast-tsrx": "__BEAST_PACKAGE_SPEC__",
-    "octane": "0.23.2"
+    "octane": "0.25.0"
   },
   "devDependencies": {
     "@tsrx/oxc": "0.24.0",

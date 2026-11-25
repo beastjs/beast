@@ -6,7 +6,7 @@ license: ISC
 
 # Beast
 
-This revision targets `beast-tsrx@0.23.2`, `create-beast@0.23.2`, and `octane@0.23.2`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
+This revision targets `beast-tsrx@0.25.0`, `create-beast@0.25.0`, and `octane@0.25.0`. These release numbers move together. Preserve an existing project’s versions unless upgrading is in scope.
 
 Ship indentation-first components that compile to native TSRX for Octane.
 

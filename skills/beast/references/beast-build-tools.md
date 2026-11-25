@@ -2,7 +2,7 @@
 
 Read this reference for Beast CLI, watch mode, source maps, or Vite/Rspack/Rsbuild integration. Prefer the project's installed versions and package manager; Beast and Octane are still alpha and pin compatible peers in `beast-tsrx`.
 
-Read [Octane 0.23](octane-0.23.md) for the current compiler and bundler upgrade. See [Octane 0.19](octane-0.19.md), [Octane 0.16](octane-0.16.md), [Octane 0.13](octane-0.13.md), [Octane 0.12](octane-0.12.md), [Octane 0.8](octane-0.8.md) and [Octane 0.7](octane-0.7.md) for earlier changes and [Octane 0.6](octane-0.6.md) when coming from 0.5 or earlier; for upgrades from 0.2, also read [Octane 0.3](octane-0.3.md).
+Read [Octane 0.25](octane-0.25.md) for the current compiler and bundler upgrade. See [Octane 0.23](octane-0.23.md), [Octane 0.19](octane-0.19.md), [Octane 0.16](octane-0.16.md), [Octane 0.13](octane-0.13.md), [Octane 0.12](octane-0.12.md), [Octane 0.8](octane-0.8.md) and [Octane 0.7](octane-0.7.md) for earlier changes and [Octane 0.6](octane-0.6.md) when coming from 0.5 or earlier; for upgrades from 0.2, also read [Octane 0.3](octane-0.3.md).
 
 ## Choose one integration boundary
 

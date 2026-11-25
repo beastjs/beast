@@ -5,6 +5,13 @@ recorded here. See the repository's [changelog policy](../../docs/changelogs.md)
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-25
+
+### Changed
+
+- Pin generated projects to Beast and Octane `0.25.0` and the matching
+  Rspack, Rsbuild, Base UI, Radix, and shadcn packages.
+
 ## [0.23.2] - 2026-11-24
 
 ### Changed

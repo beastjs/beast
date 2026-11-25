@@ -9,6 +9,16 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-25
+
+### Changed
+
+- Align with Octane `0.25.0`, Rspack plugin `0.3.0`, and Rsbuild plugin
+  `0.2.8`. The Node parser peer remains `@tsrx/oxc@0.24.0`.
+- Verify that the complete Vite and Rspack adapters can generate an Octane
+  data worker for a Beast app using `dataClient`. See the
+  [0.25 migration guide](docs/octane-0.25.md).
+
 ## [0.23.2] - 2026-11-24
 
 ### Changed

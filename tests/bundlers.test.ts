@@ -5,11 +5,13 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createRsbuild } from "@rsbuild/core";
 import { rspack, type Configuration, type Stats } from "@rspack/core";
+import { build as viteBuild } from "vite";
 import { beastOctane as beastOctaneRsbuild } from "../src/rsbuild.js";
 import {
   BeastRspackPlugin,
   beastOctane as beastOctaneRspack,
 } from "../src/rspack.js";
+import { beastOctane as beastOctaneVite } from "../src/vite.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -128,6 +130,50 @@ async function readScripts(directory: string): Promise<string> {
 }
 
 describe("Octane bundler integrations", () => {
+  test.each(["vite", "rspack"] as const)("%s emits the worker for a Beast app's data client", async (bundler) => {
+    const root = await temporaryProject(`beast-${bundler}-data-client-`);
+    const outDir = resolve(root, "dist");
+    const dataClient = "./src/data-client.ts";
+    await Bun.write(resolve(root, dataClient), [
+      'import { defineDataClient, httpTransport } from "octane/data";',
+      'export default defineDataClient({ transport: httpTransport("/api/data") });',
+    ].join("\n"));
+    await Bun.write(resolve(root, "src/App.btsx"), [
+      'import { openDataStore } from "octane/data/client";',
+      'button(onClick={() => openDataStore("account")}) Open store',
+    ].join("\n"));
+    await Bun.write(resolve(root, "src/main.ts"), [
+      'import { createRoot } from "octane";',
+      'import App from "./App.btsx";',
+      'createRoot(document.body).render(App);',
+    ].join("\n"));
+
+    if (bundler === "vite") {
+      await viteBuild({
+        root,
+        configFile: false,
+        logLevel: "silent",
+        plugins: [beastOctaneVite({ octane: { dataClient } })],
+        build: { rolldownOptions: { input: resolve(root, "src/main.ts") } },
+      });
+    } else {
+      await runRspack({
+        context: root,
+        mode: "production",
+        target: "web",
+        entry: "./src/main.ts",
+        output: { path: outDir },
+        plugins: [beastOctaneRspack({ octane: { dataClient } })],
+      });
+    }
+
+    const worker = await readFile(resolve(outDir, "_octane/data-worker.js"), "utf8");
+    expect(worker.trim().length).toBeGreaterThan(0);
+    const scripts = await readScripts(outDir);
+    expect(scripts).toContain("/api/data");
+    expect(scripts).toContain("Open store");
+  }, 30_000);
+
   test("Rspack resolves Beast and explicit ESM/CommonJS module extensions", () => {
     const compiler = {
       options: {

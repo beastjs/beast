@@ -63,7 +63,7 @@ points, while a machine-readable inventory guards every tracked public export.
 This ledger is the completion contract for Beast's Core API conformance work.
 It follows Octane's official [Core APIs] index, the hydration strategies taught
 on that page, and the public rendering functions from `octane/server` and
-`octane/static` in the pinned `octane@0.23.2` types. Compiler-emitted runtime
+`octane/static` in the pinned `octane@0.25.0` types. Compiler-emitted runtime
 helpers, metaframework RPC internals, compatibility aliases, type-only exports,
 and the `octane/signals` API are outside this stable Core API scope.
 
@@ -255,3 +255,14 @@ entries.
 
 See the [0.23 migration guide](octane-0.23.md) for the parser and companion
 versions and for recompiling older output.
+
+## Octane 0.25.0 regression coverage
+
+The bundler tests verify that a Beast component can import
+`octane/data/client` and that the Vite and Rspack adapters emit the worker
+when configured with `dataClient`. The language-server tests verify that a
+project JSX import source change updates diagnostics in an unchanged Beast
+document.
+
+See the [0.25 migration guide](octane-0.25.md) for the toolchain versions
+and data client setup.

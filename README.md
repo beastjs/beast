@@ -8,10 +8,10 @@
 ![Mural](public/beast-ss.png)
 
 [![Status: Alpha](https://img.shields.io/badge/status-beta-9dcbff?style=flat-square)](#project-status)
-[![Version](https://img.shields.io/badge/version-0.23.2-0E0E0E?style=flat-square)](package.json)
-[![Docs](https://img.shields.io/badge/docs-0.23.2-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
+[![Version](https://img.shields.io/badge/version-0.25.0-0E0E0E?style=flat-square)](package.json)
+[![Docs](https://img.shields.io/badge/docs-0.25.0-0E0E0E?style=flat-square)](https://beast-docs-adv.beastjs.workers.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.22.2-339933?style=flat-square&logo=nodedotjs&logoColor=white)](package.json)
-[![Octane](https://img.shields.io/badge/Octane-0.23.2-ff415a?style=flat-square)](https://octanejs.dev/)
+[![Octane](https://img.shields.io/badge/Octane-0.25.0-ff415a?style=flat-square)](https://octanejs.dev/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-0f766e?style=flat-square)](LICENSE)
 
 **Build fast apps fast. Even faster with machines.**
@@ -1070,8 +1070,8 @@ retains binding without enabling native reads, or Vite can opt in through
 Use the complete adapter with Octane's low-level Rspack plugin:
 
 ```bash
-npm install octane@0.23.2
-npm install --save-dev @tsrx/oxc@0.24.0 @rspack/core@^2 @octanejs/rspack-plugin@0.2.15
+npm install octane@0.25.0
+npm install --save-dev @tsrx/oxc@0.24.0 @rspack/core@^2 @octanejs/rspack-plugin@0.3.0
 ```
 
 ```js
@@ -1114,7 +1114,7 @@ The Rsbuild adapter composes Beast with Octane's full compiler and application
 plugin:
 
 ```bash
-npm install octane@0.23.2 @octanejs/rsbuild-plugin@0.2.6
+npm install octane@0.25.0 @octanejs/rsbuild-plugin@0.2.8
 npm install --save-dev @tsrx/oxc@0.24.0
 npm install --save-dev @rsbuild/core@^2
 ```
@@ -1262,16 +1262,17 @@ editors.
 | TypeScript                    | `^5.9.3`           | Package declarations and generated-project checking             |
 | TSRX TypeScript plugin        | `0.7.15`           | TypeScript and native `.tsrx` project type checking            |
 | TSRX native parser            | `0.24.0`           | Explicit `@tsrx/oxc` peer for Node compiler integrations        |
-| Octane                        | `0.23.2`           | TSRX validation, lowering, and runtime                          |
+| Octane                        | `0.25.0`           | TSRX validation, lowering, and runtime                          |
 | Vite                          | `^8.0.16`          | Development server and production bundling                      |
-| Octane Rspack/Rsbuild plugins | `0.2.15` / `0.2.6` | Bundler integration compatible with Octane `0.23.2`             |
+| Octane Rspack/Rsbuild plugins | `0.3.0` / `0.2.8` | Bundler integration compatible with Octane `0.25.0`             |
 | Rspack / Rsbuild              | `^2.0.0`           | Low-level and application-level production builds               |
 
 `beast-tsrx`, `create-beast`, and the skills mirror the supported Octane release
-number: `0.23.2`. Starters pin both compiler and runtime to this version.
+number: `0.25.0`. Starters pin both compiler and runtime to this version.
 Rebuild server and client output together when upgrading. Upgrade UI and router
-bindings to releases that accept Octane `^0.23.0`. Start with the
-[0.23 migration guide](docs/octane-0.23.md), then see the
+bindings to releases that accept Octane `^0.25.0`. Start with the
+[0.25 migration guide](docs/octane-0.25.md), then see the
+[0.23 guide](docs/octane-0.23.md),
 [0.19 guide](docs/octane-0.19.md), the [0.16 guide](docs/octane-0.16.md), the [0.13 guide](docs/octane-0.13.md), the [0.12 guide](docs/octane-0.12.md), the [0.8 guide](docs/octane-0.8.md), and the earlier
 [0.7 guide](docs/octane-0.7.md); projects on 0.5 or earlier should
 also read the [0.6 guide](docs/octane-0.6.md), and projects still on 0.2 the
@@ -1279,7 +1280,7 @@ also read the [0.6 guide](docs/octane-0.6.md), and projects still on 0.2 the
 
 The optional Devtools scaffold add-on pins `@beastjs/devtools@0.1.23`, whose
 Beast and Octane peers target `^0.13.8`. See the
-[0.23 migration guide](docs/octane-0.23.md) for add-on compatibility.
+[0.25 migration guide](docs/octane-0.25.md) for add-on compatibility.
 
 ## Correctness contract
 
@@ -1445,7 +1446,7 @@ the exact generated TSRX output contract. The living
 from BTSX syntax and integration work that still remains. Its public Core API
 ledger is synced to the official API index and the pinned Octane types, and a
 capability is marked covered only after its example or lifecycle test passes
-the release checks. Every row in that ledger is covered for `octane@0.23.2`.
+the release checks. Every row in that ledger is covered for `octane@0.25.0`.
 
 ## License
 

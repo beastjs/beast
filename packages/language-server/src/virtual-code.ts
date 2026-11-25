@@ -28,7 +28,11 @@ export interface BeastVirtualCode {
   toGeneratedOffset(sourceOffset: number, feature: VirtualCodeFeature): number | null;
 }
 
-export function createBeastVirtualCode(source: string, filePath: string): BeastVirtualCode | null {
+export function createBeastVirtualCode(
+  source: string,
+  filePath: string,
+  jsxImportSource?: string,
+): BeastVirtualCode | null {
   let tsrx: string;
   let beastMap: BeastSourceMap;
   try {
@@ -41,7 +45,10 @@ export function createBeastVirtualCode(source: string, filePath: string): BeastV
 
   let volar: ReturnType<typeof compileToVolarMappings>;
   try {
-    volar = compileToVolarMappings(tsrx, filePath.replace(/\.btsx$/u, ".tsrx"), { loose: true });
+    volar = compileToVolarMappings(tsrx, filePath.replace(/\.btsx$/u, ".tsrx"), {
+      loose: true,
+      ...(jsxImportSource === undefined ? {} : { defaultIntrinsics: jsxImportSource }),
+    });
   } catch {
     return null;
   }
